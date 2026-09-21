@@ -124,7 +124,7 @@ export default function Home() {
           <div className="mb-8">
             <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-full shadow-[0_0_60px_rgba(220,20,60,0.18)] sm:h-40 sm:w-40">
               <img
-                src="/snookeria-logo.png"
+                src="/snookeria-logo.jpg"
                 alt="لوگوی آکادمی اسنوکریا"
                 className="h-full w-full object-contain"
               />
