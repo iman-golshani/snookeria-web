@@ -208,9 +208,7 @@ export default function Home() {
 
             ارتباط مستقیم با مربی
 
-            <span className="text-white/70">|</span>
-
-            <span dir="ltr">{phoneNumber}</span>
+            
           </a>
 
           {/* Instagram */}
