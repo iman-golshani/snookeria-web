@@ -95,8 +95,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fa" dir="rtl">
-      <body className="bg-[#071426] text-white antialiased">
+    <html lang="fa" dir="rtl" className="bg-[#071426]">
+  <body className="min-h-screen bg-[#071426] text-white antialiased">
         {children}
         <BottomNav />
       </body>
