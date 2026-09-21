@@ -1,71 +1,63 @@
 "use client";
 
-import { Trophy, GraduationCap, Globe2 } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const items = [
-{
-label: "مسابقات",
-href: "/tournaments",
-icon: Trophy,
-},
-{
-label: "آکادمی",
-href: "/academy",
-icon: GraduationCap,
-},
-{
-label: "دنیای اسنوکر",
-href: "/snooker-world",
-icon: Globe2,
-},
-];
+import { Trophy, Newspaper, CircleDot } from "lucide-react";
 
 export default function BottomNav() {
-const pathname = usePathname();
+  const pathname = usePathname();
 
-return ( <nav className="fixed inset-x-0 bottom-0 z-50 px-3 pb-3"> <div className="mx-auto flex h-[68px] max-w-md items-center justify-around rounded-2xl border border-white/10 bg-[#101012]/95 px-2 shadow-2xl shadow-black/50 backdrop-blur-2xl">
-{items.map((item) => {
-const Icon = item.icon;
+  const isAcademy = pathname === "/";
+  const isTournaments = pathname.startsWith("/tournaments");
+  const isNews = pathname.startsWith("/news");
 
-      const active =
-        pathname === item.href ||
-        (item.href !== "/" && pathname.startsWith(item.href));
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#071426]/90 backdrop-blur-xl">
+      <div className="mx-auto grid max-w-lg grid-cols-3">
+        {/* News - Left */}
+        <Link
+          href="/news"
+          className={`flex flex-col items-center gap-1 py-3 transition ${
+            isNews ? "text-red-500" : "text-white/45 hover:text-white"
+          }`}
+        >
+          <Newspaper size={21} />
+          <span className="text-[11px]">اخبار</span>
+        </Link>
 
-      return (
-        <a
-          key={item.href}
-          href={item.href}
-          className="flex h-full min-w-[82px] flex-col items-center justify-center gap-1.5"
+        {/* Academy - Center */}
+        <Link
+          href="/"
+          className={`relative flex flex-col items-center gap-1 py-3 transition ${
+            isAcademy ? "text-red-500" : "text-white/45"
+          }`}
         >
           <div
-            className={`flex h-8 w-12 items-center justify-center rounded-xl transition-all ${
-              active
-                ? "bg-[#e21d2f]/10 text-[#e21d2f]"
-                : "text-zinc-500"
+            className={`absolute -top-5 flex h-12 w-12 items-center justify-center rounded-full border bg-[#071426] ${
+              isAcademy
+                ? "border-red-600/40 shadow-[0_0_25px_rgba(220,20,60,0.25)]"
+                : "border-white/10"
             }`}
           >
-            <Icon
-              className={`h-[19px] w-[19px] ${
-                active ? "stroke-[2.2]" : "stroke-[1.7]"
-              }`}
-            />
+            <CircleDot size={24} />
           </div>
 
-          <span
-            className={`text-[10px] transition ${
-              active
-                ? "font-bold text-white"
-                : "font-medium text-zinc-500"
-            }`}
-          >
-            {item.label}
-          </span>
-        </a>
-      );
-    })}
-  </div>
-</nav>
+          <div className="h-5" />
 
-);
+          <span className="text-[11px] font-semibold">آکادمی</span>
+        </Link>
+
+        {/* Tournaments - Right */}
+        <Link
+          href="/tournaments"
+          className={`flex flex-col items-center gap-1 py-3 transition ${
+            isTournaments ? "text-red-500" : "text-white/45 hover:text-white"
+          }`}
+        >
+          <Trophy size={21} />
+          <span className="text-[11px]">مسابقات</span>
+        </Link>
+      </div>
+    </nav>
+  );
 }
