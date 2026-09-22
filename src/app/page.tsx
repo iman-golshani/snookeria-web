@@ -149,9 +149,6 @@ export default function Home() {
               ، مربی و داور رسمی فدراسیون
             </p>
 
-            <p className="mt-1 text-xs text-white/40">
-              موسس آکادمی اسنوکریا
-            </p>
           </div>
 
           {/* Description */}
