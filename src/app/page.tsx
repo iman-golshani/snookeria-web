@@ -101,14 +101,7 @@ export default function Home() {
         }}
       />
 
-      {/* Background glow */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[-180px] h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-red-600/10 blur-[120px]" />
-
-        <div className="absolute bottom-[-200px] left-[-120px] h-[400px] w-[400px] rounded-full bg-blue-500/10 blur-[130px]" />
-
-        <div className="absolute right-[-150px] top-1/3 h-[350px] w-[350px] rounded-full bg-red-600/5 blur-[120px]" />
-      </div>
+      
 
       {/* Subtle background lines */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.035]">
