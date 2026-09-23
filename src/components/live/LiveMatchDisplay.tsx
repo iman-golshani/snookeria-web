@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Clock3,
+  Expand,
+  Minimize2,
   Radio,
   RefreshCw,
   UserRound,
@@ -101,7 +103,10 @@ export default function LiveMatchDisplay({
   const [displayShotSeconds, setDisplayShotSeconds] =
     useState(15);
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   const latestStateRef = useRef<LiveState>({});
+  const fullscreenRef = useRef<HTMLDivElement>(null);
 
   const normalizedRoomCode = useMemo(
     () =>
@@ -154,12 +159,6 @@ export default function LiveMatchDisplay({
       }
     };
 
-    /*
-     * =========================================================
-     * STATE SNAPSHOT
-     * =========================================================
-     */
-
     channel.on(
       "broadcast",
       {
@@ -182,10 +181,6 @@ export default function LiveMatchDisplay({
         setLiveState(mergedState);
         setHasReceivedState(true);
 
-        /*
-         * TIMER SYNCHRONIZATION
-         */
-
         let elapsedSeconds = 0;
 
         if (incoming.sentAt) {
@@ -194,20 +189,12 @@ export default function LiveMatchDisplay({
           if (!Number.isNaN(sentAt)) {
             elapsedSeconds = Math.max(
               0,
-              Math.floor(
-                (Date.now() - sentAt) / 1000
-              )
+              Math.floor((Date.now() - sentAt) / 1000)
             );
           }
         }
 
-        /*
-         * Match Timer
-         */
-
-        if (
-          incoming.totalTimeSeconds !== undefined
-        ) {
+        if (incoming.totalTimeSeconds !== undefined) {
           const receivedTotal = readNumber(
             incoming.totalTimeSeconds,
             600
@@ -224,13 +211,7 @@ export default function LiveMatchDisplay({
           );
         }
 
-        /*
-         * Shot Clock
-         */
-
-        if (
-          incoming.shotTimeSeconds !== undefined
-        ) {
+        if (incoming.shotTimeSeconds !== undefined) {
           const receivedShot = readNumber(
             incoming.shotTimeSeconds,
             15
@@ -249,12 +230,6 @@ export default function LiveMatchDisplay({
         }
       }
     );
-
-    /*
-     * =========================================================
-     * SUBSCRIBE
-     * =========================================================
-     */
 
     channel.subscribe((status, error) => {
       if (disposed) {
@@ -291,12 +266,6 @@ export default function LiveMatchDisplay({
       }
     });
 
-    /*
-     * =========================================================
-     * CLEANUP
-     * =========================================================
-     */
-
     return () => {
       disposed = true;
 
@@ -318,10 +287,7 @@ export default function LiveMatchDisplay({
     const timer = window.setInterval(() => {
       const state = latestStateRef.current;
 
-      if (
-        !state.isGameRunning ||
-        state.isPaused
-      ) {
+      if (!state.isGameRunning || state.isPaused) {
         return;
       }
 
@@ -340,6 +306,81 @@ export default function LiveMatchDisplay({
       window.clearInterval(timer);
     };
   }, []);
+
+  /*
+   * =========================================================
+   * FULLSCREEN
+   * =========================================================
+   */
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(
+        document.fullscreenElement === fullscreenRef.current
+      );
+    };
+
+    document.addEventListener(
+      "fullscreenchange",
+      handleFullscreenChange
+    );
+
+    return () => {
+      document.removeEventListener(
+        "fullscreenchange",
+        handleFullscreenChange
+      );
+    };
+  }, []);
+
+  const enterFullscreen = async () => {
+    const element = fullscreenRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    try {
+      if (element.requestFullscreen) {
+        await element.requestFullscreen();
+        return;
+      }
+    } catch (error) {
+      console.warn(
+        "Native fullscreen is not available:",
+        error
+      );
+    }
+
+    /*
+     * Fallback مخصوص مرورگرهایی که Fullscreen API
+     * را روی این Element اجرا نمی‌کنند.
+     */
+    setIsFullscreen(true);
+  };
+
+  const exitFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.warn(
+        "Could not exit native fullscreen:",
+        error
+      );
+    }
+
+    setIsFullscreen(false);
+  };
+
+  const toggleFullscreen = () => {
+    if (isFullscreen) {
+      void exitFullscreen();
+    } else {
+      void enterFullscreen();
+    }
+  };
 
   /*
    * =========================================================
@@ -394,14 +435,7 @@ export default function LiveMatchDisplay({
    */
 
   const shotClockLimit =
-    displayTotalSeconds <= 300
-      ? 10
-      : 15;
-
-  /*
-   * Progress:
-   * Green -> Yellow -> Orange -> Red
-   */
+    displayTotalSeconds <= 300 ? 10 : 15;
 
   const shotProgress = Math.min(
     100,
@@ -428,57 +462,70 @@ export default function LiveMatchDisplay({
 
   return (
     <section>
-      {/* Connection / Live Status */}
+      {/* Normal page status */}
 
-      <div className="mb-2 flex h-9 items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3">
-        <div className="flex items-center gap-2">
-          {isLive ? (
-            <>
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-              </span>
+      {!isFullscreen && (
+        <div className="mb-2 flex h-9 items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3">
+          <div className="flex items-center gap-2">
+            {isLive ? (
+              <>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                </span>
 
-              <span className="text-[10px] font-bold tracking-[0.16em] text-red-500">
-                LIVE
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="h-2 w-2 rounded-full bg-white/25" />
+                <span className="text-[10px] font-bold tracking-[0.16em] text-red-500">
+                  LIVE
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="h-2 w-2 rounded-full bg-white/25" />
 
-              <span className="text-[10px] text-white/40">
-                در انتظار شروع
-              </span>
-            </>
-          )}
+                <span className="text-[10px] text-white/40">
+                  در انتظار شروع
+                </span>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div
+              className={`flex items-center gap-1.5 text-[10px] ${
+                connectionState === "connected"
+                  ? "text-emerald-400"
+                  : "text-white/35"
+              }`}
+            >
+              {connectionState === "connected" ? (
+                <Wifi size={13} />
+              ) : connectionState === "connecting" ? (
+                <RefreshCw
+                  size={12}
+                  className="animate-spin"
+                />
+              ) : (
+                <WifiOff size={13} />
+              )}
+
+              {connectionState === "connected"
+                ? "اتصال زنده"
+                : connectionState === "connecting"
+                  ? "در حال اتصال..."
+                  : "اتصال قطع است"}
+            </div>
+
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              aria-label="نمایش تمام صفحه"
+              className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-white/60 transition hover:bg-white/10 hover:text-white active:scale-95"
+            >
+              <Expand size={14} />
+            </button>
+          </div>
         </div>
-
-        <div
-          className={`flex items-center gap-1.5 text-[10px] ${
-            connectionState === "connected"
-              ? "text-emerald-400"
-              : "text-white/35"
-          }`}
-        >
-          {connectionState === "connected" ? (
-            <Wifi size={13} />
-          ) : connectionState === "connecting" ? (
-            <RefreshCw
-              size={12}
-              className="animate-spin"
-            />
-          ) : (
-            <WifiOff size={13} />
-          )}
-
-          {connectionState === "connected"
-            ? "اتصال زنده"
-            : connectionState === "connecting"
-              ? "در حال اتصال..."
-              : "اتصال قطع است"}
-        </div>
-      </div>
+      )}
 
       {!hasReceivedState ? (
         <div className="flex min-h-[55vh] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/[0.025] px-5 text-center">
@@ -522,201 +569,327 @@ export default function LiveMatchDisplay({
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.035]">
-          {/* Match Timer */}
+        /*
+         * =====================================================
+         * FULLSCREEN TARGET
+         * =====================================================
+         */
 
-          <div className="border-b border-white/10 px-4 py-3 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-[10px] text-white/35">
-              <Clock3 size={12} />
-              زمان باقی‌مانده مسابقه
-            </div>
+        <div
+          ref={fullscreenRef}
+          className={
+            isFullscreen
+              ? "fixed inset-0 z-[9999] flex min-h-[100dvh] w-screen items-center justify-center overflow-hidden bg-[#071426] p-3 text-white"
+              : ""
+          }
+        >
+          <div
+            className={`relative w-full overflow-hidden border border-white/10 bg-[#0a192c] ${
+              isFullscreen
+                ? "mx-auto max-w-3xl rounded-[24px]"
+                : "rounded-[22px]"
+            }`}
+          >
+            {/* Fullscreen top controls */}
 
-            <div
-              dir="ltr"
-              className="mt-1 text-4xl font-black leading-none tracking-tight tabular-nums sm:text-5xl"
-            >
-              {formatTime(displayTotalSeconds)}
-            </div>
+            {isFullscreen && (
+              <div className="flex h-10 items-center justify-between border-b border-white/10 px-3">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                  </span>
 
-            {isPaused && (
-              <div className="mt-1.5 inline-flex rounded-full bg-amber-500/10 px-3 py-1 text-[9px] font-semibold text-amber-400">
-                مسابقه متوقف شده است
+                  <span className="text-[10px] font-bold tracking-[0.16em] text-red-500">
+                    LIVE
+                  </span>
+
+                  {connectionState === "connected" && (
+                    <span className="flex items-center gap-1 text-[9px] text-emerald-400">
+                      <Wifi size={11} />
+                      متصل
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={toggleFullscreen}
+                  aria-label="خروج از تمام صفحه"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-white/60 transition hover:bg-white/10 hover:text-white active:scale-95"
+                >
+                  <Minimize2 size={14} />
+                </button>
               </div>
             )}
-          </div>
 
-          {/* Players */}
+            {/* Match Timer */}
 
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-3 sm:gap-8 sm:px-8 sm:py-5">
-            {/* Player 1 */}
+            <div
+              className={`border-b border-white/10 text-center ${
+                isFullscreen
+                  ? "px-4 py-4"
+                  : "px-4 py-3"
+              }`}
+            >
+              <div className="flex items-center justify-center gap-1.5 text-[10px] text-white/35">
+                <Clock3 size={12} />
+                زمان باقی‌مانده مسابقه
+              </div>
 
-            <div className="min-w-0 text-center">
               <div
-                className={`mx-auto h-20 w-20 overflow-hidden rounded-full border-2 sm:h-28 sm:w-28 ${
-                  currentPlayer === 1
-                    ? "border-red-500"
-                    : "border-white/10"
+                dir="ltr"
+                className={`mt-1 font-black leading-none tracking-tight tabular-nums ${
+                  isFullscreen
+                    ? "text-5xl sm:text-6xl"
+                    : "text-4xl sm:text-5xl"
                 }`}
               >
-                {liveState.player1Image ? (
-                  <img
-                    src={liveState.player1Image}
-                    alt={player1Name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-[#0b1b30] text-white/25">
-                    <UserRound size={30} />
-                  </div>
-                )}
+                {formatTime(displayTotalSeconds)}
               </div>
 
-              <h2 className="mt-2 truncate text-sm font-bold sm:text-lg">
-                {player1Name}
-              </h2>
-
-              <div className="mt-1 text-5xl font-black leading-none tabular-nums sm:text-6xl">
-                {player1Score}
-              </div>
-
-              {/* Player 1 Break */}
-
-              <div className="mt-2 flex items-center justify-center gap-2">
-                <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30">
-                  BREAK
-                </span>
-
-                <span
-                  className={`text-lg font-black leading-none tabular-nums sm:text-xl ${
-                    currentPlayer === 1 &&
-                    player1Break > 0
-                      ? "text-red-400"
-                      : "text-white/60"
-                  }`}
-                >
-                  {player1Break}
-                </span>
-              </div>
-            </div>
-
-            {/* Center */}
-
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-[10px] font-black tracking-[0.18em] text-white/20">
-                VS
-              </span>
-
-              <div className="my-2 h-5 w-px bg-white/10" />
-
-              {(currentPlayer === 1 ||
-                currentPlayer === 2) && (
-                <span className="whitespace-nowrap rounded-full border border-red-500/20 bg-red-500/10 px-2 py-1 text-[9px] font-semibold text-red-400">
-                  نوبت بازیکن {currentPlayer}
-                </span>
+              {isPaused && (
+                <div className="mt-1.5 inline-flex rounded-full bg-amber-500/10 px-3 py-1 text-[9px] font-semibold text-amber-400">
+                  مسابقه متوقف شده است
+                </div>
               )}
             </div>
 
-            {/* Player 2 */}
+            {/* Players */}
 
-            <div className="min-w-0 text-center">
-              <div
-                className={`mx-auto h-20 w-20 overflow-hidden rounded-full border-2 sm:h-28 sm:w-28 ${
-                  currentPlayer === 2
-                    ? "border-red-500"
-                    : "border-white/10"
-                }`}
-              >
-                {liveState.player2Image ? (
-                  <img
-                    src={liveState.player2Image}
-                    alt={player2Name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-[#0b1b30] text-white/25">
-                    <UserRound size={30} />
-                  </div>
+            <div
+              className={`grid grid-cols-[1fr_auto_1fr] items-center ${
+                isFullscreen
+                  ? "gap-3 px-4 py-5 sm:gap-10 sm:px-10"
+                  : "gap-2 px-3 py-3 sm:gap-8 sm:px-8 sm:py-5"
+              }`}
+            >
+              {/* Player 1 */}
+
+              <div className="min-w-0 text-center">
+                <div
+                  className={`mx-auto overflow-hidden rounded-full border-2 ${
+                    isFullscreen
+                      ? "h-24 w-24 sm:h-32 sm:w-32"
+                      : "h-20 w-20 sm:h-28 sm:w-28"
+                  } ${
+                    currentPlayer === 1
+                      ? "border-red-500"
+                      : "border-white/10"
+                  }`}
+                >
+                  {liveState.player1Image ? (
+                    <img
+                      src={liveState.player1Image}
+                      alt={player1Name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-[#0b1b30] text-white/25">
+                      <UserRound
+                        size={isFullscreen ? 34 : 30}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <h2
+                  className={`mt-2 truncate font-bold ${
+                    isFullscreen
+                      ? "text-base sm:text-xl"
+                      : "text-sm sm:text-lg"
+                  }`}
+                >
+                  {player1Name}
+                </h2>
+
+                <div
+                  className={`mt-1 font-black leading-none tabular-nums ${
+                    isFullscreen
+                      ? "text-6xl sm:text-7xl"
+                      : "text-5xl sm:text-6xl"
+                  }`}
+                >
+                  {player1Score}
+                </div>
+
+                <div className="mt-2 flex items-center justify-center gap-2">
+                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30">
+                    BREAK
+                  </span>
+
+                  <span
+                    className={`font-black leading-none tabular-nums ${
+                      isFullscreen
+                        ? "text-xl sm:text-2xl"
+                        : "text-lg sm:text-xl"
+                    } ${
+                      currentPlayer === 1 &&
+                      player1Break > 0
+                        ? "text-red-400"
+                        : "text-white/60"
+                    }`}
+                  >
+                    {player1Break}
+                  </span>
+                </div>
+              </div>
+
+              {/* VS */}
+
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-xs font-black tracking-[0.18em] text-white/20">
+                  VS
+                </span>
+
+                <div className="my-2 h-6 w-px bg-white/10" />
+
+                {(currentPlayer === 1 ||
+                  currentPlayer === 2) && (
+                  <span className="whitespace-nowrap rounded-full border border-red-500/20 bg-red-500/10 px-2 py-1 text-[9px] font-semibold text-red-400">
+                    نوبت بازیکن {currentPlayer}
+                  </span>
                 )}
               </div>
 
-              <h2 className="mt-2 truncate text-sm font-bold sm:text-lg">
-                {player2Name}
-              </h2>
+              {/* Player 2 */}
 
-              <div className="mt-1 text-5xl font-black leading-none tabular-nums sm:text-6xl">
-                {player2Score}
-              </div>
-
-              {/* Player 2 Break */}
-
-              <div className="mt-2 flex items-center justify-center gap-2">
-                <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30">
-                  BREAK
-                </span>
-
-                <span
-                  className={`text-lg font-black leading-none tabular-nums sm:text-xl ${
-                    currentPlayer === 2 &&
-                    player2Break > 0
-                      ? "text-red-400"
-                      : "text-white/60"
+              <div className="min-w-0 text-center">
+                <div
+                  className={`mx-auto overflow-hidden rounded-full border-2 ${
+                    isFullscreen
+                      ? "h-24 w-24 sm:h-32 sm:w-32"
+                      : "h-20 w-20 sm:h-28 sm:w-28"
+                  } ${
+                    currentPlayer === 2
+                      ? "border-red-500"
+                      : "border-white/10"
                   }`}
                 >
-                  {player2Break}
-                </span>
+                  {liveState.player2Image ? (
+                    <img
+                      src={liveState.player2Image}
+                      alt={player2Name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-[#0b1b30] text-white/25">
+                      <UserRound
+                        size={isFullscreen ? 34 : 30}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <h2
+                  className={`mt-2 truncate font-bold ${
+                    isFullscreen
+                      ? "text-base sm:text-xl"
+                      : "text-sm sm:text-lg"
+                  }`}
+                >
+                  {player2Name}
+                </h2>
+
+                <div
+                  className={`mt-1 font-black leading-none tabular-nums ${
+                    isFullscreen
+                      ? "text-6xl sm:text-7xl"
+                      : "text-5xl sm:text-6xl"
+                  }`}
+                >
+                  {player2Score}
+                </div>
+
+                <div className="mt-2 flex items-center justify-center gap-2">
+                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30">
+                    BREAK
+                  </span>
+
+                  <span
+                    className={`font-black leading-none tabular-nums ${
+                      isFullscreen
+                        ? "text-xl sm:text-2xl"
+                        : "text-lg sm:text-xl"
+                    } ${
+                      currentPlayer === 2 &&
+                      player2Break > 0
+                        ? "text-red-400"
+                        : "text-white/60"
+                    }`}
+                  >
+                    {player2Break}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Shot Clock */}
+            {/* Shot Clock */}
 
-          <div className="border-t border-white/10 px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[9px] font-semibold tracking-[0.14em] text-white/30">
-                  SHOT CLOCK
-                </p>
+            <div
+              className={`border-t border-white/10 ${
+                isFullscreen
+                  ? "px-5 py-4"
+                  : "px-4 py-3"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-semibold tracking-[0.14em] text-white/30">
+                    SHOT CLOCK
+                  </p>
 
-                <p className="mt-0.5 text-[9px] text-white/25">
-                  {isShotRunning
-                    ? "در حال شمارش"
-                    : "آماده"}
+                  <p className="mt-0.5 text-[9px] text-white/25">
+                    {isShotRunning
+                      ? "در حال شمارش"
+                      : "آماده"}
+                  </p>
+                </div>
+
+                <p
+                  dir="ltr"
+                  className={`font-black leading-none tabular-nums ${
+                    isFullscreen
+                      ? "text-5xl"
+                      : "text-4xl"
+                  } ${
+                    isShotRunning &&
+                    displayShotSeconds <= 5
+                      ? "text-red-500"
+                      : "text-white"
+                  }`}
+                >
+                  {displayShotSeconds}
                 </p>
               </div>
 
-              <p
-                dir="ltr"
-                className={`text-4xl font-black leading-none tabular-nums ${
-                  isShotRunning &&
-                  displayShotSeconds <= 5
-                    ? "text-red-500"
-                    : "text-white"
+              {/* Progress */}
+
+              <div
+                className={`overflow-hidden rounded-full bg-white/10 ${
+                  isFullscreen
+                    ? "mt-4 h-2"
+                    : "mt-3 h-1.5"
                 }`}
               >
-                {displayShotSeconds}
-              </p>
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${shotProgressColor}`}
+                  style={{
+                    width: `${shotProgress}%`,
+                  }}
+                />
+              </div>
             </div>
 
-            {/* Shot Clock Progress */}
+            {/* Footer */}
 
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${shotProgressColor}`}
-                style={{
-                  width: `${shotProgress}%`,
-                }}
-              />
+            <div className="flex h-8 items-center justify-between border-t border-white/10 px-4 text-[9px] text-white/20">
+              <span>SNOOKERIA LIVE</span>
+
+              <span dir="ltr">
+                ROOM {normalizedRoomCode}
+              </span>
             </div>
-          </div>
-
-          {/* Footer */}
-
-          <div className="flex h-8 items-center justify-between border-t border-white/10 px-4 text-[9px] text-white/20">
-            <span>SNOOKERIA LIVE</span>
-
-            <span dir="ltr">
-              ROOM {normalizedRoomCode}
-            </span>
           </div>
         </div>
       )}
