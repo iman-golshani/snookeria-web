@@ -159,6 +159,12 @@ export default function LiveMatchDisplay({
       }
     };
 
+    /*
+     * =========================================================
+     * STATE SNAPSHOT
+     * =========================================================
+     */
+
     channel.on(
       "broadcast",
       {
@@ -181,6 +187,10 @@ export default function LiveMatchDisplay({
         setLiveState(mergedState);
         setHasReceivedState(true);
 
+        /*
+         * TIMER SYNCHRONIZATION
+         */
+
         let elapsedSeconds = 0;
 
         if (incoming.sentAt) {
@@ -193,6 +203,10 @@ export default function LiveMatchDisplay({
             );
           }
         }
+
+        /*
+         * Match Timer
+         */
 
         if (incoming.totalTimeSeconds !== undefined) {
           const receivedTotal = readNumber(
@@ -210,6 +224,10 @@ export default function LiveMatchDisplay({
             Math.max(0, correctedTotal)
           );
         }
+
+        /*
+         * Shot Clock
+         */
 
         if (incoming.shotTimeSeconds !== undefined) {
           const receivedShot = readNumber(
@@ -230,6 +248,12 @@ export default function LiveMatchDisplay({
         }
       }
     );
+
+    /*
+     * =========================================================
+     * SUBSCRIBE
+     * =========================================================
+     */
 
     channel.subscribe((status, error) => {
       if (disposed) {
@@ -265,6 +289,12 @@ export default function LiveMatchDisplay({
         setConnectionState("disconnected");
       }
     });
+
+    /*
+     * =========================================================
+     * CLEANUP
+     * =========================================================
+     */
 
     return () => {
       disposed = true;
@@ -353,9 +383,9 @@ export default function LiveMatchDisplay({
     }
 
     /*
-     * Fallback مخصوص مرورگرهایی که Fullscreen API
-     * را روی این Element اجرا نمی‌کنند.
+     * Fallback for browsers without element fullscreen support.
      */
+
     setIsFullscreen(true);
   };
 
@@ -430,8 +460,8 @@ export default function LiveMatchDisplay({
 
   /*
    * Shoot Out:
-   * بالای 5 دقیقه = Shot Clock 15s
-   * 5 دقیقه آخر = Shot Clock 10s
+   * First 5 minutes = 15 seconds
+   * Last 5 minutes = 10 seconds
    */
 
   const shotClockLimit =
@@ -462,7 +492,7 @@ export default function LiveMatchDisplay({
 
   return (
     <section>
-      {/* Normal page status */}
+      {/* Normal Page Status */}
 
       {!isFullscreen && (
         <div className="mb-2 flex h-9 items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3">
@@ -528,6 +558,10 @@ export default function LiveMatchDisplay({
       )}
 
       {!hasReceivedState ? (
+        /*
+         * WAITING FOR STATE
+         */
+
         <div className="flex min-h-[55vh] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/[0.025] px-5 text-center">
           {connectionState === "error" ? (
             <>
@@ -579,33 +613,33 @@ export default function LiveMatchDisplay({
           ref={fullscreenRef}
           className={
             isFullscreen
-              ? "fixed inset-0 z-[9999] flex min-h-[100dvh] w-screen items-center justify-center overflow-hidden bg-[#071426] p-3 text-white"
+              ? "fixed inset-0 z-[9999] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-[#071426] p-3 text-white md:p-4"
               : ""
           }
         >
           <div
             className={`relative w-full overflow-hidden border border-white/10 bg-[#0a192c] ${
               isFullscreen
-                ? "mx-auto max-w-3xl rounded-[24px]"
+                ? "mx-auto rounded-[24px] md:flex md:h-full md:max-w-none md:flex-col md:rounded-[28px]"
                 : "rounded-[22px]"
             }`}
           >
-            {/* Fullscreen top controls */}
+            {/* Fullscreen Top Controls */}
 
             {isFullscreen && (
-              <div className="flex h-10 items-center justify-between border-b border-white/10 px-3">
+              <div className="flex h-10 shrink-0 items-center justify-between border-b border-white/10 px-3 md:h-12 md:px-5">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
                   </span>
 
-                  <span className="text-[10px] font-bold tracking-[0.16em] text-red-500">
+                  <span className="text-[10px] font-bold tracking-[0.16em] text-red-500 md:text-xs">
                     LIVE
                   </span>
 
                   {connectionState === "connected" && (
-                    <span className="flex items-center gap-1 text-[9px] text-emerald-400">
+                    <span className="flex items-center gap-1 text-[9px] text-emerald-400 md:text-xs">
                       <Wifi size={11} />
                       متصل
                     </span>
@@ -616,9 +650,12 @@ export default function LiveMatchDisplay({
                   type="button"
                   onClick={toggleFullscreen}
                   aria-label="خروج از تمام صفحه"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-white/60 transition hover:bg-white/10 hover:text-white active:scale-95"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-white/60 transition hover:bg-white/10 hover:text-white active:scale-95 md:h-9 md:w-9"
                 >
-                  <Minimize2 size={14} />
+                  <Minimize2
+                    size={14}
+                    className="md:h-[18px] md:w-[18px]"
+                  />
                 </button>
               </div>
             )}
@@ -626,13 +663,13 @@ export default function LiveMatchDisplay({
             {/* Match Timer */}
 
             <div
-              className={`border-b border-white/10 text-center ${
+              className={`shrink-0 border-b border-white/10 text-center ${
                 isFullscreen
-                  ? "px-4 py-4"
+                  ? "px-4 py-4 md:py-5"
                   : "px-4 py-3"
               }`}
             >
-              <div className="flex items-center justify-center gap-1.5 text-[10px] text-white/35">
+              <div className="flex items-center justify-center gap-1.5 text-[10px] text-white/35 md:text-xs">
                 <Clock3 size={12} />
                 زمان باقی‌مانده مسابقه
               </div>
@@ -641,7 +678,7 @@ export default function LiveMatchDisplay({
                 dir="ltr"
                 className={`mt-1 font-black leading-none tracking-tight tabular-nums ${
                   isFullscreen
-                    ? "text-5xl sm:text-6xl"
+                    ? "text-5xl sm:text-6xl md:text-7xl"
                     : "text-4xl sm:text-5xl"
                 }`}
               >
@@ -649,7 +686,7 @@ export default function LiveMatchDisplay({
               </div>
 
               {isPaused && (
-                <div className="mt-1.5 inline-flex rounded-full bg-amber-500/10 px-3 py-1 text-[9px] font-semibold text-amber-400">
+                <div className="mt-1.5 inline-flex rounded-full bg-amber-500/10 px-3 py-1 text-[9px] font-semibold text-amber-400 md:text-xs">
                   مسابقه متوقف شده است
                 </div>
               )}
@@ -660,7 +697,7 @@ export default function LiveMatchDisplay({
             <div
               className={`grid grid-cols-[1fr_auto_1fr] items-center ${
                 isFullscreen
-                  ? "gap-3 px-4 py-5 sm:gap-10 sm:px-10"
+                  ? "gap-3 px-4 py-5 sm:gap-10 sm:px-10 md:min-h-0 md:flex-1 md:gap-16 md:px-16 md:py-4 lg:px-24"
                   : "gap-2 px-3 py-3 sm:gap-8 sm:px-8 sm:py-5"
               }`}
             >
@@ -670,7 +707,7 @@ export default function LiveMatchDisplay({
                 <div
                   className={`mx-auto overflow-hidden rounded-full border-2 ${
                     isFullscreen
-                      ? "h-24 w-24 sm:h-32 sm:w-32"
+                      ? "h-24 w-24 sm:h-32 sm:w-32 md:h-44 md:w-44 lg:h-52 lg:w-52"
                       : "h-20 w-20 sm:h-28 sm:w-28"
                   } ${
                     currentPlayer === 1
@@ -688,6 +725,11 @@ export default function LiveMatchDisplay({
                     <div className="flex h-full w-full items-center justify-center bg-[#0b1b30] text-white/25">
                       <UserRound
                         size={isFullscreen ? 34 : 30}
+                        className={
+                          isFullscreen
+                            ? "md:h-14 md:w-14"
+                            : ""
+                        }
                       />
                     </div>
                   )}
@@ -696,7 +738,7 @@ export default function LiveMatchDisplay({
                 <h2
                   className={`mt-2 truncate font-bold ${
                     isFullscreen
-                      ? "text-base sm:text-xl"
+                      ? "text-base sm:text-xl md:mt-4 md:text-2xl lg:text-3xl"
                       : "text-sm sm:text-lg"
                   }`}
                 >
@@ -706,22 +748,28 @@ export default function LiveMatchDisplay({
                 <div
                   className={`mt-1 font-black leading-none tabular-nums ${
                     isFullscreen
-                      ? "text-6xl sm:text-7xl"
+                      ? "text-6xl sm:text-7xl md:mt-3 md:text-8xl lg:text-9xl"
                       : "text-5xl sm:text-6xl"
                   }`}
                 >
                   {player1Score}
                 </div>
 
-                <div className="mt-2 flex items-center justify-center gap-2">
-                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30">
+                <div
+                  className={`flex items-center justify-center gap-2 ${
+                    isFullscreen
+                      ? "mt-2 md:mt-4"
+                      : "mt-2"
+                  }`}
+                >
+                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30 md:text-sm">
                     BREAK
                   </span>
 
                   <span
                     className={`font-black leading-none tabular-nums ${
                       isFullscreen
-                        ? "text-xl sm:text-2xl"
+                        ? "text-xl sm:text-2xl md:text-3xl"
                         : "text-lg sm:text-xl"
                     } ${
                       currentPlayer === 1 &&
@@ -738,15 +786,33 @@ export default function LiveMatchDisplay({
               {/* VS */}
 
               <div className="flex flex-col items-center justify-center">
-                <span className="text-xs font-black tracking-[0.18em] text-white/20">
+                <span
+                  className={`font-black tracking-[0.18em] text-white/20 ${
+                    isFullscreen
+                      ? "text-xs md:text-2xl"
+                      : "text-xs"
+                  }`}
+                >
                   VS
                 </span>
 
-                <div className="my-2 h-6 w-px bg-white/10" />
+                <div
+                  className={`w-px bg-white/10 ${
+                    isFullscreen
+                      ? "my-2 h-6 md:my-4 md:h-12"
+                      : "my-2 h-6"
+                  }`}
+                />
 
                 {(currentPlayer === 1 ||
                   currentPlayer === 2) && (
-                  <span className="whitespace-nowrap rounded-full border border-red-500/20 bg-red-500/10 px-2 py-1 text-[9px] font-semibold text-red-400">
+                  <span
+                    className={`whitespace-nowrap rounded-full border border-red-500/20 bg-red-500/10 font-semibold text-red-400 ${
+                      isFullscreen
+                        ? "px-2 py-1 text-[9px] md:px-4 md:py-2 md:text-sm"
+                        : "px-2 py-1 text-[9px]"
+                    }`}
+                  >
                     نوبت بازیکن {currentPlayer}
                   </span>
                 )}
@@ -758,7 +824,7 @@ export default function LiveMatchDisplay({
                 <div
                   className={`mx-auto overflow-hidden rounded-full border-2 ${
                     isFullscreen
-                      ? "h-24 w-24 sm:h-32 sm:w-32"
+                      ? "h-24 w-24 sm:h-32 sm:w-32 md:h-44 md:w-44 lg:h-52 lg:w-52"
                       : "h-20 w-20 sm:h-28 sm:w-28"
                   } ${
                     currentPlayer === 2
@@ -776,6 +842,11 @@ export default function LiveMatchDisplay({
                     <div className="flex h-full w-full items-center justify-center bg-[#0b1b30] text-white/25">
                       <UserRound
                         size={isFullscreen ? 34 : 30}
+                        className={
+                          isFullscreen
+                            ? "md:h-14 md:w-14"
+                            : ""
+                        }
                       />
                     </div>
                   )}
@@ -784,7 +855,7 @@ export default function LiveMatchDisplay({
                 <h2
                   className={`mt-2 truncate font-bold ${
                     isFullscreen
-                      ? "text-base sm:text-xl"
+                      ? "text-base sm:text-xl md:mt-4 md:text-2xl lg:text-3xl"
                       : "text-sm sm:text-lg"
                   }`}
                 >
@@ -794,22 +865,28 @@ export default function LiveMatchDisplay({
                 <div
                   className={`mt-1 font-black leading-none tabular-nums ${
                     isFullscreen
-                      ? "text-6xl sm:text-7xl"
+                      ? "text-6xl sm:text-7xl md:mt-3 md:text-8xl lg:text-9xl"
                       : "text-5xl sm:text-6xl"
                   }`}
                 >
                   {player2Score}
                 </div>
 
-                <div className="mt-2 flex items-center justify-center gap-2">
-                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30">
+                <div
+                  className={`flex items-center justify-center gap-2 ${
+                    isFullscreen
+                      ? "mt-2 md:mt-4"
+                      : "mt-2"
+                  }`}
+                >
+                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30 md:text-sm">
                     BREAK
                   </span>
 
                   <span
                     className={`font-black leading-none tabular-nums ${
                       isFullscreen
-                        ? "text-xl sm:text-2xl"
+                        ? "text-xl sm:text-2xl md:text-3xl"
                         : "text-lg sm:text-xl"
                     } ${
                       currentPlayer === 2 &&
@@ -827,19 +904,19 @@ export default function LiveMatchDisplay({
             {/* Shot Clock */}
 
             <div
-              className={`border-t border-white/10 ${
+              className={`shrink-0 border-t border-white/10 ${
                 isFullscreen
-                  ? "px-5 py-4"
+                  ? "px-5 py-4 md:px-8 md:py-5"
                   : "px-4 py-3"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold tracking-[0.14em] text-white/30">
+                  <p className="text-[10px] font-semibold tracking-[0.14em] text-white/30 md:text-sm">
                     SHOT CLOCK
                   </p>
 
-                  <p className="mt-0.5 text-[9px] text-white/25">
+                  <p className="mt-0.5 text-[9px] text-white/25 md:text-xs">
                     {isShotRunning
                       ? "در حال شمارش"
                       : "آماده"}
@@ -850,7 +927,7 @@ export default function LiveMatchDisplay({
                   dir="ltr"
                   className={`font-black leading-none tabular-nums ${
                     isFullscreen
-                      ? "text-5xl"
+                      ? "text-5xl md:text-7xl"
                       : "text-4xl"
                   } ${
                     isShotRunning &&
@@ -868,7 +945,7 @@ export default function LiveMatchDisplay({
               <div
                 className={`overflow-hidden rounded-full bg-white/10 ${
                   isFullscreen
-                    ? "mt-4 h-2"
+                    ? "mt-4 h-2 md:mt-5 md:h-3"
                     : "mt-3 h-1.5"
                 }`}
               >
@@ -883,7 +960,13 @@ export default function LiveMatchDisplay({
 
             {/* Footer */}
 
-            <div className="flex h-8 items-center justify-between border-t border-white/10 px-4 text-[9px] text-white/20">
+            <div
+              className={`flex shrink-0 items-center justify-between border-t border-white/10 px-4 text-white/20 ${
+                isFullscreen
+                  ? "h-8 text-[9px] md:h-10 md:px-6 md:text-xs"
+                  : "h-8 text-[9px]"
+              }`}
+            >
               <span>SNOOKERIA LIVE</span>
 
               <span dir="ltr">
