@@ -158,10 +158,6 @@ export default function LiveMatchDisplay({
      * =========================================================
      * STATE SNAPSHOT
      * =========================================================
-     *
-     * مهم:
-     * Flutter/Supabase در این پروژه State را مستقیماً
-     * در message تحویل می‌دهد، نه داخل message.payload.
      */
 
     channel.on(
@@ -176,13 +172,6 @@ export default function LiveMatchDisplay({
 
         const incoming = message as LiveState;
 
-        /*
-         * Snapshot جدید را روی State قبلی Merge می‌کنیم.
-         *
-         * این موضوع برای Player Media مهم است چون ممکن است
-         * بعضی اطلاعات در Broadcastهای جداگانه ارسال شوند.
-         */
-
         const mergedState: LiveState = {
           ...latestStateRef.current,
           ...incoming,
@@ -194,9 +183,7 @@ export default function LiveMatchDisplay({
         setHasReceivedState(true);
 
         /*
-         * =====================================================
          * TIMER SYNCHRONIZATION
-         * =====================================================
          */
 
         let elapsedSeconds = 0;
@@ -284,12 +271,6 @@ export default function LiveMatchDisplay({
       if (status === "SUBSCRIBED") {
         setConnectionState("connected");
 
-        /*
-         * مشابه Flutter Public Display:
-         * بعد از Subscribe کمی صبر می‌کنیم و State فعلی
-         * Operator را درخواست می‌کنیم.
-         */
-
         requestTimer = setTimeout(() => {
           void requestCurrentState();
         }, 250);
@@ -331,9 +312,6 @@ export default function LiveMatchDisplay({
    * =========================================================
    * LOCAL TIMER
    * =========================================================
-   *
-   * بین Snapshotهای Flutter، Browser خودش Timer را
-   * هر ثانیه جلو می‌برد.
    */
 
   useEffect(() => {
@@ -437,7 +415,7 @@ export default function LiveMatchDisplay({
 
   /*
    * =========================================================
-   * UI
+   * COMPACT LIVE UI
    * =========================================================
    */
 
@@ -445,25 +423,24 @@ export default function LiveMatchDisplay({
     <section>
       {/* Connection / Live Status */}
 
-      <div className="mb-4 flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+      <div className="mb-2 flex h-9 items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3">
         <div className="flex items-center gap-2">
           {isLive ? (
             <>
-              <span className="relative flex h-2.5 w-2.5">
+              <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
               </span>
 
-              <span className="text-xs font-bold tracking-[0.18em] text-red-500">
+              <span className="text-[10px] font-bold tracking-[0.16em] text-red-500">
                 LIVE
               </span>
             </>
           ) : (
             <>
-              <span className="h-2.5 w-2.5 rounded-full bg-white/25" />
+              <span className="h-2 w-2 rounded-full bg-white/25" />
 
-              <span className="text-xs font-medium text-white/40">
+              <span className="text-[10px] text-white/40">
                 در انتظار شروع
               </span>
             </>
@@ -471,68 +448,65 @@ export default function LiveMatchDisplay({
         </div>
 
         <div
-          className={`flex items-center gap-2 text-xs ${
+          className={`flex items-center gap-1.5 text-[10px] ${
             connectionState === "connected"
               ? "text-emerald-400"
               : "text-white/35"
           }`}
         >
           {connectionState === "connected" ? (
-            <Wifi size={15} />
+            <Wifi size={13} />
           ) : connectionState === "connecting" ? (
             <RefreshCw
-              size={14}
+              size={12}
               className="animate-spin"
             />
           ) : (
-            <WifiOff size={15} />
+            <WifiOff size={13} />
           )}
 
           {connectionState === "connected"
-            ? "اتصال زنده برقرار است"
+            ? "اتصال زنده"
             : connectionState === "connecting"
               ? "در حال اتصال..."
-              : "اتصال زنده قطع است"}
+              : "اتصال قطع است"}
         </div>
       </div>
 
       {!hasReceivedState ? (
         /*
-         * =====================================================
          * WAITING FOR STATE
-         * =====================================================
          */
 
-        <div className="flex min-h-[65vh] flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/[0.025] px-6 text-center">
+        <div className="flex min-h-[55vh] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/[0.025] px-5 text-center">
           {connectionState === "error" ? (
             <>
               <WifiOff
-                size={34}
+                size={30}
                 className="text-red-500"
               />
 
-              <h1 className="mt-5 text-lg font-bold">
+              <h1 className="mt-4 text-base font-bold">
                 اتصال به مسابقه برقرار نشد
               </h1>
 
-              <p className="mt-3 max-w-md text-sm leading-7 text-white/40">
-                اتصال زنده به Room مسابقه برقرار
-                نشد. ممکن است مسابقه پایان یافته
-                باشد یا Operator در دسترس نباشد.
+              <p className="mt-2 max-w-md text-xs leading-6 text-white/40">
+                ممکن است مسابقه پایان یافته باشد یا
+                Operator در دسترس نباشد.
               </p>
             </>
           ) : (
             <>
               <Radio
-                size={34}
+                size={30}
                 className="animate-pulse text-red-500"
               />
 
-              <h1 className="mt-5 text-lg font-bold">
+              <h1 className="mt-4 text-base font-bold">
                 در حال دریافت اطلاعات مسابقه
               </h1>
 
-              <p className="mt-3 text-sm text-white/40">
+              <p className="mt-2 text-xs text-white/40">
                 Room:{" "}
                 <span
                   dir="ltr"
@@ -551,25 +525,24 @@ export default function LiveMatchDisplay({
          * =====================================================
          */
 
-        <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.035]">
+        <div className="overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.035]">
           {/* Match Timer */}
 
-          <div className="border-b border-white/10 px-5 py-7 text-center">
-            <div className="flex items-center justify-center gap-2 text-xs text-white/35">
-              <Clock3 size={14} />
-
+          <div className="border-b border-white/10 px-4 py-3 text-center">
+            <div className="flex items-center justify-center gap-1.5 text-[10px] text-white/35">
+              <Clock3 size={12} />
               زمان باقی‌مانده مسابقه
             </div>
 
             <div
               dir="ltr"
-              className="mt-2 text-5xl font-black tracking-tight tabular-nums sm:text-6xl"
+              className="mt-1 text-4xl font-black leading-none tracking-tight tabular-nums sm:text-5xl"
             >
               {formatTime(displayTotalSeconds)}
             </div>
 
             {isPaused && (
-              <div className="mt-3 inline-flex rounded-full bg-amber-500/10 px-4 py-1.5 text-xs font-semibold text-amber-400">
+              <div className="mt-1.5 inline-flex rounded-full bg-amber-500/10 px-3 py-1 text-[9px] font-semibold text-amber-400">
                 مسابقه متوقف شده است
               </div>
             )}
@@ -577,60 +550,51 @@ export default function LiveMatchDisplay({
 
           {/* Players */}
 
-          <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2 px-3 py-7 sm:gap-8 sm:px-8">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-3 sm:gap-8 sm:px-8 sm:py-5">
             {/* Player 1 */}
 
             <div className="min-w-0 text-center">
               <div
-                className={`mx-auto rounded-full p-[2px] ${
+                className={`mx-auto h-16 w-16 overflow-hidden rounded-full border-2 sm:h-24 sm:w-24 ${
                   currentPlayer === 1
-                    ? "bg-red-500"
-                    : "bg-white/10"
+                    ? "border-red-500"
+                    : "border-white/10"
                 }`}
               >
                 {liveState.player1Image ? (
                   <img
                     src={liveState.player1Image}
                     alt={player1Name}
-                    className="h-20 w-20 rounded-full bg-[#071426] object-cover sm:h-28 sm:w-28"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#0b1b30] text-white/25 sm:h-28 sm:w-28">
-                    <UserRound size={31} />
+                  <div className="flex h-full w-full items-center justify-center bg-[#0b1b30] text-white/25">
+                    <UserRound size={25} />
                   </div>
                 )}
               </div>
 
-              <h2 className="mt-4 truncate text-sm font-bold sm:text-lg">
+              <h2 className="mt-2 truncate text-xs font-bold sm:text-base">
                 {player1Name}
               </h2>
 
-              <div className="mt-3 text-5xl font-black tabular-nums sm:text-6xl">
+              <div className="mt-1 text-4xl font-black leading-none tabular-nums sm:text-5xl">
                 {player1Score}
               </div>
-
-              {player1Break > 0 && (
-                <div className="mt-3 text-xs text-white/40">
-                  Break{" "}
-                  <span className="font-bold text-white/70">
-                    {player1Break}
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Center */}
 
-            <div className="flex min-h-44 flex-col items-center justify-center">
-              <span className="text-xs font-black tracking-[0.2em] text-white/20">
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-[10px] font-black tracking-[0.18em] text-white/20">
                 VS
               </span>
 
-              <div className="my-4 h-12 w-px bg-white/10" />
+              <div className="my-2 h-5 w-px bg-white/10" />
 
               {(currentPlayer === 1 ||
                 currentPlayer === 2) && (
-                <span className="whitespace-nowrap rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-[10px] font-semibold text-red-400">
+                <span className="whitespace-nowrap rounded-full border border-red-500/20 bg-red-500/10 px-2 py-1 text-[9px] font-semibold text-red-400">
                   نوبت بازیکن {currentPlayer}
                 </span>
               )}
@@ -640,86 +604,83 @@ export default function LiveMatchDisplay({
 
             <div className="min-w-0 text-center">
               <div
-                className={`mx-auto rounded-full p-[2px] ${
+                className={`mx-auto h-16 w-16 overflow-hidden rounded-full border-2 sm:h-24 sm:w-24 ${
                   currentPlayer === 2
-                    ? "bg-red-500"
-                    : "bg-white/10"
+                    ? "border-red-500"
+                    : "border-white/10"
                 }`}
               >
                 {liveState.player2Image ? (
                   <img
                     src={liveState.player2Image}
                     alt={player2Name}
-                    className="h-20 w-20 rounded-full bg-[#071426] object-cover sm:h-28 sm:w-28"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#0b1b30] text-white/25 sm:h-28 sm:w-28">
-                    <UserRound size={31} />
+                  <div className="flex h-full w-full items-center justify-center bg-[#0b1b30] text-white/25">
+                    <UserRound size={25} />
                   </div>
                 )}
               </div>
 
-              <h2 className="mt-4 truncate text-sm font-bold sm:text-lg">
+              <h2 className="mt-2 truncate text-xs font-bold sm:text-base">
                 {player2Name}
               </h2>
 
-              <div className="mt-3 text-5xl font-black tabular-nums sm:text-6xl">
+              <div className="mt-1 text-4xl font-black leading-none tabular-nums sm:text-5xl">
                 {player2Score}
               </div>
-
-              {player2Break > 0 && (
-                <div className="mt-3 text-xs text-white/40">
-                  Break{" "}
-                  <span className="font-bold text-white/70">
-                    {player2Break}
-                  </span>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Current Break */}
+          {/* Current Break + Shot Clock */}
 
-          <div className="border-t border-white/10 px-5 py-5 text-center">
-            <p className="text-xs text-white/35">
-              CURRENT BREAK
-            </p>
+          <div className="grid grid-cols-2 border-t border-white/10">
+            {/* Current Break */}
 
-            <p className="mt-1 text-3xl font-black">
-              {activeBreak}
-            </p>
-          </div>
+            <div className="border-l border-white/10 px-3 py-3 text-center">
+              <p className="text-[9px] font-semibold tracking-[0.12em] text-white/30">
+                CURRENT BREAK
+              </p>
 
-          {/* Shot Clock */}
+              <p className="mt-1 text-3xl font-black leading-none tabular-nums">
+                {activeBreak}
+              </p>
+            </div>
 
-          <div className="border-t border-white/10 px-5 py-6">
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-xs font-semibold tracking-[0.15em] text-white/35">
+            {/* Shot Clock */}
+
+            <div className="px-3 py-3 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <p className="text-[9px] font-semibold tracking-[0.12em] text-white/30">
                   SHOT CLOCK
                 </p>
 
-                <p
-                  dir="ltr"
-                  className={`mt-1 text-4xl font-black tabular-nums ${
-                    isShotRunning &&
-                    displayShotSeconds <= 5
-                      ? "text-red-500"
-                      : "text-white"
-                  }`}
-                >
-                  {displayShotSeconds}
-                </p>
+                <span className="text-[8px] text-white/25">
+                  {isShotRunning
+                    ? "در حال شمارش"
+                    : "آماده"}
+                </span>
               </div>
 
-              <div className="text-left text-xs text-white/30">
-                {isShotRunning
-                  ? "در حال شمارش"
-                  : "آماده"}
-              </div>
+              <p
+                dir="ltr"
+                className={`mt-1 text-3xl font-black leading-none tabular-nums ${
+                  isShotRunning &&
+                  displayShotSeconds <= 5
+                    ? "text-red-500"
+                    : "text-white"
+                }`}
+              >
+                {displayShotSeconds}
+              </p>
             </div>
+          </div>
 
-            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10">
+          {/* Shot Clock Progress */}
+
+          <div className="border-t border-white/10 px-4 py-2.5">
+            <div className="h-1 overflow-hidden rounded-full bg-white/10">
               <div
                 className="h-full rounded-full bg-red-500 transition-[width] duration-300"
                 style={{
@@ -731,7 +692,7 @@ export default function LiveMatchDisplay({
 
           {/* Footer */}
 
-          <div className="flex items-center justify-between border-t border-white/10 px-5 py-4 text-[11px] text-white/25">
+          <div className="flex h-8 items-center justify-between border-t border-white/10 px-4 text-[9px] text-white/20">
             <span>SNOOKERIA LIVE</span>
 
             <span dir="ltr">
