@@ -205,7 +205,7 @@ export default function LiveMatchDisplay({
         }
 
         /*
-         * Match Timer
+         * MATCH TIMER
          */
 
         if (incoming.totalTimeSeconds !== undefined) {
@@ -226,7 +226,7 @@ export default function LiveMatchDisplay({
         }
 
         /*
-         * Shot Clock
+         * SHOT CLOCK
          */
 
         if (incoming.shotTimeSeconds !== undefined) {
@@ -382,10 +382,6 @@ export default function LiveMatchDisplay({
       );
     }
 
-    /*
-     * Fallback for browsers without element fullscreen support.
-     */
-
     setIsFullscreen(true);
   };
 
@@ -492,7 +488,7 @@ export default function LiveMatchDisplay({
 
   return (
     <section>
-      {/* Normal Page Status */}
+      {/* NORMAL PAGE STATUS */}
 
       {!isFullscreen && (
         <div className="mb-2 flex h-9 items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3">
@@ -624,7 +620,7 @@ export default function LiveMatchDisplay({
                 : "rounded-[22px]"
             }`}
           >
-            {/* Fullscreen Top Controls */}
+            {/* FULLSCREEN TOP BAR */}
 
             {isFullscreen && (
               <div className="flex h-10 shrink-0 items-center justify-between border-b border-white/10 px-3 md:h-12 md:px-5">
@@ -660,7 +656,7 @@ export default function LiveMatchDisplay({
               </div>
             )}
 
-            {/* Match Timer */}
+            {/* MATCH TIMER */}
 
             <div
               className={`shrink-0 border-b border-white/10 text-center ${
@@ -685,14 +681,25 @@ export default function LiveMatchDisplay({
                 {formatTime(displayTotalSeconds)}
               </div>
 
-              {isPaused && (
-                <div className="mt-1.5 inline-flex rounded-full bg-amber-500/10 px-3 py-1 text-[9px] font-semibold text-amber-400 md:text-xs">
+              {/*
+               * Reserved pause area.
+               * Always exists so pause/resume never moves the layout.
+               */}
+
+              <div className="mt-1.5 flex h-[22px] items-center justify-center md:h-[26px]">
+                <div
+                  className={`rounded-full px-3 py-1 text-[9px] font-semibold transition-opacity duration-200 md:text-xs ${
+                    isPaused
+                      ? "bg-amber-500/10 text-amber-400 opacity-100"
+                      : "pointer-events-none bg-transparent text-transparent opacity-0"
+                  }`}
+                >
                   مسابقه متوقف شده است
                 </div>
-              )}
+              </div>
             </div>
 
-            {/* Players */}
+            {/* PLAYERS */}
 
             <div
               className={`grid grid-cols-[1fr_auto_1fr] items-center ${
@@ -701,7 +708,7 @@ export default function LiveMatchDisplay({
                   : "gap-2 px-3 py-3 sm:gap-8 sm:px-8 sm:py-5"
               }`}
             >
-              {/* Player 1 */}
+              {/* PLAYER 1 */}
 
               <div className="min-w-0 text-center">
                 <div
@@ -783,42 +790,37 @@ export default function LiveMatchDisplay({
                 </div>
               </div>
 
-              {/* VS */}
+              {/* CENTER / VS */}
 
-              <div className="flex flex-col items-center justify-center">
-                <span
-                  className={`font-black tracking-[0.18em] text-white/20 ${
+              <div className="flex h-full flex-col items-center justify-center">
+                <div
+                  className={`flex flex-col items-center justify-center ${
                     isFullscreen
-                      ? "text-xs md:text-2xl"
-                      : "text-xs"
+                      ? "md:h-40"
+                      : ""
                   }`}
                 >
-                  VS
-                </span>
-
-                <div
-                  className={`w-px bg-white/10 ${
-                    isFullscreen
-                      ? "my-2 h-6 md:my-4 md:h-12"
-                      : "my-2 h-6"
-                  }`}
-                />
-
-                {(currentPlayer === 1 ||
-                  currentPlayer === 2) && (
                   <span
-                    className={`whitespace-nowrap rounded-full border border-red-500/20 bg-red-500/10 font-semibold text-red-400 ${
+                    className={`font-black tracking-[0.18em] text-white/20 ${
                       isFullscreen
-                        ? "px-2 py-1 text-[9px] md:px-4 md:py-2 md:text-sm"
-                        : "px-2 py-1 text-[9px]"
+                        ? "text-xs md:text-2xl"
+                        : "text-xs"
                     }`}
                   >
-                    نوبت بازیکن {currentPlayer}
+                    VS
                   </span>
-                )}
+
+                  <div
+                    className={`w-px bg-white/10 ${
+                      isFullscreen
+                        ? "my-2 h-6 md:my-4 md:h-12"
+                        : "my-2 h-6"
+                    }`}
+                  />
+                </div>
               </div>
 
-              {/* Player 2 */}
+              {/* PLAYER 2 */}
 
               <div className="min-w-0 text-center">
                 <div
@@ -901,7 +903,7 @@ export default function LiveMatchDisplay({
               </div>
             </div>
 
-            {/* Shot Clock */}
+            {/* SHOT CLOCK */}
 
             <div
               className={`shrink-0 border-t border-white/10 ${
@@ -940,7 +942,7 @@ export default function LiveMatchDisplay({
                 </p>
               </div>
 
-              {/* Progress */}
+              {/* PROGRESS */}
 
               <div
                 className={`overflow-hidden rounded-full bg-white/10 ${
@@ -958,7 +960,7 @@ export default function LiveMatchDisplay({
               </div>
             </div>
 
-            {/* Footer */}
+            {/* FOOTER */}
 
             <div
               className={`flex shrink-0 items-center justify-between border-t border-white/10 px-4 text-white/20 ${
