@@ -378,11 +378,6 @@ export default function LiveMatchDisplay({
     1
   );
 
-  const activeBreak =
-    currentPlayer === 1
-      ? player1Break
-      : player2Break;
-
   const isLive =
     liveState.isGameRunning === true;
 
@@ -403,15 +398,31 @@ export default function LiveMatchDisplay({
       ? 10
       : 15;
 
+  /*
+   * Progress بر اساس زمان باقی‌مانده:
+   *
+   * زمان زیاد    -> سبز
+   * زمان متوسط   -> زرد
+   * زمان کم      -> نارنجی
+   * زمان بحرانی  -> قرمز
+   */
+
   const shotProgress = Math.min(
     100,
     Math.max(
       0,
-      ((shotClockLimit - displayShotSeconds) /
-        shotClockLimit) *
-        100
+      (displayShotSeconds / shotClockLimit) * 100
     )
   );
+
+  const shotProgressColor =
+    shotProgress > 60
+      ? "bg-emerald-500"
+      : shotProgress > 35
+        ? "bg-yellow-400"
+        : shotProgress > 15
+          ? "bg-orange-500"
+          : "bg-red-500";
 
   /*
    * =========================================================
@@ -581,6 +592,25 @@ export default function LiveMatchDisplay({
               <div className="mt-1 text-4xl font-black leading-none tabular-nums sm:text-5xl">
                 {player1Score}
               </div>
+
+              {/* Player 1 Break */}
+
+              <div className="mt-2 flex items-center justify-center gap-1.5">
+                <span className="text-[9px] font-medium tracking-[0.1em] text-white/30">
+                  BREAK
+                </span>
+
+                <span
+                  className={`text-sm font-black tabular-nums ${
+                    currentPlayer === 1 &&
+                    player1Break > 0
+                      ? "text-red-400"
+                      : "text-white/60"
+                  }`}
+                >
+                  {player1Break}
+                </span>
+              </div>
             </div>
 
             {/* Center */}
@@ -630,42 +660,47 @@ export default function LiveMatchDisplay({
               <div className="mt-1 text-4xl font-black leading-none tabular-nums sm:text-5xl">
                 {player2Score}
               </div>
+
+              {/* Player 2 Break */}
+
+              <div className="mt-2 flex items-center justify-center gap-1.5">
+                <span className="text-[9px] font-medium tracking-[0.1em] text-white/30">
+                  BREAK
+                </span>
+
+                <span
+                  className={`text-sm font-black tabular-nums ${
+                    currentPlayer === 2 &&
+                    player2Break > 0
+                      ? "text-red-400"
+                      : "text-white/60"
+                  }`}
+                >
+                  {player2Break}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Current Break + Shot Clock */}
+          {/* Shot Clock */}
 
-          <div className="grid grid-cols-2 border-t border-white/10">
-            {/* Current Break */}
-
-            <div className="border-l border-white/10 px-3 py-3 text-center">
-              <p className="text-[9px] font-semibold tracking-[0.12em] text-white/30">
-                CURRENT BREAK
-              </p>
-
-              <p className="mt-1 text-3xl font-black leading-none tabular-nums">
-                {activeBreak}
-              </p>
-            </div>
-
-            {/* Shot Clock */}
-
-            <div className="px-3 py-3 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <p className="text-[9px] font-semibold tracking-[0.12em] text-white/30">
+          <div className="border-t border-white/10 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[9px] font-semibold tracking-[0.14em] text-white/30">
                   SHOT CLOCK
                 </p>
 
-                <span className="text-[8px] text-white/25">
+                <p className="mt-0.5 text-[9px] text-white/25">
                   {isShotRunning
                     ? "در حال شمارش"
                     : "آماده"}
-                </span>
+                </p>
               </div>
 
               <p
                 dir="ltr"
-                className={`mt-1 text-3xl font-black leading-none tabular-nums ${
+                className={`text-4xl font-black leading-none tabular-nums ${
                   isShotRunning &&
                   displayShotSeconds <= 5
                     ? "text-red-500"
@@ -675,14 +710,12 @@ export default function LiveMatchDisplay({
                 {displayShotSeconds}
               </p>
             </div>
-          </div>
 
-          {/* Shot Clock Progress */}
+            {/* Shot Clock Progress */}
 
-          <div className="border-t border-white/10 px-4 py-2.5">
-            <div className="h-1 overflow-hidden rounded-full bg-white/10">
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-red-500 transition-[width] duration-300"
+                className={`h-full rounded-full transition-all duration-500 ${shotProgressColor}`}
                 style={{
                   width: `${shotProgress}%`,
                 }}
