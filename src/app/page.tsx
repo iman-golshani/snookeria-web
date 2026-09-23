@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import {
   Phone,
   CircleDot,
@@ -143,9 +143,12 @@ export default function Home() {
           <div className="mt-7">
             <p className="text-sm leading-8 text-white/70 sm:text-base">
               زیر نظر{" "}
-              <strong className="font-semibold text-white">
-                ایمان گلشنی
-              </strong>
+              <Link
+    href="/coach/iman-golshani"
+    className="font-semibold text-white underline decoration-red-500/50 underline-offset-4 transition hover:text-red-500"
+  >
+    ایمان گلشنی
+  </Link>
               ، مربی و داور رسمی فدراسیون
             </p>
 
