@@ -399,12 +399,8 @@ export default function LiveMatchDisplay({
       : 15;
 
   /*
-   * Progress بر اساس زمان باقی‌مانده:
-   *
-   * زمان زیاد    -> سبز
-   * زمان متوسط   -> زرد
-   * زمان کم      -> نارنجی
-   * زمان بحرانی  -> قرمز
+   * Progress:
+   * Green -> Yellow -> Orange -> Red
    */
 
   const shotProgress = Math.min(
@@ -426,7 +422,7 @@ export default function LiveMatchDisplay({
 
   /*
    * =========================================================
-   * COMPACT LIVE UI
+   * UI
    * =========================================================
    */
 
@@ -485,10 +481,6 @@ export default function LiveMatchDisplay({
       </div>
 
       {!hasReceivedState ? (
-        /*
-         * WAITING FOR STATE
-         */
-
         <div className="flex min-h-[55vh] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/[0.025] px-5 text-center">
           {connectionState === "error" ? (
             <>
@@ -530,12 +522,6 @@ export default function LiveMatchDisplay({
           )}
         </div>
       ) : (
-        /*
-         * =====================================================
-         * LIVE MATCH
-         * =====================================================
-         */
-
         <div className="overflow-hidden rounded-[22px] border border-white/10 bg-white/[0.035]">
           {/* Match Timer */}
 
@@ -566,7 +552,7 @@ export default function LiveMatchDisplay({
 
             <div className="min-w-0 text-center">
               <div
-                className={`mx-auto h-16 w-16 overflow-hidden rounded-full border-2 sm:h-24 sm:w-24 ${
+                className={`mx-auto h-20 w-20 overflow-hidden rounded-full border-2 sm:h-28 sm:w-28 ${
                   currentPlayer === 1
                     ? "border-red-500"
                     : "border-white/10"
@@ -580,28 +566,28 @@ export default function LiveMatchDisplay({
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-[#0b1b30] text-white/25">
-                    <UserRound size={25} />
+                    <UserRound size={30} />
                   </div>
                 )}
               </div>
 
-              <h2 className="mt-2 truncate text-xs font-bold sm:text-base">
+              <h2 className="mt-2 truncate text-sm font-bold sm:text-lg">
                 {player1Name}
               </h2>
 
-              <div className="mt-1 text-4xl font-black leading-none tabular-nums sm:text-5xl">
+              <div className="mt-1 text-5xl font-black leading-none tabular-nums sm:text-6xl">
                 {player1Score}
               </div>
 
               {/* Player 1 Break */}
 
-              <div className="mt-2 flex items-center justify-center gap-1.5">
-                <span className="text-[9px] font-medium tracking-[0.1em] text-white/30">
+              <div className="mt-2 flex items-center justify-center gap-2">
+                <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30">
                   BREAK
                 </span>
 
                 <span
-                  className={`text-sm font-black tabular-nums ${
+                  className={`text-lg font-black leading-none tabular-nums sm:text-xl ${
                     currentPlayer === 1 &&
                     player1Break > 0
                       ? "text-red-400"
@@ -634,7 +620,7 @@ export default function LiveMatchDisplay({
 
             <div className="min-w-0 text-center">
               <div
-                className={`mx-auto h-16 w-16 overflow-hidden rounded-full border-2 sm:h-24 sm:w-24 ${
+                className={`mx-auto h-20 w-20 overflow-hidden rounded-full border-2 sm:h-28 sm:w-28 ${
                   currentPlayer === 2
                     ? "border-red-500"
                     : "border-white/10"
@@ -648,28 +634,28 @@ export default function LiveMatchDisplay({
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-[#0b1b30] text-white/25">
-                    <UserRound size={25} />
+                    <UserRound size={30} />
                   </div>
                 )}
               </div>
 
-              <h2 className="mt-2 truncate text-xs font-bold sm:text-base">
+              <h2 className="mt-2 truncate text-sm font-bold sm:text-lg">
                 {player2Name}
               </h2>
 
-              <div className="mt-1 text-4xl font-black leading-none tabular-nums sm:text-5xl">
+              <div className="mt-1 text-5xl font-black leading-none tabular-nums sm:text-6xl">
                 {player2Score}
               </div>
 
               {/* Player 2 Break */}
 
-              <div className="mt-2 flex items-center justify-center gap-1.5">
-                <span className="text-[9px] font-medium tracking-[0.1em] text-white/30">
+              <div className="mt-2 flex items-center justify-center gap-2">
+                <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30">
                   BREAK
                 </span>
 
                 <span
-                  className={`text-sm font-black tabular-nums ${
+                  className={`text-lg font-black leading-none tabular-nums sm:text-xl ${
                     currentPlayer === 2 &&
                     player2Break > 0
                       ? "text-red-400"
