@@ -8,6 +8,8 @@ import {
   Radio,
   RefreshCw,
   UserRound,
+  Volume2,
+  VolumeX,
   Wifi,
   WifiOff,
 } from "lucide-react";
@@ -44,6 +46,20 @@ type LiveState = {
   isShotRunning?: boolean;
   isPaused?: boolean;
 
+  isMatchFinished?: boolean;
+  isTie?: boolean;
+  isPenaltyMode?: boolean;
+
+  winnerPlayer?: number | null;
+
+  penaltyRound?: number;
+
+  player1PenaltyResult?: boolean | null;
+  player2PenaltyResult?: boolean | null;
+
+  player1PenaltyHistory?: boolean[];
+  player2PenaltyHistory?: boolean[];
+
   hasPlayerMedia?: boolean;
   mediaPlayer?: number;
 
@@ -53,11 +69,30 @@ type LiveState = {
   event?: string;
 };
 
+type AudioEvent = {
+  sound?: string;
+  roomCode?: string;
+  eventId?: string;
+  sentAt?: string;
+};
+
 type ConnectionState =
   | "connecting"
   | "connected"
   | "disconnected"
   | "error";
+
+type AudioPlayers = {
+  matchStart: HTMLAudioElement;
+  halftime: HTMLAudioElement;
+  matchWarning: HTMLAudioElement;
+  matchEnd: HTMLAudioElement;
+  shotWarning: HTMLAudioElement;
+  shotTimeout: HTMLAudioElement;
+  shotPlayed: HTMLAudioElement;
+  penaltyPot: HTMLAudioElement;
+  penaltyMiss: HTMLAudioElement;
+};
 
 function formatTime(totalSeconds: number) {
   const safeSeconds = Math.max(0, Math.floor(totalSeconds));
@@ -86,6 +121,128 @@ function readNumber(value: unknown, fallback: number) {
   return fallback;
 }
 
+function extractBroadcastPayload<T>(message: unknown): T {
+  if (
+    message &&
+    typeof message === "object" &&
+    "payload" in message
+  ) {
+    const wrapped = message as {
+      payload?: unknown;
+    };
+
+    if (
+      wrapped.payload &&
+      typeof wrapped.payload === "object"
+    ) {
+      return wrapped.payload as T;
+    }
+  }
+
+  return message as T;
+}
+
+function createAudioPlayers(): AudioPlayers {
+  const create = (src: string) => {
+    const audio = new Audio(src);
+    audio.preload = "auto";
+    return audio;
+  };
+
+  return {
+    matchStart: create("/sounds/start.mp3"),
+    halftime: create("/sounds/halftime.mp3"),
+    matchWarning: create("/sounds/beep.mp3"),
+    matchEnd: create("/sounds/long_beep1.mp3"),
+    shotWarning: create("/sounds/beep.mp3"),
+    shotTimeout: create("/sounds/long_beep.mp3"),
+    shotPlayed: create("/sounds/shot.mp3"),
+    penaltyPot: create("/sounds/pot.mp3"),
+    penaltyMiss: create("/sounds/miss.mp3"),
+  };
+}
+
+function stopAudio(audio?: HTMLAudioElement) {
+  if (!audio) {
+    return;
+  }
+
+  try {
+    audio.pause();
+    audio.currentTime = 0;
+  } catch {
+    // Browser may reject currentTime before metadata is loaded.
+  }
+}
+
+function stopAllAudio(players: AudioPlayers | null) {
+  if (!players) {
+    return;
+  }
+
+  Object.values(players).forEach((audio) => {
+    stopAudio(audio);
+  });
+}
+
+async function playAudio(audio?: HTMLAudioElement) {
+  if (!audio) {
+    return;
+  }
+
+  try {
+    audio.pause();
+    audio.currentTime = 0;
+
+    await audio.play();
+  } catch (error) {
+    console.warn("Live audio playback blocked:", error);
+  }
+}
+
+function PenaltyHistory({
+  history,
+}: {
+  history: boolean[];
+}) {
+  const visibleHistory = history.slice(-6);
+  const hasOlderResults = history.length > 6;
+
+  if (history.length === 0) {
+    return (
+      <span className="text-[10px] font-semibold text-white/25 md:text-xs">
+        در انتظار ضربه
+      </span>
+    );
+  }
+
+  return (
+    <div
+      dir="ltr"
+      className="flex h-6 items-center justify-center gap-1"
+    >
+      {hasOlderResults && (
+        <span className="mr-0.5 text-[10px] text-white/25">
+          …
+        </span>
+      )}
+
+      {visibleHistory.map((result, index) => (
+        <span
+          key={`${index}-${result}`}
+          className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-black ${
+            result
+              ? "bg-emerald-500/15 text-emerald-400"
+              : "bg-red-500/15 text-red-400"
+          }`}
+        >
+          {result ? "✓" : "×"}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export default function LiveMatchDisplay({
   roomCode,
 }: LiveMatchDisplayProps) {
@@ -105,8 +262,15 @@ export default function LiveMatchDisplay({
 
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const [audioEnabled, setAudioEnabled] = useState(false);
+
   const latestStateRef = useRef<LiveState>({});
   const fullscreenRef = useRef<HTMLDivElement>(null);
+
+  const audioPlayersRef = useRef<AudioPlayers | null>(null);
+  const audioEnabledRef = useRef(false);
+
+  const lastAudioEventIdRef = useRef<string | null>(null);
 
   const normalizedRoomCode = useMemo(
     () =>
@@ -116,6 +280,165 @@ export default function LiveMatchDisplay({
         .toUpperCase(),
     [roomCode]
   );
+
+  /*
+   * =========================================================
+   * AUDIO SETUP
+   * =========================================================
+   */
+
+  useEffect(() => {
+    audioPlayersRef.current = createAudioPlayers();
+
+    return () => {
+      stopAllAudio(audioPlayersRef.current);
+
+      audioPlayersRef.current = null;
+    };
+  }, []);
+
+  const enableAudio = async () => {
+    const players = audioPlayersRef.current;
+
+    if (!players) {
+      return;
+    }
+
+    audioEnabledRef.current = true;
+    setAudioEnabled(true);
+
+    /*
+     * Prime all players from a direct user interaction.
+     * This is important for Safari / iPhone.
+     */
+
+    const allPlayers = Object.values(players);
+
+    for (const audio of allPlayers) {
+      try {
+        audio.muted = true;
+        audio.currentTime = 0;
+
+        const playPromise = audio.play();
+
+        if (playPromise) {
+          await playPromise;
+        }
+
+        audio.pause();
+        audio.currentTime = 0;
+        audio.muted = false;
+      } catch {
+        audio.muted = false;
+      }
+    }
+  };
+
+  const disableAudio = () => {
+    audioEnabledRef.current = false;
+    setAudioEnabled(false);
+
+    stopAllAudio(audioPlayersRef.current);
+  };
+
+  const toggleAudio = () => {
+    if (audioEnabledRef.current) {
+      disableAudio();
+    } else {
+      void enableAudio();
+    }
+  };
+
+  /*
+   * =========================================================
+   * AUDIO EVENT HANDLER
+   * =========================================================
+   */
+
+  const handleAudioEvent = (incoming: AudioEvent) => {
+    if (!audioEnabledRef.current) {
+      return;
+    }
+
+    const eventId = incoming.eventId?.toString();
+
+    /*
+     * Prevent duplicate playback.
+     */
+
+    if (
+      eventId &&
+      lastAudioEventIdRef.current === eventId
+    ) {
+      return;
+    }
+
+    if (eventId) {
+      lastAudioEventIdRef.current = eventId;
+    }
+
+    const sound = incoming.sound ?? "";
+    const players = audioPlayersRef.current;
+
+    if (!players) {
+      return;
+    }
+
+    switch (sound) {
+      case "match_start":
+        void playAudio(players.matchStart);
+        break;
+
+      case "halftime":
+        void playAudio(players.halftime);
+        break;
+
+      case "match_warning":
+        void playAudio(players.matchWarning);
+        break;
+
+      case "match_end":
+        void playAudio(players.matchEnd);
+        break;
+
+      case "shot_warning":
+        void playAudio(players.shotWarning);
+        break;
+
+      case "shot_timeout":
+        /*
+         * Same behavior as Flutter:
+         * stop warning beep before timeout sound.
+         */
+        stopAudio(players.shotWarning);
+
+        void playAudio(players.shotTimeout);
+        break;
+
+      case "shot_played":
+        /*
+         * IMPORTANT:
+         * When the player hits the shot, both the 5-second
+         * warning and timeout sound stop immediately.
+         */
+        stopAudio(players.shotWarning);
+        stopAudio(players.shotTimeout);
+
+        void playAudio(players.shotPlayed);
+        break;
+
+      case "penalty_pot":
+        void playAudio(players.penaltyPot);
+        break;
+
+      case "penalty_miss":
+        void playAudio(players.penaltyMiss);
+        break;
+
+      default:
+        break;
+    }
+  };
 
   /*
    * =========================================================
@@ -175,7 +498,8 @@ export default function LiveMatchDisplay({
           return;
         }
 
-        const incoming = message as LiveState;
+        const incoming =
+          extractBroadcastPayload<LiveState>(message);
 
         const mergedState: LiveState = {
           ...latestStateRef.current,
@@ -251,6 +575,29 @@ export default function LiveMatchDisplay({
 
     /*
      * =========================================================
+     * AUDIO EVENT
+     * =========================================================
+     */
+
+    channel.on(
+      "broadcast",
+      {
+        event: "audio_event",
+      },
+      (message) => {
+        if (disposed || !message) {
+          return;
+        }
+
+        const incoming =
+          extractBroadcastPayload<AudioEvent>(message);
+
+        handleAudioEvent(incoming);
+      }
+    );
+
+    /*
+     * =========================================================
      * SUBSCRIBE
      * =========================================================
      */
@@ -317,7 +664,12 @@ export default function LiveMatchDisplay({
     const timer = window.setInterval(() => {
       const state = latestStateRef.current;
 
-      if (!state.isGameRunning || state.isPaused) {
+      if (
+        !state.isGameRunning ||
+        state.isPaused ||
+        state.isMatchFinished ||
+        state.isPenaltyMode
+      ) {
         return;
       }
 
@@ -445,7 +797,18 @@ export default function LiveMatchDisplay({
     1
   );
 
-  const isLive =
+  const penaltyRound = readNumber(
+    liveState.penaltyRound,
+    1
+  );
+
+  const player1PenaltyHistory =
+    liveState.player1PenaltyHistory ?? [];
+
+  const player2PenaltyHistory =
+    liveState.player2PenaltyHistory ?? [];
+
+  const isGameRunning =
     liveState.isGameRunning === true;
 
   const isPaused =
@@ -454,10 +817,78 @@ export default function LiveMatchDisplay({
   const isShotRunning =
     liveState.isShotRunning === true;
 
+  const isMatchFinished =
+    liveState.isMatchFinished === true;
+
+  const isTie =
+    liveState.isTie === true;
+
+  const isPenaltyMode =
+    liveState.isPenaltyMode === true;
+
+  const winnerPlayer =
+    liveState.winnerPlayer ?? null;
+
+  const winnerName =
+    winnerPlayer === 1
+      ? player1Name
+      : winnerPlayer === 2
+        ? player2Name
+        : "";
+
   /*
-   * Shoot Out:
-   * First 5 minutes = 15 seconds
-   * Last 5 minutes = 10 seconds
+   * A match remains visually LIVE during penalty mode.
+   */
+
+  const isLive =
+    isGameRunning || isPenaltyMode;
+
+  /*
+   * =========================================================
+   * STATUS SLOT
+   * =========================================================
+   */
+
+  let statusText = "";
+  let statusClass =
+    "bg-transparent text-transparent opacity-0";
+
+  if (isMatchFinished && winnerPlayer) {
+    statusText = `پایان مسابقه • برنده: ${winnerName}`;
+
+    statusClass =
+      "bg-emerald-500/10 text-emerald-400 opacity-100";
+  } else if (isPenaltyMode) {
+    statusText = `پنالتی • راند ${penaltyRound}`;
+
+    statusClass =
+      "bg-red-500/10 text-red-400 opacity-100";
+  } else if (
+    isMatchFinished &&
+    isTie &&
+    !isPenaltyMode
+  ) {
+    statusText =
+      "مسابقه مساوی شد • در انتظار شروع پنالتی";
+
+    statusClass =
+      "bg-amber-500/10 text-amber-400 opacity-100";
+  } else if (isPaused) {
+    statusText = "مسابقه متوقف شده است";
+
+    statusClass =
+      "bg-amber-500/10 text-amber-400 opacity-100";
+  } else if (!isGameRunning) {
+    statusText = "آماده شروع مسابقه";
+
+    statusClass =
+      "bg-white/[0.05] text-white/45 opacity-100";
+  }
+
+  /*
+   * =========================================================
+   * SHOT CLOCK
+   * =========================================================
    */
 
   const shotClockLimit =
@@ -504,6 +935,14 @@ export default function LiveMatchDisplay({
                   LIVE
                 </span>
               </>
+            ) : isMatchFinished ? (
+              <>
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+
+                <span className="text-[10px] font-semibold text-emerald-400">
+                  پایان مسابقه
+                </span>
+              </>
             ) : (
               <>
                 <span className="h-2 w-2 rounded-full bg-white/25" />
@@ -515,7 +954,33 @@ export default function LiveMatchDisplay({
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleAudio}
+              aria-label={
+                audioEnabled
+                  ? "قطع صدای پخش زنده"
+                  : "فعال‌سازی صدای پخش زنده"
+              }
+              title={
+                audioEnabled
+                  ? "صدای پخش زنده فعال است"
+                  : "فعال‌سازی صدای پخش زنده"
+              }
+              className={`flex h-7 w-7 items-center justify-center rounded-lg transition active:scale-95 ${
+                audioEnabled
+                  ? "bg-emerald-500/10 text-emerald-400"
+                  : "bg-white/[0.06] text-white/45 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              {audioEnabled ? (
+                <Volume2 size={14} />
+              ) : (
+                <VolumeX size={14} />
+              )}
+            </button>
+
             <div
               className={`flex items-center gap-1.5 text-[10px] ${
                 connectionState === "connected"
@@ -615,14 +1080,26 @@ export default function LiveMatchDisplay({
             {isFullscreen && (
               <div className="flex h-10 shrink-0 items-center justify-between border-b border-white/10 px-3 md:h-11 md:px-5">
                 <div className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-                  </span>
+                  {isLive ? (
+                    <>
+                      <span className="relative flex h-2 w-2">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                      </span>
 
-                  <span className="text-[10px] font-bold tracking-[0.16em] text-red-500 md:text-xs">
-                    LIVE
-                  </span>
+                      <span className="text-[10px] font-bold tracking-[0.16em] text-red-500 md:text-xs">
+                        LIVE
+                      </span>
+                    </>
+                  ) : isMatchFinished ? (
+                    <span className="text-[10px] font-semibold text-emerald-400 md:text-xs">
+                      پایان مسابقه
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-white/40 md:text-xs">
+                      آماده شروع
+                    </span>
+                  )}
 
                   {connectionState === "connected" && (
                     <span className="flex items-center gap-1 text-[9px] text-emerald-400 md:text-xs">
@@ -632,17 +1109,46 @@ export default function LiveMatchDisplay({
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={toggleFullscreen}
-                  aria-label="خروج از تمام صفحه"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-white/60 transition hover:bg-white/10 hover:text-white active:scale-95 md:h-8 md:w-8"
-                >
-                  <Minimize2
-                    size={14}
-                    className="md:h-4 md:w-4"
-                  />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={toggleAudio}
+                    aria-label={
+                      audioEnabled
+                        ? "قطع صدای پخش زنده"
+                        : "فعال‌سازی صدای پخش زنده"
+                    }
+                    className={`flex h-7 w-7 items-center justify-center rounded-lg transition active:scale-95 md:h-8 md:w-8 ${
+                      audioEnabled
+                        ? "bg-emerald-500/10 text-emerald-400"
+                        : "bg-white/[0.06] text-white/50 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {audioEnabled ? (
+                      <Volume2
+                        size={14}
+                        className="md:h-4 md:w-4"
+                      />
+                    ) : (
+                      <VolumeX
+                        size={14}
+                        className="md:h-4 md:w-4"
+                      />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={toggleFullscreen}
+                    aria-label="خروج از تمام صفحه"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-white/60 transition hover:bg-white/10 hover:text-white active:scale-95 md:h-8 md:w-8"
+                  >
+                    <Minimize2
+                      size={14}
+                      className="md:h-4 md:w-4"
+                    />
+                  </button>
+                </div>
               </div>
             )}
 
@@ -657,7 +1163,12 @@ export default function LiveMatchDisplay({
             >
               <div className="flex items-center justify-center gap-1.5 text-[10px] text-white/35 md:text-xs">
                 <Clock3 size={12} />
-                زمان باقی‌مانده مسابقه
+
+                {isPenaltyMode
+                  ? "مرحله پنالتی"
+                  : isMatchFinished
+                    ? "زمان نهایی مسابقه"
+                    : "زمان باقی‌مانده مسابقه"}
               </div>
 
               <div
@@ -675,13 +1186,9 @@ export default function LiveMatchDisplay({
 
               <div className="mt-1.5 flex h-[22px] shrink-0 items-center justify-center md:h-[22px]">
                 <div
-                  className={`rounded-full px-3 py-1 text-[9px] font-semibold transition-opacity duration-200 md:text-[10px] ${
-                    isPaused
-                      ? "bg-amber-500/10 text-amber-400 opacity-100"
-                      : "pointer-events-none bg-transparent text-transparent opacity-0"
-                  }`}
+                  className={`max-w-full truncate rounded-full px-3 py-1 text-[9px] font-semibold transition-opacity duration-200 md:text-[10px] ${statusClass}`}
                 >
-                  مسابقه متوقف شده است
+                  {statusText || "placeholder"}
                 </div>
               </div>
             </div>
@@ -704,9 +1211,12 @@ export default function LiveMatchDisplay({
                       ? "h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40"
                       : "h-20 w-20 sm:h-28 sm:w-28"
                   } ${
-                    currentPlayer === 1
+                    currentPlayer === 1 &&
+                    !isMatchFinished
                       ? "border-red-500"
-                      : "border-white/10"
+                      : winnerPlayer === 1
+                        ? "border-emerald-400"
+                        : "border-white/10"
                   }`}
                 >
                   {liveState.player1Image ? (
@@ -750,30 +1260,39 @@ export default function LiveMatchDisplay({
                 </div>
 
                 <div
-                  className={`flex items-center justify-center gap-2 ${
+                  className={`flex h-6 items-center justify-center gap-2 ${
                     isFullscreen
                       ? "mt-2 md:mt-2"
                       : "mt-2"
                   }`}
                 >
-                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30 md:text-xs">
-                    BREAK
-                  </span>
+                  {isPenaltyMode ||
+                  player1PenaltyHistory.length > 0 ? (
+                    <PenaltyHistory
+                      history={player1PenaltyHistory}
+                    />
+                  ) : (
+                    <>
+                      <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30 md:text-xs">
+                        BREAK
+                      </span>
 
-                  <span
-                    className={`font-black leading-none tabular-nums ${
-                      isFullscreen
-                        ? "text-xl sm:text-2xl md:text-2xl"
-                        : "text-lg sm:text-xl"
-                    } ${
-                      currentPlayer === 1 &&
-                      player1Break > 0
-                        ? "text-red-400"
-                        : "text-white/60"
-                    }`}
-                  >
-                    {player1Break}
-                  </span>
+                      <span
+                        className={`font-black leading-none tabular-nums ${
+                          isFullscreen
+                            ? "text-xl sm:text-2xl md:text-2xl"
+                            : "text-lg sm:text-xl"
+                        } ${
+                          currentPlayer === 1 &&
+                          player1Break > 0
+                            ? "text-red-400"
+                            : "text-white/60"
+                        }`}
+                      >
+                        {player1Break}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -787,7 +1306,7 @@ export default function LiveMatchDisplay({
                       : "text-xs"
                   }`}
                 >
-                  VS
+                  {isPenaltyMode ? "PEN" : "VS"}
                 </span>
 
                 <div
@@ -800,10 +1319,21 @@ export default function LiveMatchDisplay({
 
                 {/* RESERVED CENTER SLOT */}
 
-                <div
-                  aria-hidden="true"
-                  className="h-[25px] md:h-[24px]"
-                />
+                <div className="flex h-[25px] items-center justify-center md:h-[24px]">
+                  {isPenaltyMode ? (
+                    <span className="whitespace-nowrap text-[9px] font-bold text-red-400 md:text-[10px]">
+                      راند {penaltyRound}
+                    </span>
+                  ) : winnerPlayer ? (
+                    <span className="whitespace-nowrap text-[9px] font-bold text-emerald-400 md:text-[10px]">
+                      WINNER
+                    </span>
+                  ) : (
+                    <span className="pointer-events-none text-transparent">
+                      -
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* PLAYER 2 */}
@@ -815,9 +1345,12 @@ export default function LiveMatchDisplay({
                       ? "h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40"
                       : "h-20 w-20 sm:h-28 sm:w-28"
                   } ${
-                    currentPlayer === 2
+                    currentPlayer === 2 &&
+                    !isMatchFinished
                       ? "border-red-500"
-                      : "border-white/10"
+                      : winnerPlayer === 2
+                        ? "border-emerald-400"
+                        : "border-white/10"
                   }`}
                 >
                   {liveState.player2Image ? (
@@ -861,30 +1394,39 @@ export default function LiveMatchDisplay({
                 </div>
 
                 <div
-                  className={`flex items-center justify-center gap-2 ${
+                  className={`flex h-6 items-center justify-center gap-2 ${
                     isFullscreen
                       ? "mt-2 md:mt-2"
                       : "mt-2"
                   }`}
                 >
-                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30 md:text-xs">
-                    BREAK
-                  </span>
+                  {isPenaltyMode ||
+                  player2PenaltyHistory.length > 0 ? (
+                    <PenaltyHistory
+                      history={player2PenaltyHistory}
+                    />
+                  ) : (
+                    <>
+                      <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30 md:text-xs">
+                        BREAK
+                      </span>
 
-                  <span
-                    className={`font-black leading-none tabular-nums ${
-                      isFullscreen
-                        ? "text-xl sm:text-2xl md:text-2xl"
-                        : "text-lg sm:text-xl"
-                    } ${
-                      currentPlayer === 2 &&
-                      player2Break > 0
-                        ? "text-red-400"
-                        : "text-white/60"
-                    }`}
-                  >
-                    {player2Break}
-                  </span>
+                      <span
+                        className={`font-black leading-none tabular-nums ${
+                          isFullscreen
+                            ? "text-xl sm:text-2xl md:text-2xl"
+                            : "text-lg sm:text-xl"
+                        } ${
+                          currentPlayer === 2 &&
+                          player2Break > 0
+                            ? "text-red-400"
+                            : "text-white/60"
+                        }`}
+                      >
+                        {player2Break}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -901,13 +1443,19 @@ export default function LiveMatchDisplay({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-semibold tracking-[0.14em] text-white/30 md:text-xs">
-                    SHOT CLOCK
+                    {isPenaltyMode
+                      ? "PENALTY SHOOTOUT"
+                      : "SHOT CLOCK"}
                   </p>
 
                   <p className="mt-0.5 text-[9px] text-white/25 md:text-[10px]">
-                    {isShotRunning
-                      ? "در حال شمارش"
-                      : "آماده"}
+                    {isPenaltyMode
+                      ? `راند ${penaltyRound}`
+                      : isMatchFinished
+                        ? "پایان مسابقه"
+                        : isShotRunning
+                          ? "در حال شمارش"
+                          : "آماده"}
                   </p>
                 </div>
 
@@ -921,10 +1469,14 @@ export default function LiveMatchDisplay({
                     isShotRunning &&
                     displayShotSeconds <= 5
                       ? "text-red-500"
-                      : "text-white"
+                      : isPenaltyMode
+                        ? "text-red-400"
+                        : "text-white"
                   }`}
                 >
-                  {displayShotSeconds}
+                  {isPenaltyMode
+                    ? penaltyRound
+                    : displayShotSeconds}
                 </p>
               </div>
 
@@ -938,9 +1490,15 @@ export default function LiveMatchDisplay({
                 }`}
               >
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${shotProgressColor}`}
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    isPenaltyMode
+                      ? "bg-red-500"
+                      : shotProgressColor
+                  }`}
                   style={{
-                    width: `${shotProgress}%`,
+                    width: isPenaltyMode
+                      ? "100%"
+                      : `${shotProgress}%`,
                   }}
                 />
               </div>
@@ -955,7 +1513,11 @@ export default function LiveMatchDisplay({
                   : "h-8 text-[9px]"
               }`}
             >
-              <span>SNOOKERIA LIVE</span>
+              <span>
+                {audioEnabled
+                  ? "SNOOKERIA LIVE • AUDIO ON"
+                  : "SNOOKERIA LIVE"}
+              </span>
 
               <span dir="ltr">
                 ROOM {normalizedRoomCode}
