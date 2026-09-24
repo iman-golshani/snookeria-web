@@ -112,7 +112,7 @@ export default function ImanGolshaniPage() {
           </h2>
 
           <p className="mt-6 text-sm leading-8 text-white/60 sm:text-base sm:leading-9">
-            ایمان گلشنی فعالیت خود در حوزه اسنوکر را از سال ۱۳۹۶ آغاز کرده
+            ایمان گلشنی فعالیت حرفه ای خود در حوزه اسنوکر را از سال ۱۳۹۶ آغاز کرده
             و به عنوان مربی و داور رسمی فدراسیون فعالیت می‌کند.
           </p>
 
