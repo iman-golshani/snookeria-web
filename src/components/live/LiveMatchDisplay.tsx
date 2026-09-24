@@ -606,14 +606,14 @@ export default function LiveMatchDisplay({
           <div
             className={`relative w-full overflow-hidden border border-white/10 bg-[#0a192c] ${
               isFullscreen
-                ? "mx-auto rounded-[24px] md:grid md:h-full md:max-w-none md:grid-rows-[48px_164px_minmax(0,1fr)_144px_40px] md:rounded-[28px]"
+                ? "mx-auto rounded-[24px] md:grid md:h-full md:max-w-none md:grid-rows-[44px_135px_minmax(0,1fr)_115px_32px] md:rounded-[28px]"
                 : "rounded-[22px]"
             }`}
           >
             {/* FULLSCREEN TOP BAR */}
 
             {isFullscreen && (
-              <div className="flex h-10 shrink-0 items-center justify-between border-b border-white/10 px-3 md:h-12 md:px-5">
+              <div className="flex h-10 shrink-0 items-center justify-between border-b border-white/10 px-3 md:h-11 md:px-5">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
@@ -636,11 +636,11 @@ export default function LiveMatchDisplay({
                   type="button"
                   onClick={toggleFullscreen}
                   aria-label="خروج از تمام صفحه"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-white/60 transition hover:bg-white/10 hover:text-white active:scale-95 md:h-9 md:w-9"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-white/60 transition hover:bg-white/10 hover:text-white active:scale-95 md:h-8 md:w-8"
                 >
                   <Minimize2
                     size={14}
-                    className="md:h-[18px] md:w-[18px]"
+                    className="md:h-4 md:w-4"
                   />
                 </button>
               </div>
@@ -664,22 +664,18 @@ export default function LiveMatchDisplay({
                 dir="ltr"
                 className={`mt-1 font-black leading-none tracking-tight tabular-nums ${
                   isFullscreen
-                    ? "text-5xl sm:text-6xl md:text-7xl"
+                    ? "text-5xl sm:text-6xl md:text-6xl"
                     : "text-4xl sm:text-5xl"
                 }`}
               >
                 {formatTime(displayTotalSeconds)}
               </div>
 
-              {/*
-                FIXED STATUS SLOT
-                این فضا همیشه وجود دارد.
-                Pause / Waiting / Penalty / Finished بعداً همین‌جا قرار می‌گیرند.
-              */}
+              {/* FIXED STATUS SLOT */}
 
-              <div className="mt-1.5 flex h-[22px] shrink-0 items-center justify-center md:h-[26px]">
+              <div className="mt-1.5 flex h-[22px] shrink-0 items-center justify-center md:h-[22px]">
                 <div
-                  className={`rounded-full px-3 py-1 text-[9px] font-semibold transition-opacity duration-200 md:text-xs ${
+                  className={`rounded-full px-3 py-1 text-[9px] font-semibold transition-opacity duration-200 md:text-[10px] ${
                     isPaused
                       ? "bg-amber-500/10 text-amber-400 opacity-100"
                       : "pointer-events-none bg-transparent text-transparent opacity-0"
@@ -695,7 +691,7 @@ export default function LiveMatchDisplay({
             <div
               className={`grid grid-cols-[1fr_auto_1fr] items-center ${
                 isFullscreen
-                  ? "gap-3 px-4 py-5 sm:gap-10 sm:px-10 md:h-full md:min-h-0 md:gap-16 md:px-16 md:py-2 lg:px-24"
+                  ? "gap-3 px-4 py-5 sm:gap-10 sm:px-10 md:h-full md:min-h-0 md:gap-14 md:px-16 md:py-1 lg:px-24"
                   : "gap-2 px-3 py-3 sm:gap-8 sm:px-8 sm:py-5"
               }`}
             >
@@ -705,7 +701,7 @@ export default function LiveMatchDisplay({
                 <div
                   className={`mx-auto overflow-hidden rounded-full border-2 ${
                     isFullscreen
-                      ? "h-24 w-24 sm:h-32 sm:w-32 md:h-44 md:w-44 lg:h-52 lg:w-52"
+                      ? "h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40"
                       : "h-20 w-20 sm:h-28 sm:w-28"
                   } ${
                     currentPlayer === 1
@@ -725,7 +721,7 @@ export default function LiveMatchDisplay({
                         size={isFullscreen ? 34 : 30}
                         className={
                           isFullscreen
-                            ? "md:h-14 md:w-14"
+                            ? "md:h-12 md:w-12"
                             : ""
                         }
                       />
@@ -736,7 +732,7 @@ export default function LiveMatchDisplay({
                 <h2
                   className={`mt-2 truncate font-bold ${
                     isFullscreen
-                      ? "text-base sm:text-xl md:mt-4 md:text-2xl lg:text-3xl"
+                      ? "text-base sm:text-xl md:mt-3 md:text-xl lg:text-2xl"
                       : "text-sm sm:text-lg"
                   }`}
                 >
@@ -746,7 +742,7 @@ export default function LiveMatchDisplay({
                 <div
                   className={`mt-1 font-black leading-none tabular-nums ${
                     isFullscreen
-                      ? "text-6xl sm:text-7xl md:mt-3 md:text-8xl lg:text-9xl"
+                      ? "text-6xl sm:text-7xl md:mt-2 md:text-6xl lg:text-7xl"
                       : "text-5xl sm:text-6xl"
                   }`}
                 >
@@ -756,18 +752,18 @@ export default function LiveMatchDisplay({
                 <div
                   className={`flex items-center justify-center gap-2 ${
                     isFullscreen
-                      ? "mt-2 md:mt-4"
+                      ? "mt-2 md:mt-2"
                       : "mt-2"
                   }`}
                 >
-                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30 md:text-sm">
+                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30 md:text-xs">
                     BREAK
                   </span>
 
                   <span
                     className={`font-black leading-none tabular-nums ${
                       isFullscreen
-                        ? "text-xl sm:text-2xl md:text-3xl"
+                        ? "text-xl sm:text-2xl md:text-2xl"
                         : "text-lg sm:text-xl"
                     } ${
                       currentPlayer === 1 &&
@@ -787,7 +783,7 @@ export default function LiveMatchDisplay({
                 <span
                   className={`font-black tracking-[0.18em] text-white/20 ${
                     isFullscreen
-                      ? "text-xs md:text-2xl"
+                      ? "text-xs md:text-xl"
                       : "text-xs"
                   }`}
                 >
@@ -797,20 +793,16 @@ export default function LiveMatchDisplay({
                 <div
                   className={`w-px bg-white/10 ${
                     isFullscreen
-                      ? "my-2 h-6 md:my-4 md:h-12"
+                      ? "my-2 h-6 md:my-3 md:h-9"
                       : "my-2 h-6"
                   }`}
                 />
 
-                {/*
-                  RESERVED CENTER SLOT
-                  فضای ثابت برای وضعیت‌های بعدی.
-                  عمداً خالی است تا Layout جابه‌جا نشود.
-                */}
+                {/* RESERVED CENTER SLOT */}
 
                 <div
                   aria-hidden="true"
-                  className="h-[25px] md:h-[32px]"
+                  className="h-[25px] md:h-[24px]"
                 />
               </div>
 
@@ -820,7 +812,7 @@ export default function LiveMatchDisplay({
                 <div
                   className={`mx-auto overflow-hidden rounded-full border-2 ${
                     isFullscreen
-                      ? "h-24 w-24 sm:h-32 sm:w-32 md:h-44 md:w-44 lg:h-52 lg:w-52"
+                      ? "h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40"
                       : "h-20 w-20 sm:h-28 sm:w-28"
                   } ${
                     currentPlayer === 2
@@ -840,7 +832,7 @@ export default function LiveMatchDisplay({
                         size={isFullscreen ? 34 : 30}
                         className={
                           isFullscreen
-                            ? "md:h-14 md:w-14"
+                            ? "md:h-12 md:w-12"
                             : ""
                         }
                       />
@@ -851,7 +843,7 @@ export default function LiveMatchDisplay({
                 <h2
                   className={`mt-2 truncate font-bold ${
                     isFullscreen
-                      ? "text-base sm:text-xl md:mt-4 md:text-2xl lg:text-3xl"
+                      ? "text-base sm:text-xl md:mt-3 md:text-xl lg:text-2xl"
                       : "text-sm sm:text-lg"
                   }`}
                 >
@@ -861,7 +853,7 @@ export default function LiveMatchDisplay({
                 <div
                   className={`mt-1 font-black leading-none tabular-nums ${
                     isFullscreen
-                      ? "text-6xl sm:text-7xl md:mt-3 md:text-8xl lg:text-9xl"
+                      ? "text-6xl sm:text-7xl md:mt-2 md:text-6xl lg:text-7xl"
                       : "text-5xl sm:text-6xl"
                   }`}
                 >
@@ -871,18 +863,18 @@ export default function LiveMatchDisplay({
                 <div
                   className={`flex items-center justify-center gap-2 ${
                     isFullscreen
-                      ? "mt-2 md:mt-4"
+                      ? "mt-2 md:mt-2"
                       : "mt-2"
                   }`}
                 >
-                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30 md:text-sm">
+                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white/30 md:text-xs">
                     BREAK
                   </span>
 
                   <span
                     className={`font-black leading-none tabular-nums ${
                       isFullscreen
-                        ? "text-xl sm:text-2xl md:text-3xl"
+                        ? "text-xl sm:text-2xl md:text-2xl"
                         : "text-lg sm:text-xl"
                     } ${
                       currentPlayer === 2 &&
@@ -908,11 +900,11 @@ export default function LiveMatchDisplay({
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold tracking-[0.14em] text-white/30 md:text-sm">
+                  <p className="text-[10px] font-semibold tracking-[0.14em] text-white/30 md:text-xs">
                     SHOT CLOCK
                   </p>
 
-                  <p className="mt-0.5 text-[9px] text-white/25 md:text-xs">
+                  <p className="mt-0.5 text-[9px] text-white/25 md:text-[10px]">
                     {isShotRunning
                       ? "در حال شمارش"
                       : "آماده"}
@@ -923,7 +915,7 @@ export default function LiveMatchDisplay({
                   dir="ltr"
                   className={`font-black leading-none tabular-nums ${
                     isFullscreen
-                      ? "text-5xl md:text-7xl"
+                      ? "text-5xl md:text-5xl"
                       : "text-4xl"
                   } ${
                     isShotRunning &&
@@ -941,7 +933,7 @@ export default function LiveMatchDisplay({
               <div
                 className={`overflow-hidden rounded-full bg-white/10 ${
                   isFullscreen
-                    ? "mt-4 h-2 md:mt-5 md:h-3"
+                    ? "mt-4 h-2 md:mt-3 md:h-2"
                     : "mt-3 h-1.5"
                 }`}
               >
@@ -959,7 +951,7 @@ export default function LiveMatchDisplay({
             <div
               className={`flex shrink-0 items-center justify-between border-t border-white/10 px-4 text-white/20 ${
                 isFullscreen
-                  ? "h-8 text-[9px] md:h-10 md:px-6 md:text-xs"
+                  ? "h-8 text-[9px] md:h-8 md:px-6 md:text-[10px]"
                   : "h-8 text-[9px]"
               }`}
             >
