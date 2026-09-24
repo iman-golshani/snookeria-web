@@ -2,34 +2,45 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, Newspaper, CircleDot } from "lucide-react";
+import {
+  Trophy,
+  Presentation,
+  CircleDot,
+} from "lucide-react";
 
 export default function BottomNav() {
   const pathname = usePathname();
 
   const isAcademy = pathname === "/";
   const isTournaments = pathname.startsWith("/tournaments");
-  const isNews = pathname.startsWith("/news");
+  const isWorkshops = pathname.startsWith("/workshops");
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#071426]/90 backdrop-blur-xl">
       <div className="mx-auto grid max-w-lg grid-cols-3">
-        {/* News - Left */}
+        {/* Workshops - Left */}
         <Link
-          href="/news"
+          href="/workshops"
           className={`flex flex-col items-center gap-1 py-3 transition ${
-            isNews ? "text-red-500" : "text-white/45 hover:text-white"
+            isWorkshops
+              ? "text-red-500"
+              : "text-white/45 hover:text-white"
           }`}
         >
-          <Newspaper size={21} />
-          <span className="text-[11px]">اخبار</span>
+          <Presentation size={21} />
+
+          <span className="text-[11px]">
+            کارگاه آموزشی
+          </span>
         </Link>
 
         {/* Academy - Center */}
         <Link
           href="/"
           className={`relative flex flex-col items-center gap-1 py-3 transition ${
-            isAcademy ? "text-red-500" : "text-white/45"
+            isAcademy
+              ? "text-red-500"
+              : "text-white/45"
           }`}
         >
           <div
@@ -44,18 +55,25 @@ export default function BottomNav() {
 
           <div className="h-5" />
 
-          <span className="text-[11px] font-semibold">آکادمی</span>
+          <span className="text-[11px] font-semibold">
+            آکادمی
+          </span>
         </Link>
 
         {/* Tournaments - Right */}
         <Link
           href="/tournaments"
           className={`flex flex-col items-center gap-1 py-3 transition ${
-            isTournaments ? "text-red-500" : "text-white/45 hover:text-white"
+            isTournaments
+              ? "text-red-500"
+              : "text-white/45 hover:text-white"
           }`}
         >
           <Trophy size={21} />
-          <span className="text-[11px]">مسابقات</span>
+
+          <span className="text-[11px]">
+            مسابقات
+          </span>
         </Link>
       </div>
     </nav>

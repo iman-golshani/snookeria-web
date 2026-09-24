@@ -171,7 +171,7 @@ function stopAudio(audio?: HTMLAudioElement) {
     audio.pause();
     audio.currentTime = 0;
   } catch {
-    // Browser may reject currentTime before metadata is loaded.
+    // Ignore browser media reset errors.
   }
 }
 
@@ -292,7 +292,6 @@ export default function LiveMatchDisplay({
 
     return () => {
       stopAllAudio(audioPlayersRef.current);
-
       audioPlayersRef.current = null;
     };
   }, []);
@@ -306,11 +305,6 @@ export default function LiveMatchDisplay({
 
     audioEnabledRef.current = true;
     setAudioEnabled(true);
-
-    /*
-     * Prime all players from a direct user interaction.
-     * This is important for Safari / iPhone.
-     */
 
     const allPlayers = Object.values(players);
 
@@ -362,10 +356,6 @@ export default function LiveMatchDisplay({
 
     const eventId = incoming.eventId?.toString();
 
-    /*
-     * Prevent duplicate playback.
-     */
-
     if (
       eventId &&
       lastAudioEventIdRef.current === eventId
@@ -406,21 +396,11 @@ export default function LiveMatchDisplay({
         break;
 
       case "shot_timeout":
-        /*
-         * Same behavior as Flutter:
-         * stop warning beep before timeout sound.
-         */
         stopAudio(players.shotWarning);
-
         void playAudio(players.shotTimeout);
         break;
 
       case "shot_played":
-        /*
-         * IMPORTANT:
-         * When the player hits the shot, both the 5-second
-         * warning and timeout sound stop immediately.
-         */
         stopAudio(players.shotWarning);
         stopAudio(players.shotTimeout);
 
@@ -482,12 +462,6 @@ export default function LiveMatchDisplay({
       }
     };
 
-    /*
-     * =========================================================
-     * STATE SNAPSHOT
-     * =========================================================
-     */
-
     channel.on(
       "broadcast",
       {
@@ -511,10 +485,6 @@ export default function LiveMatchDisplay({
         setLiveState(mergedState);
         setHasReceivedState(true);
 
-        /*
-         * TIMER SYNCHRONIZATION
-         */
-
         let elapsedSeconds = 0;
 
         if (incoming.sentAt) {
@@ -527,10 +497,6 @@ export default function LiveMatchDisplay({
             );
           }
         }
-
-        /*
-         * MATCH TIMER
-         */
 
         if (incoming.totalTimeSeconds !== undefined) {
           const receivedTotal = readNumber(
@@ -548,10 +514,6 @@ export default function LiveMatchDisplay({
             Math.max(0, correctedTotal)
           );
         }
-
-        /*
-         * SHOT CLOCK
-         */
 
         if (incoming.shotTimeSeconds !== undefined) {
           const receivedShot = readNumber(
@@ -573,12 +535,6 @@ export default function LiveMatchDisplay({
       }
     );
 
-    /*
-     * =========================================================
-     * AUDIO EVENT
-     * =========================================================
-     */
-
     channel.on(
       "broadcast",
       {
@@ -595,12 +551,6 @@ export default function LiveMatchDisplay({
         handleAudioEvent(incoming);
       }
     );
-
-    /*
-     * =========================================================
-     * SUBSCRIBE
-     * =========================================================
-     */
 
     channel.subscribe((status, error) => {
       if (disposed) {
@@ -636,12 +586,6 @@ export default function LiveMatchDisplay({
         setConnectionState("disconnected");
       }
     });
-
-    /*
-     * =========================================================
-     * CLEANUP
-     * =========================================================
-     */
 
     return () => {
       disposed = true;
@@ -836,16 +780,17 @@ export default function LiveMatchDisplay({
         ? player2Name
         : "";
 
-  /*
-   * A match remains visually LIVE during penalty mode.
-   */
+  const activePlayerName =
+    currentPlayer === 1
+      ? player1Name
+      : player2Name;
 
   const isLive =
     isGameRunning || isPenaltyMode;
 
   /*
    * =========================================================
-   * STATUS SLOT
+   * STATUS
    * =========================================================
    */
 
@@ -1186,7 +1131,7 @@ export default function LiveMatchDisplay({
 
               <div className="mt-1.5 flex h-[22px] shrink-0 items-center justify-center md:h-[22px]">
                 <div
-                  className={`max-w-full truncate rounded-full px-3 py-1 text-[9px] font-semibold transition-opacity duration-200 md:text-[10px] ${statusClass}`}
+                  className={`max-w-full truncate rounded-full px-4 py-1 text-[11px] font-bold transition-opacity duration-200 md:text-xs ${statusClass}`}
                 >
                   {statusText || "placeholder"}
                 </div>
@@ -1206,16 +1151,16 @@ export default function LiveMatchDisplay({
 
               <div className="min-w-0 text-center">
                 <div
-                  className={`mx-auto overflow-hidden rounded-full border-2 ${
+                  className={`mx-auto overflow-hidden rounded-full border-2 transition-all duration-300 ${
                     isFullscreen
                       ? "h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40"
                       : "h-20 w-20 sm:h-28 sm:w-28"
                   } ${
                     currentPlayer === 1 &&
                     !isMatchFinished
-                      ? "border-red-500"
+                      ? "border-red-500 shadow-[0_0_28px_rgba(239,68,68,0.65)] ring-2 ring-red-500/35"
                       : winnerPlayer === 1
-                        ? "border-emerald-400"
+                        ? "border-emerald-400 shadow-[0_0_28px_rgba(52,211,153,0.45)] ring-2 ring-emerald-400/30"
                         : "border-white/10"
                   }`}
                 >
@@ -1241,6 +1186,13 @@ export default function LiveMatchDisplay({
 
                 <h2
                   className={`mt-2 truncate font-bold ${
+                    currentPlayer === 1 &&
+                    !isMatchFinished
+                      ? "text-white"
+                      : winnerPlayer === 1
+                        ? "text-emerald-400"
+                        : "text-white"
+                  } ${
                     isFullscreen
                       ? "text-base sm:text-xl md:mt-3 md:text-xl lg:text-2xl"
                       : "text-sm sm:text-lg"
@@ -1317,21 +1269,44 @@ export default function LiveMatchDisplay({
                   }`}
                 />
 
-                {/* RESERVED CENTER SLOT */}
+                {/* ACTIVE PLAYER / WINNER SLOT */}
 
-                <div className="flex h-[25px] items-center justify-center md:h-[24px]">
-                  {isPenaltyMode ? (
-                    <span className="whitespace-nowrap text-[9px] font-bold text-red-400 md:text-[10px]">
-                      راند {penaltyRound}
-                    </span>
-                  ) : winnerPlayer ? (
-                    <span className="whitespace-nowrap text-[9px] font-bold text-emerald-400 md:text-[10px]">
-                      WINNER
-                    </span>
+                <div className="flex h-[38px] min-w-[86px] items-center justify-center md:h-[38px] md:min-w-[120px]">
+                  {winnerPlayer ? (
+                    <div className="text-center">
+                      <p className="text-[8px] font-semibold text-emerald-400/60 md:text-[9px]">
+                        برنده
+                      </p>
+
+                      <p className="mt-0.5 max-w-[110px] truncate text-[10px] font-black text-emerald-400 md:max-w-[150px] md:text-sm">
+                        {winnerName}
+                      </p>
+                    </div>
+                  ) : isPenaltyMode ? (
+                    <div className="text-center">
+                      <p className="text-[8px] font-semibold text-red-400/60 md:text-[9px]">
+                        پنالتی
+                      </p>
+
+                      <p className="mt-0.5 text-[10px] font-black text-red-400 md:text-sm">
+                        راند {penaltyRound}
+                      </p>
+                    </div>
+                  ) : isGameRunning ? (
+                    <div className="text-center">
+                      <p className="text-[8px] font-semibold text-white/30 md:text-[9px]">
+                        نوبت ضربه
+                      </p>
+
+                      <p className="mt-0.5 max-w-[110px] truncate text-[10px] font-black text-red-400 md:max-w-[150px] md:text-sm">
+                        {activePlayerName}
+                      </p>
+                    </div>
                   ) : (
-                    <span className="pointer-events-none text-transparent">
-                      -
-                    </span>
+                    <div
+                      aria-hidden="true"
+                      className="h-[38px]"
+                    />
                   )}
                 </div>
               </div>
@@ -1340,16 +1315,16 @@ export default function LiveMatchDisplay({
 
               <div className="min-w-0 text-center">
                 <div
-                  className={`mx-auto overflow-hidden rounded-full border-2 ${
+                  className={`mx-auto overflow-hidden rounded-full border-2 transition-all duration-300 ${
                     isFullscreen
                       ? "h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40"
                       : "h-20 w-20 sm:h-28 sm:w-28"
                   } ${
                     currentPlayer === 2 &&
                     !isMatchFinished
-                      ? "border-red-500"
+                      ? "border-red-500 shadow-[0_0_28px_rgba(239,68,68,0.65)] ring-2 ring-red-500/35"
                       : winnerPlayer === 2
-                        ? "border-emerald-400"
+                        ? "border-emerald-400 shadow-[0_0_28px_rgba(52,211,153,0.45)] ring-2 ring-emerald-400/30"
                         : "border-white/10"
                   }`}
                 >
@@ -1375,6 +1350,13 @@ export default function LiveMatchDisplay({
 
                 <h2
                   className={`mt-2 truncate font-bold ${
+                    currentPlayer === 2 &&
+                    !isMatchFinished
+                      ? "text-white"
+                      : winnerPlayer === 2
+                        ? "text-emerald-400"
+                        : "text-white"
+                  } ${
                     isFullscreen
                       ? "text-base sm:text-xl md:mt-3 md:text-xl lg:text-2xl"
                       : "text-sm sm:text-lg"
