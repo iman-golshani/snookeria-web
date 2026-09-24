@@ -554,10 +554,6 @@ export default function LiveMatchDisplay({
       )}
 
       {!hasReceivedState ? (
-        /*
-         * WAITING FOR STATE
-         */
-
         <div className="flex min-h-[55vh] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/[0.025] px-5 text-center">
           {connectionState === "error" ? (
             <>
@@ -599,12 +595,6 @@ export default function LiveMatchDisplay({
           )}
         </div>
       ) : (
-        /*
-         * =====================================================
-         * FULLSCREEN TARGET
-         * =====================================================
-         */
-
         <div
           ref={fullscreenRef}
           className={
@@ -616,7 +606,7 @@ export default function LiveMatchDisplay({
           <div
             className={`relative w-full overflow-hidden border border-white/10 bg-[#0a192c] ${
               isFullscreen
-                ? "mx-auto rounded-[24px] md:flex md:h-full md:max-w-none md:flex-col md:rounded-[28px]"
+                ? "mx-auto rounded-[24px] md:grid md:h-full md:max-w-none md:grid-rows-[48px_164px_minmax(0,1fr)_144px_40px] md:rounded-[28px]"
                 : "rounded-[22px]"
             }`}
           >
@@ -661,7 +651,7 @@ export default function LiveMatchDisplay({
             <div
               className={`shrink-0 border-b border-white/10 text-center ${
                 isFullscreen
-                  ? "px-4 py-4 md:py-5"
+                  ? "px-4 py-4 md:flex md:h-full md:flex-col md:items-center md:justify-center md:py-0"
                   : "px-4 py-3"
               }`}
             >
@@ -682,11 +672,12 @@ export default function LiveMatchDisplay({
               </div>
 
               {/*
-               * Reserved pause area.
-               * Always exists so pause/resume never moves the layout.
-               */}
+                FIXED STATUS SLOT
+                این فضا همیشه وجود دارد.
+                Pause / Waiting / Penalty / Finished بعداً همین‌جا قرار می‌گیرند.
+              */}
 
-              <div className="mt-1.5 flex h-[22px] items-center justify-center md:h-[26px]">
+              <div className="mt-1.5 flex h-[22px] shrink-0 items-center justify-center md:h-[26px]">
                 <div
                   className={`rounded-full px-3 py-1 text-[9px] font-semibold transition-opacity duration-200 md:text-xs ${
                     isPaused
@@ -704,7 +695,7 @@ export default function LiveMatchDisplay({
             <div
               className={`grid grid-cols-[1fr_auto_1fr] items-center ${
                 isFullscreen
-                  ? "gap-3 px-4 py-5 sm:gap-10 sm:px-10 md:min-h-0 md:flex-1 md:gap-16 md:px-16 md:py-4 lg:px-24"
+                  ? "gap-3 px-4 py-5 sm:gap-10 sm:px-10 md:h-full md:min-h-0 md:gap-16 md:px-16 md:py-2 lg:px-24"
                   : "gap-2 px-3 py-3 sm:gap-8 sm:px-8 sm:py-5"
               }`}
             >
@@ -790,34 +781,37 @@ export default function LiveMatchDisplay({
                 </div>
               </div>
 
-              {/* CENTER / VS */}
+              {/* CENTER */}
 
-              <div className="flex h-full flex-col items-center justify-center">
-                <div
-                  className={`flex flex-col items-center justify-center ${
+              <div className="flex h-full min-h-0 flex-col items-center justify-center">
+                <span
+                  className={`font-black tracking-[0.18em] text-white/20 ${
                     isFullscreen
-                      ? "md:h-40"
-                      : ""
+                      ? "text-xs md:text-2xl"
+                      : "text-xs"
                   }`}
                 >
-                  <span
-                    className={`font-black tracking-[0.18em] text-white/20 ${
-                      isFullscreen
-                        ? "text-xs md:text-2xl"
-                        : "text-xs"
-                    }`}
-                  >
-                    VS
-                  </span>
+                  VS
+                </span>
 
-                  <div
-                    className={`w-px bg-white/10 ${
-                      isFullscreen
-                        ? "my-2 h-6 md:my-4 md:h-12"
-                        : "my-2 h-6"
-                    }`}
-                  />
-                </div>
+                <div
+                  className={`w-px bg-white/10 ${
+                    isFullscreen
+                      ? "my-2 h-6 md:my-4 md:h-12"
+                      : "my-2 h-6"
+                  }`}
+                />
+
+                {/*
+                  RESERVED CENTER SLOT
+                  فضای ثابت برای وضعیت‌های بعدی.
+                  عمداً خالی است تا Layout جابه‌جا نشود.
+                */}
+
+                <div
+                  aria-hidden="true"
+                  className="h-[25px] md:h-[32px]"
+                />
               </div>
 
               {/* PLAYER 2 */}
@@ -908,7 +902,7 @@ export default function LiveMatchDisplay({
             <div
               className={`shrink-0 border-t border-white/10 ${
                 isFullscreen
-                  ? "px-5 py-4 md:px-8 md:py-5"
+                  ? "px-5 py-4 md:flex md:h-full md:flex-col md:justify-center md:px-8 md:py-0"
                   : "px-4 py-3"
               }`}
             >
