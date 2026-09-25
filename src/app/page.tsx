@@ -1,9 +1,12 @@
 "use client";
+
 import Link from "next/link";
 import {
   Phone,
   CircleDot,
   CheckCircle2,
+  Radio,
+  ArrowLeft,
 } from "lucide-react";
 
 const courses = [
@@ -101,8 +104,6 @@ export default function Home() {
         }}
       />
 
-      
-
       {/* Subtle background lines */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.035]">
         <div className="absolute left-1/2 top-0 h-full w-px bg-white" />
@@ -144,14 +145,13 @@ export default function Home() {
             <p className="text-sm leading-8 text-white/70 sm:text-base">
               زیر نظر{" "}
               <Link
-    href="/coach/iman-golshani"
-    className="font-semibold text-white underline decoration-red-500/50 underline-offset-4 transition hover:text-red-500"
-  >
-    ایمان گلشنی
-  </Link>
+                href="/coach/iman-golshani"
+                className="font-semibold text-white underline decoration-red-500/50 underline-offset-4 transition hover:text-red-500"
+              >
+                ایمان گلشنی
+              </Link>
               ، مربی و داور رسمی فدراسیون
             </p>
-
           </div>
 
           {/* Description */}
@@ -200,47 +200,106 @@ export default function Home() {
             />
 
             ارتباط مستقیم با مربی
-
-            
           </a>
 
           {/* Instagram */}
           <a
-  href="https://www.instagram.com/snookeria"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="mt-5 flex items-center gap-2 text-sm text-white/50 transition hover:text-white"
->
-  <svg
-    width="17"
-    height="17"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-  >
-    <rect
-      x="3"
-      y="3"
-      width="18"
-      height="18"
-      rx="5"
-      stroke="currentColor"
-      strokeWidth="2"
-    />
-    <circle
-      cx="12"
-      cy="12"
-      r="4"
-      stroke="currentColor"
-      strokeWidth="2"
-    />
-    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
-  </svg>
+            href="https://www.instagram.com/snookeria"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 flex items-center gap-2 text-sm text-white/50 transition hover:text-white"
+          >
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <rect
+                x="3"
+                y="3"
+                width="18"
+                height="18"
+                rx="5"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
 
-  اینستاگرام اسنوکریا
-</a>
+              <circle
+                cx="12"
+                cy="12"
+                r="4"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+
+              <circle
+                cx="17.5"
+                cy="6.5"
+                r="1"
+                fill="currentColor"
+              />
+            </svg>
+
+            اینستاگرام اسنوکریا
+          </a>
         </div>
+
+        {/* Live Matches */}
+        <section className="mx-auto mt-16 max-w-3xl">
+          <Link
+            href="/live"
+            className="group relative block overflow-hidden rounded-3xl border border-red-500/25 bg-red-600/[0.055] p-5 shadow-[0_0_45px_rgba(220,20,60,0.06)] transition duration-300 hover:border-red-500/40 hover:bg-red-600/[0.08] active:scale-[0.99] sm:p-6"
+          >
+            {/* Glow */}
+            <div className="pointer-events-none absolute -right-16 top-1/2 h-36 w-36 -translate-y-1/2 rounded-full bg-red-600/10 blur-3xl" />
+
+            <div className="relative flex items-center justify-between gap-5">
+              <div className="flex min-w-0 items-center gap-4">
+                {/* Live Icon */}
+                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-500 sm:h-14 sm:w-14">
+                  <Radio size={22} />
+
+                  <span className="absolute right-1 top-1 flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                  </span>
+                </div>
+
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black tracking-[0.18em] text-red-500">
+                      LIVE
+                    </span>
+
+                    <span className="h-1 w-1 rounded-full bg-white/20" />
+
+                    <span className="text-[10px] text-white/35">
+                      SNOOKERIA
+                    </span>
+                  </div>
+
+                  <h2 className="mt-1.5 text-base font-bold sm:text-lg">
+                    پخش زنده مسابقات
+                  </h2>
+
+                  <p className="mt-1 text-xs leading-6 text-white/40 sm:text-sm">
+                    مسابقات اسنوکریا را به‌صورت زنده دنبال کنید.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/45 transition duration-300 group-hover:border-red-500/20 group-hover:bg-red-500/10 group-hover:text-red-400">
+                <ArrowLeft
+                  size={17}
+                  className="transition-transform duration-300 group-hover:-translate-x-0.5"
+                />
+              </div>
+            </div>
+          </Link>
+        </section>
 
         {/* Academy Courses */}
         <section
@@ -278,7 +337,9 @@ export default function Home() {
                 {/* Accent */}
                 <div
                   className={`absolute right-0 top-0 h-1 w-full ${
-                    index === 2 ? "bg-red-600" : "bg-white/15"
+                    index === 2
+                      ? "bg-red-600"
+                      : "bg-white/15"
                   }`}
                 />
 
