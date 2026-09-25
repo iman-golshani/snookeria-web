@@ -786,7 +786,8 @@ export default function LiveMatchDisplay({
       : player2Name;
 
   const isLive =
-    isGameRunning || isPenaltyMode;
+    !isMatchFinished &&
+    (isGameRunning || isPenaltyMode);
 
   /*
    * =========================================================
