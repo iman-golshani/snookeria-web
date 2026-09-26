@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+
 import BottomNav from "@/components/layout/BottomNav";
 
 export const metadata: Metadata = {
@@ -45,6 +46,45 @@ export const metadata: Metadata = {
 
   manifest: "/manifest.webmanifest",
 
+  icons: {
+    icon: [
+      {
+        url: "/favicon.ico",
+        type: "image/x-icon",
+      },
+      {
+        url: "/favicon-16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+      },
+      {
+        url: "/favicon-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/favicon-48x48.png",
+        sizes: "48x48",
+        type: "image/png",
+      },
+    ],
+
+    shortcut: [
+      {
+        url: "/favicon.ico",
+        type: "image/x-icon",
+      },
+    ],
+
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
+
   openGraph: {
     type: "website",
     locale: "fa_IR",
@@ -77,39 +117,6 @@ export const metadata: Metadata = {
     images: ["/snookeria-icon-1024.png"],
   },
 
-  icons: {
-    icon: [
-      {
-        url: "/favicon.ico",
-      },
-      {
-        url: "/favicon-16x16.png",
-        sizes: "16x16",
-        type: "image/png",
-      },
-      {
-        url: "/favicon-32x32.png",
-        sizes: "32x32",
-        type: "image/png",
-      },
-      {
-        url: "/favicon-48x48.png",
-        sizes: "48x48",
-        type: "image/png",
-      },
-    ],
-
-    apple: [
-      {
-        url: "/apple-touch-icon.png",
-        sizes: "180x180",
-        type: "image/png",
-      },
-    ],
-
-    shortcut: "/favicon.ico",
-  },
-
   robots: {
     index: true,
     follow: true,
@@ -140,7 +147,6 @@ export default function RootLayout({
     <html lang="fa" dir="rtl" className="bg-[#071426]">
       <body className="min-h-screen bg-[#071426] text-white antialiased">
         {children}
-
         <BottomNav />
       </body>
     </html>
