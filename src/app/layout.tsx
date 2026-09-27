@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+
 import "./globals.css";
 
 import BottomNav from "@/components/layout/BottomNav";
+import PWARegister from "@/components/PWARegister";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://snookeria.ir"),
@@ -147,7 +149,10 @@ export default function RootLayout({
     <html lang="fa" dir="rtl" className="bg-[#071426]">
       <body className="min-h-screen bg-[#071426] text-white antialiased">
         {children}
+
         <BottomNav />
+
+        <PWARegister />
       </body>
     </html>
   );
