@@ -1,406 +1,52 @@
-"use client";
-
 import Link from "next/link";
-import {
-  Phone,
-  CircleDot,
-  CheckCircle2,
-  Radio,
-  ArrowLeft,
-} from "lucide-react";
+import { ArrowLeft, BookOpen, Compass, GraduationCap, Radio, Sparkles, Target, Trophy } from "lucide-react";
 
-const courses = [
-  {
-    title: "دوره مبتدی",
-    subtitle: "شروع اصولی مسیر اسنوکر",
-    description:
-      "دوره آموزش اسنوکر برای بازیکنانی که می‌خواهند این ورزش را از پایه و به شکل اصولی یاد بگیرند.",
-    features: [
-      "ماهیانه ۶ جلسه آموزشی",
-      "هر جلسه ۲ ساعت",
-      "آموزش اصول و تکنیک‌های پایه اسنوکر",
-    ],
-  },
-  {
-    title: "دوره پیشرفته",
-    subtitle: "توسعه مهارت و عملکرد",
-    description:
-      "برای بازیکنانی که اصول اولیه را پشت سر گذاشته‌اند و به دنبال پیشرفت فنی و عملکرد بهتر در بازی هستند.",
-    features: [
-      "ماهیانه ۸ جلسه آموزشی",
-      "هر جلسه ۲ ساعت",
-      "برنامه‌ریزی تمرین",
-      "آنالیز تخصصی متناسب با سطح بازیکن",
-    ],
-  },
-  {
-    title: "دوره حرفه‌ای",
-    subtitle: "کوچینگ ویژه بازیکنان سطح بالا",
-    description:
-      "دوره کوچینگ تخصصی برای بازیکنان سطح بالا با تمرکز بر عملکرد، مسابقات و آماده‌سازی حرفه‌ای.",
-    features: [
-      "برنامه‌ریزی تمرینی اختصاصی",
-      "آنالیز کامل بازی‌ها",
-      "آمادگی ذهنی پیشرفته",
-      "آماده‌سازی برای مسابقات پیش رو",
-    ],
-  },
-];
+function EmptyCard({ icon, title, description, href, action }: { icon: React.ReactNode; title: string; description: string; href?: string; action?: string }) {
+  const content = (
+    <div className="group rounded-[26px] border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/15 hover:bg-white/[0.045]">
+      <div className="flex items-start gap-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-white/45">{icon}</div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold text-white/85">{title}</h3>
+          <p className="mt-1.5 text-xs leading-6 text-white/35">{description}</p>
+          {action && <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-500">{action}<ArrowLeft size={14} /></div>}
+        </div>
+      </div>
+    </div>
+  );
+  return href ? <Link href={href}>{content}</Link> : content;
+}
 
 export default function Home() {
-  const phoneNumber = "09196353060";
-
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "@id": "https://snookeria.ir/#organization",
-        name: "آکادمی اسنوکریا",
-        alternateName: "Snookeria Academy",
-        url: "https://snookeria.ir",
-        logo: "https://snookeria.ir/snookeria-logo.png",
-        sameAs: ["https://www.instagram.com/snookeria"],
-        founder: {
-          "@id": "https://snookeria.ir/#iman-golshani",
-        },
-        description:
-          "آکادمی اسنوکریا، مدرسه تخصصی اسنوکر برای آموزش، تمرین، رقابت و رشد بازیکنان اسنوکر.",
-      },
-      {
-        "@type": "Person",
-        "@id": "https://snookeria.ir/#iman-golshani",
-        name: "ایمان گلشنی",
-        url: "https://snookeria.ir",
-        jobTitle: "مربی و داور رسمی فدراسیون",
-        description:
-          "ایمان گلشنی، مربی و داور رسمی فدراسیون و موسس آکادمی اسنوکریا.",
-        worksFor: {
-          "@id": "https://snookeria.ir/#organization",
-        },
-        sameAs: ["https://www.instagram.com/snookeria"],
-      },
-      {
-        "@type": "WebSite",
-        "@id": "https://snookeria.ir/#website",
-        url: "https://snookeria.ir",
-        name: "Snookeria Academy",
-        alternateName: "آکادمی اسنوکریا",
-        publisher: {
-          "@id": "https://snookeria.ir/#organization",
-        },
-        inLanguage: "fa-IR",
-      },
-    ],
-  };
-
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#071426] text-white">
-      {/* Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData),
-        }}
-      />
+    <main className="relative min-h-screen overflow-hidden bg-[#071426] pb-28 text-white">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_50%_0%,rgba(220,20,60,0.14),transparent_58%)]" />
+      <div className="relative mx-auto max-w-5xl px-4 pt-7 sm:px-6 sm:pt-10">
+        <header className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5"><div className="h-9 w-9 overflow-hidden rounded-full border border-white/10"><img src="/snookeria-logo.png" alt="لوگوی اسنوکریا" className="h-full w-full object-cover" /></div><span className="text-xs font-bold tracking-[0.22em] text-white/70">SNOOKERIA</span></div>
+          <Link href="/live" aria-label="پخش زنده" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.035] text-white/55 transition hover:text-red-500"><Radio size={17} /></Link>
+        </header>
 
-      {/* Subtle background lines */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.035]">
-        <div className="absolute left-1/2 top-0 h-full w-px bg-white" />
-        <div className="absolute left-0 top-1/2 h-px w-full bg-white" />
+        <section className="mx-auto flex min-h-[430px] max-w-3xl flex-col items-center justify-center py-14 text-center sm:min-h-[500px]">
+          <div className="relative"><div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/10 blur-3xl" /><img src="/snookeria-logo.png" alt="Snookeria" className="relative mx-auto h-24 w-24 rounded-full sm:h-28 sm:w-28" /></div>
+          <p className="mt-7 text-[11px] font-bold tracking-[0.42em] text-red-500 sm:text-xs">SNOOKERIA</p>
+          <h1 className="mt-4 text-4xl font-black leading-[1.35] tracking-tight sm:text-6xl">جایی برای<span className="block text-red-500">زندگی کردن اسنوکر.</span></h1>
+          <p className="mt-6 max-w-xl text-sm leading-8 text-white/50 sm:text-base">اسنوکر برای ما فقط یه بازی نیست؛ یه سبک زندگیه.</p>
+          <div dir="ltr" className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[10px] font-bold tracking-[0.18em] text-white/25 sm:text-xs"><span>LIVE</span><span className="text-red-500/50">•</span><span>PLAY</span><span className="text-red-500/50">•</span><span>LEARN</span><span className="text-red-500/50">•</span><span>WATCH</span><span className="text-red-500/50">•</span><span>BELONG</span></div>
+        </section>
+
+        <section className="mx-auto max-w-3xl"><div className="rounded-[28px] border border-red-500/15 bg-gradient-to-br from-red-500/[0.07] to-white/[0.025] p-5 sm:p-6"><div className="flex items-start gap-4"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 text-red-500"><Sparkles size={20} /></div><div><p className="text-[10px] font-bold tracking-[0.2em] text-red-500">SNOOKERIA SAYS</p><h2 className="mt-2 text-lg font-bold">میز همیشه چیزی برای یاد دادن داره.</h2><p className="mt-2 text-xs leading-6 text-white/40">این بخش شخصیت روزانه اسنوکریاست و بعداً از پنل مدیریت به‌روزرسانی می‌شود.</p></div></div></div></section>
+
+        <section className="mx-auto mt-10 max-w-3xl"><div className="mb-4 flex items-end justify-between"><div><p className="text-[10px] font-bold tracking-[0.22em] text-red-500">LIVE & MATCH CENTER</p><h2 className="mt-1.5 text-xl font-bold">همین حالا روی میز</h2></div><Link href="/live" className="flex items-center gap-1 text-xs text-white/40 hover:text-white">مشاهده لایو <ArrowLeft size={13} /></Link></div><EmptyCard icon={<Radio size={20} />} title="فعلاً میزها ساکتن." description="وقتی مسابقه زنده یا Match Center فعال باشد، از همین‌جا وارد جریان بازی می‌شوی." href="/live" action="رفتن به Live Center" /></section>
+
+        <section className="mx-auto mt-10 max-w-3xl"><div className="mb-4"><p className="text-[10px] font-bold tracking-[0.22em] text-red-500">SHOT OF THE DAY</p><h2 className="mt-1.5 text-xl font-bold">تو چه ضربه‌ای می‌زدی؟</h2></div><EmptyCard icon={<Target size={20} />} title="شات امروز هنوز منتشر نشده." description="موقعیت‌های واقعی مسابقات و تمرین‌های منتخب اینجا به یک تجربه تعاملی تبدیل می‌شوند." href="/academy" action="ورود به آکادمی" /></section>
+
+        <section className="mx-auto mt-10 max-w-3xl"><div className="mb-4 flex items-end justify-between"><div><p className="text-[10px] font-bold tracking-[0.22em] text-red-500">DISCOVER SNOOKER</p><h2 className="mt-1.5 text-xl font-bold">داستان‌ها، لحظه‌ها و دنیای اسنوکر</h2></div><Link href="/discover" className="flex items-center gap-1 text-xs text-white/40 hover:text-white">کشف <ArrowLeft size={13} /></Link></div><div className="grid gap-3 sm:grid-cols-2"><EmptyCard icon={<BookOpen size={20} />} title="هنوز داستانی منتشر نشده." description="داستان بازیکنان، اسطوره‌ها، مقالات و روایت‌های اسنوکر اینجا نمایش داده می‌شوند." /><EmptyCard icon={<Compass size={20} />} title="محتوای تازه در راه است." description="خبر، ویدئو، تحلیل، 147 و محتوای منتخب از پنل مدیریت وارد Discover می‌شوند." /></div></section>
+
+        <section className="mx-auto mt-10 max-w-3xl"><div className="grid gap-3 sm:grid-cols-2"><Link href="/tournaments" className="group rounded-[26px] border border-white/10 bg-white/[0.03] p-5 transition hover:border-red-500/20 hover:bg-red-500/[0.04]"><Trophy size={22} className="text-red-500" /><h2 className="mt-4 text-lg font-bold">مسابقات</h2><p className="mt-2 text-xs leading-6 text-white/35">تورنمنت‌ها، نتایج، Match Center و رقابت‌های اسنوکر.</p><ArrowLeft size={16} className="mt-4 text-white/30 transition group-hover:-translate-x-1 group-hover:text-red-500" /></Link><Link href="/academy" className="group rounded-[26px] border border-white/10 bg-white/[0.03] p-5 transition hover:border-red-500/20 hover:bg-red-500/[0.04]"><GraduationCap size={23} className="text-red-500" /><h2 className="mt-4 text-lg font-bold">آکادمی اسنوکریا</h2><p className="mt-2 text-xs leading-6 text-white/35">آموزش، تمرین، کارگاه‌ها و مسیر رشد بازیکن.</p><ArrowLeft size={16} className="mt-4 text-white/30 transition group-hover:-translate-x-1 group-hover:text-red-500" /></Link></div></section>
+
+        <footer className="mx-auto mt-16 max-w-3xl border-t border-white/10 py-8 text-center"><p className="text-xs font-bold tracking-[0.25em] text-white/35">SNOOKERIA</p><p className="mt-2 text-xs text-white/20">جایی برای زندگی کردن اسنوکر.</p></footer>
       </div>
-
-      {/* Main content */}
-      <section className="relative mx-auto max-w-5xl px-5 pb-32 pt-12 sm:px-8">
-        {/* Hero */}
-        <div className="flex flex-col items-center text-center">
-          {/* Logo */}
-          <div className="mb-8">
-            <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-full shadow-[0_0_60px_rgba(220,20,60,0.18)] sm:h-40 sm:w-40">
-              <img
-                src="/snookeria-logo.png"
-                alt="لوگوی آکادمی اسنوکریا"
-                className="h-full w-full object-contain"
-              />
-            </div>
-          </div>
-
-          {/* Brand */}
-          <div>
-            <p className="mb-3 text-xs font-semibold tracking-[0.45em] text-red-500">
-              SNOOKERIA ACADEMY
-            </p>
-
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              آکادمی اسنوکریا
-            </h1>
-
-            <p className="mt-4 text-lg font-medium text-white/75 sm:text-xl">
-              مدرسه تخصصی اسنوکر
-            </p>
-          </div>
-
-          {/* Coach */}
-          <div className="mt-7">
-            <p className="text-sm leading-8 text-white/70 sm:text-base">
-              زیر نظر{" "}
-              <Link
-                href="/coach/iman-golshani"
-                className="font-semibold text-white underline decoration-red-500/50 underline-offset-4 transition hover:text-red-500"
-              >
-                ایمان گلشنی
-              </Link>
-              ، مربی و داور رسمی فدراسیون
-            </p>
-          </div>
-
-          {/* Description */}
-          <div className="mt-5 max-w-2xl">
-            <p className="text-sm leading-8 text-white/55 sm:text-base sm:leading-9">
-              آکادمی اسنوکریا جایی برای آموزش اسنوکر، تمرین، رقابت و رشد
-              بازیکنان اسنوکر است. اسنوکریا مسیر بازیکن را از یادگیری اصولی
-              تا حضور در مسابقات حرفه‌ای همراهی می‌کند.
-            </p>
-          </div>
-
-          {/* SEO Context */}
-          <div className="mt-5 max-w-2xl">
-            <p className="text-xs leading-7 text-white/35 sm:text-sm">
-              آموزش تخصصی اسنوکر با تمرکز بر تکنیک، تمرین، آنالیز بازی و
-              آماده‌سازی بازیکن برای رقابت.
-            </p>
-          </div>
-
-          {/* Philosophy */}
-          <div className="relative mt-12 max-w-xl">
-            <div className="absolute left-1/2 top-1/2 h-24 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/10 blur-3xl" />
-
-            <p className="relative text-xl font-semibold leading-9 sm:text-2xl">
-              اسنوکر برای ما فقط یه بازی نیست
-            </p>
-
-            <p className="relative mt-1 text-xl font-semibold leading-9 text-red-500 sm:text-2xl">
-              یه سبک زندگیه
-            </p>
-
-            <p className="relative mt-5 text-sm leading-8 text-white/45 sm:text-base">
-              ما با اسنوکر تو زندگی رشد میکنیم
-            </p>
-          </div>
-
-          {/* Contact */}
-          <a
-            href={`tel:${phoneNumber}`}
-            className="group mt-10 flex items-center gap-3 rounded-full bg-red-600 px-8 py-4 text-sm font-bold text-white shadow-[0_10px_40px_rgba(220,20,60,0.22)] transition-all duration-300 hover:bg-red-500 hover:shadow-[0_10px_50px_rgba(220,20,60,0.35)] active:scale-95"
-          >
-            <Phone
-              size={18}
-              strokeWidth={2}
-              className="transition-transform duration-300 group-hover:scale-110"
-            />
-
-            ارتباط مستقیم با مربی
-          </a>
-
-          {/* Instagram */}
-          <a
-            href="https://www.instagram.com/snookeria"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-5 flex items-center gap-2 text-sm text-white/50 transition hover:text-white"
-          >
-            <svg
-              width="17"
-              height="17"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <rect
-                x="3"
-                y="3"
-                width="18"
-                height="18"
-                rx="5"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-
-              <circle
-                cx="12"
-                cy="12"
-                r="4"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-
-              <circle
-                cx="17.5"
-                cy="6.5"
-                r="1"
-                fill="currentColor"
-              />
-            </svg>
-
-            اینستاگرام اسنوکریا
-          </a>
-        </div>
-
-        {/* Live Matches */}
-        <section className="mx-auto mt-16 max-w-3xl">
-          <Link
-            href="/live"
-            className="group relative block overflow-hidden rounded-3xl border border-red-500/25 bg-red-600/[0.055] p-5 shadow-[0_0_45px_rgba(220,20,60,0.06)] transition duration-300 hover:border-red-500/40 hover:bg-red-600/[0.08] active:scale-[0.99] sm:p-6"
-          >
-            {/* Glow */}
-            <div className="pointer-events-none absolute -right-16 top-1/2 h-36 w-36 -translate-y-1/2 rounded-full bg-red-600/10 blur-3xl" />
-
-            <div className="relative flex items-center justify-between gap-5">
-              <div className="flex min-w-0 items-center gap-4">
-                {/* Live Icon */}
-                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-500 sm:h-14 sm:w-14">
-                  <Radio size={22} />
-
-                  <span className="absolute right-1 top-1 flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
-                  </span>
-                </div>
-
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black tracking-[0.18em] text-red-500">
-                      LIVE
-                    </span>
-
-                    <span className="h-1 w-1 rounded-full bg-white/20" />
-
-                    <span className="text-[10px] text-white/35">
-                      SNOOKERIA
-                    </span>
-                  </div>
-
-                  <h2 className="mt-1.5 text-base font-bold sm:text-lg">
-                    پخش زنده مسابقات
-                  </h2>
-
-                  <p className="mt-1 text-xs leading-6 text-white/40 sm:text-sm">
-                    مسابقات اسنوکریا را به‌صورت زنده دنبال کنید.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/45 transition duration-300 group-hover:border-red-500/20 group-hover:bg-red-500/10 group-hover:text-red-400">
-                <ArrowLeft
-                  size={17}
-                  className="transition-transform duration-300 group-hover:-translate-x-0.5"
-                />
-              </div>
-            </div>
-          </Link>
-        </section>
-
-        {/* Academy Courses */}
-        <section
-          aria-labelledby="academy-courses"
-          className="mt-20"
-        >
-          <div className="mb-8 text-center">
-            <p className="text-xs font-semibold tracking-[0.3em] text-red-500">
-              ACADEMY PROGRAMS
-            </p>
-
-            <h2
-              id="academy-courses"
-              className="mt-2 text-2xl font-bold sm:text-3xl"
-            >
-              دوره‌های آموزش اسنوکر
-            </h2>
-
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/45">
-              دوره‌های آموزشی آکادمی اسنوکریا برای سطوح مختلف بازیکنان، از
-              شروع یادگیری تا کوچینگ حرفه‌ای.
-            </p>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-3">
-            {courses.map((course, index) => (
-              <article
-                key={course.title}
-                className={`group relative overflow-hidden rounded-3xl border p-6 transition duration-300 hover:-translate-y-1 ${
-                  index === 2
-                    ? "border-red-600/40 bg-red-600/[0.07]"
-                    : "border-white/10 bg-white/[0.035]"
-                }`}
-              >
-                {/* Accent */}
-                <div
-                  className={`absolute right-0 top-0 h-1 w-full ${
-                    index === 2
-                      ? "bg-red-600"
-                      : "bg-white/15"
-                  }`}
-                />
-
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-xl font-bold">
-                      {course.title}
-                    </h3>
-
-                    <p className="mt-2 text-sm text-red-500">
-                      {course.subtitle}
-                    </p>
-                  </div>
-
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/5 text-red-500">
-                    <CircleDot size={21} />
-                  </div>
-                </div>
-
-                <p className="mt-5 text-sm leading-7 text-white/50">
-                  {course.description}
-                </p>
-
-                <div className="mt-6 space-y-3 border-t border-white/10 pt-5">
-                  {course.features.map((feature) => (
-                    <div
-                      key={feature}
-                      className="flex items-start gap-2 text-sm text-white/70"
-                    >
-                      <CheckCircle2
-                        size={17}
-                        className="mt-0.5 shrink-0 text-red-500"
-                      />
-
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* Snooker education section */}
-        <section className="mx-auto mt-20 max-w-3xl text-center">
-          <h2 className="text-xl font-bold sm:text-2xl">
-            آموزش اسنوکر و توسعه بازیکن
-          </h2>
-
-          <p className="mt-5 text-sm leading-8 text-white/45 sm:text-base sm:leading-9">
-            در آکادمی اسنوکریا، آموزش اسنوکر فقط به یادگیری ضربه‌ها محدود
-            نمی‌شود. تکنیک، کنترل کیوبال، تاکتیک، تمرین هدفمند، آنالیز بازی
-            و آمادگی برای مسابقه بخشی از مسیر رشد بازیکن هستند.
-          </p>
-
-          <p className="mt-4 text-xs leading-7 text-white/30">
-            هدف اسنوکریا ساختن بازیکنی است که بتواند آموخته‌های خود را در
-            شرایط واقعی مسابقه به کار بگیرد.
-          </p>
-        </section>
-      </section>
     </main>
   );
 }
