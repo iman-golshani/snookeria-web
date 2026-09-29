@@ -2,78 +2,60 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Trophy,
-  Presentation,
-  CircleDot,
-} from "lucide-react";
+import { Compass, GraduationCap, Radio, Trophy } from "lucide-react";
+
+const baseItem =
+  "relative flex h-16 items-center justify-center transition duration-200 active:scale-95";
 
 export default function BottomNav() {
   const pathname = usePathname();
 
-  const isAcademy = pathname === "/";
+  const isHome = pathname === "/";
+  const isAcademy = pathname.startsWith("/academy") || pathname.startsWith("/workshops");
   const isTournaments = pathname.startsWith("/tournaments");
-  const isWorkshops = pathname.startsWith("/workshops");
+  const isDiscover = pathname.startsWith("/discover") || pathname.startsWith("/news");
+  const isLive = pathname.startsWith("/live");
+
+  const itemClass = (active: boolean) =>
+    `${baseItem} ${active ? "text-red-500" : "text-white/40 hover:text-white/75"}`;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#071426]/90 backdrop-blur-xl">
-      <div className="mx-auto grid max-w-lg grid-cols-3">
-        {/* Workshops - Left */}
-        <Link
-          href="/workshops"
-          className={`flex flex-col items-center gap-1 py-3 transition ${
-            isWorkshops
-              ? "text-red-500"
-              : "text-white/45 hover:text-white"
-          }`}
-        >
-          <Presentation size={21} />
-
-          <span className="text-[11px]">
-            کارگاه آموزشی
-          </span>
+    <nav
+      aria-label="ناوبری اصلی اسنوکریا"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#071426]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl"
+    >
+      <div className="mx-auto grid h-16 max-w-lg grid-cols-5 px-2">
+        <Link href="/live" aria-label="پخش زنده" className={itemClass(isLive)}>
+          <Radio size={23} strokeWidth={isLive ? 2.5 : 2} />
+          {isLive && <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-red-500" />}
         </Link>
 
-        {/* Academy - Center */}
-        <Link
-          href="/"
-          className={`relative flex flex-col items-center gap-1 py-3 transition ${
-            isAcademy
-              ? "text-red-500"
-              : "text-white/45"
-          }`}
-        >
+        <Link href="/discover" aria-label="کشف" className={itemClass(isDiscover)}>
+          <Compass size={23} strokeWidth={isDiscover ? 2.5 : 2} />
+          {isDiscover && <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-red-500" />}
+        </Link>
+
+        <Link href="/" aria-label="خانه اسنوکریا" className="relative flex h-16 items-center justify-center">
           <div
-            className={`absolute -top-5 flex h-12 w-12 items-center justify-center rounded-full border bg-[#071426] ${
-              isAcademy
-                ? "border-red-600/40 shadow-[0_0_25px_rgba(220,20,60,0.25)]"
+            className={`absolute -top-4 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border bg-[#071426] transition duration-200 active:scale-95 ${
+              isHome
+                ? "border-red-500/50 shadow-[0_0_28px_rgba(220,20,60,0.28)]"
                 : "border-white/10"
             }`}
           >
-            <CircleDot size={24} />
+            <img src="/snookeria-logo.png" alt="" className="h-full w-full object-cover" />
           </div>
-
-          <div className="h-5" />
-
-          <span className="text-[11px] font-semibold">
-            آکادمی
-          </span>
+          {isHome && <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-red-500" />}
         </Link>
 
-        {/* Tournaments - Right */}
-        <Link
-          href="/tournaments"
-          className={`flex flex-col items-center gap-1 py-3 transition ${
-            isTournaments
-              ? "text-red-500"
-              : "text-white/45 hover:text-white"
-          }`}
-        >
-          <Trophy size={21} />
+        <Link href="/academy" aria-label="آکادمی" className={itemClass(isAcademy)}>
+          <GraduationCap size={24} strokeWidth={isAcademy ? 2.5 : 2} />
+          {isAcademy && <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-red-500" />}
+        </Link>
 
-          <span className="text-[11px]">
-            مسابقات
-          </span>
+        <Link href="/tournaments" aria-label="مسابقات" className={itemClass(isTournaments)}>
+          <Trophy size={23} strokeWidth={isTournaments ? 2.5 : 2} />
+          {isTournaments && <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-red-500" />}
         </Link>
       </div>
     </nav>
