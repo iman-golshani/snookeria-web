@@ -10,6 +10,10 @@ const baseItem =
 export default function BottomNav() {
   const pathname = usePathname();
 
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
+
   const isHome = pathname === "/";
   const isAcademy = pathname.startsWith("/academy") || pathname.startsWith("/workshops");
   const isTournaments = pathname.startsWith("/tournaments");
