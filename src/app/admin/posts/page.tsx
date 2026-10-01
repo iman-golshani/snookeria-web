@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight, Check, ChevronDown, ExternalLink, FileText,
-  ImagePlus, Loader2, Plus, Search, Settings2, Upload, X
+  ImagePlus, Loader2, Plus, Search, Settings2, Upload, X, Pencil, Trash2
 } from "lucide-react";
 import { cmsSupabase } from "@/lib/supabase/cms";
 import RichTextEditor from "@/components/admin/RichTextEditor";
+import { makeEnglishSlug } from "@/lib/slug";
 
 type Post = {
   id: string; title: string; slug: string; category: string; status: string;
@@ -19,16 +20,6 @@ const categories = [
   ["article","مقاله"],["story","داستان"],["news","خبر"],["video","ویدئو"],["147","147"],
 ];
 
-function makeSlug(input: string) {
-  return input
-    .trim()
-    .toLowerCase()
-    .replace(/ي/g, "ی").replace(/ك/g, "ک")
-    .replace(/[^a-z0-9؀-ۿs-]/g, "")
-    .replace(/s+/g, "-").replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
 export default function PostsAdminPage() {
   const router = useRouter();
   const [ready,setReady] = useState(false);
@@ -38,6 +29,7 @@ export default function PostsAdminPage() {
   const [uploading,setUploading] = useState(false);
   const [error,setError] = useState("");
   const [slugTouched,setSlugTouched] = useState(false);
+  const [editingId,setEditingId] = useState<string | null>(null);
 
   const [title,setTitle] = useState("");
   const [slug,setSlug] = useState("");
@@ -78,7 +70,7 @@ export default function PostsAdminPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!slugTouched) setSlug(makeSlug(title));
+    if (!slugTouched) setSlug(makeEnglishSlug(title));
   }, [title,slugTouched]);
 
   const previewTitle = seoTitle.trim() || title.trim() || "عنوان مطلب";
@@ -100,7 +92,7 @@ export default function PostsAdminPage() {
   }
 
   function reset() {
-    setTitle(""); setSlug(""); setSlugTouched(false); setCategory("article");
+    setEditingId(null); setTitle(""); setSlug(""); setSlugTouched(false); setCategory("article");
     setExcerpt(""); setBody(""); setCover(""); setFeatured(false);
     setSeoTitle(""); setSeoDescription(""); setFocusKeyword(""); setKeywords("");
     setCanonical(""); setOgTitle(""); setOgDescription(""); setOgImage("");
@@ -124,10 +116,35 @@ export default function PostsAdminPage() {
       og_image_url:ogImage.trim() || cover || null,
       robots_index:robotsIndex, robots_follow:robotsFollow, schema_type:schemaType,
     };
-    const { error: saveError } = await cmsSupabase.from("posts").insert(payload);
+    const query = editingId
+      ? cmsSupabase.from("posts").update(payload).eq("id", editingId)
+      : cmsSupabase.from("posts").insert(payload);
+    const { error: saveError } = await query;
     setSaving(false);
     if (saveError) { setError(saveError.code === "23505" ? "این Slug قبلاً استفاده شده است." : saveError.message); return; }
     reset(); setShowEditor(false); await loadPosts();
+  }
+
+  async function editPost(id:string) {
+    setError("");
+    const { data, error } = await cmsSupabase.from("posts").select("*").eq("id",id).single();
+    if(error || !data) { setError("بارگذاری مطلب انجام نشد."); return; }
+    setEditingId(data.id); setTitle(data.title||""); setSlug(data.slug||""); setSlugTouched(true);
+    setCategory(data.category||"article"); setExcerpt(data.excerpt||""); setBody(data.body||"");
+    setCover(data.cover_image_url||""); setFeatured(!!data.is_featured);
+    setSeoTitle(data.seo_title||""); setSeoDescription(data.seo_description||"");
+    setFocusKeyword(data.focus_keyword||""); setKeywords((data.seo_keywords||[]).join(", "));
+    setCanonical(data.canonical_url||""); setOgTitle(data.og_title||"");
+    setOgDescription(data.og_description||""); setOgImage(data.og_image_url||"");
+    setRobotsIndex(data.robots_index!==false); setRobotsFollow(data.robots_follow!==false);
+    setSchemaType(data.schema_type||"Article"); setShowEditor(true);
+  }
+
+  async function deletePost(id:string,title:string) {
+    if(!window.confirm(`مطلب «${title}» حذف شود؟ این کار قابل بازگشت نیست.`)) return;
+    const { error } = await cmsSupabase.from("posts").delete().eq("id",id);
+    if(error) { setError("حذف مطلب انجام نشد: "+error.message); return; }
+    await loadPosts();
   }
 
   if (!ready) return <main className="min-h-screen bg-[#06111c]"/>;
@@ -153,7 +170,12 @@ export default function PostsAdminPage() {
           ) : posts.map(post=>(
             <div key={post.id} className="flex items-center justify-between border-b border-white/[.055] px-4 py-4 last:border-0 sm:px-5">
               <div className="min-w-0"><p className="truncate text-sm font-bold">{post.title}</p><p dir="ltr" className="mt-1 truncate text-left text-[10px] text-white/25">{post.slug}</p></div>
-              <span className={`mr-4 shrink-0 rounded-full px-2.5 py-1 text-[9px] ${post.status==="published"?"bg-[#169260]/12 text-[#55d49a]":"bg-white/[.05] text-white/35"}`}>{post.status==="published"?"منتشر شده":"پیش‌نویس"}</span>
+              <div className="mr-4 flex shrink-0 items-center gap-2">
+                <span className={`rounded-full px-2.5 py-1 text-[9px] ${post.status==="published"?"bg-[#169260]/12 text-[#55d49a]":"bg-white/[.05] text-white/35"}`}>{post.status==="published"?"منتشر شده":"پیش‌نویس"}</span>
+                {post.status==="published" && <Link href={`/discover/${post.slug}`} target="_blank" className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#15905f]/10 text-[#55d49a]" title="مشاهده"><ExternalLink size={13}/></Link>}
+                <button onClick={()=>editPost(post.id)} className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[.04] text-white/45 hover:text-white" title="ویرایش"><Pencil size={13}/></button>
+                <button onClick={()=>deletePost(post.id,post.title)} className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#e3222b]/8 text-[#ff5964]/70 hover:text-[#ff5964]" title="حذف"><Trash2 size={13}/></button>
+              </div>
             </div>
           ))}
         </div>
@@ -168,7 +190,7 @@ export default function PostsAdminPage() {
           <button onClick={()=>setShowEditor(false)} className="flex items-center gap-2 text-xs text-white/50"><X size={17}/> بستن</button>
           <div className="flex gap-2">
             <button disabled={saving} onClick={()=>save("draft")} className="h-10 rounded-xl border border-white/[.09] bg-[#0b202a] px-4 text-xs font-bold text-white/65">ذخیره پیش‌نویس</button>
-            <button disabled={saving} onClick={()=>save("published")} className="flex h-10 items-center gap-2 rounded-xl bg-[#e3222b] px-4 text-xs font-black disabled:opacity-50">{saving?<Loader2 className="animate-spin" size={15}/>:<Check size={15}/>} انتشار</button>
+            <button disabled={saving} onClick={()=>save("published")} className="flex h-10 items-center gap-2 rounded-xl bg-[#e3222b] px-4 text-xs font-black disabled:opacity-50">{saving?<Loader2 className="animate-spin" size={15}/>:<Check size={15}/>} {editingId?"به‌روزرسانی و انتشار":"انتشار"}</button>
           </div>
         </div>
       </div>
@@ -181,7 +203,7 @@ export default function PostsAdminPage() {
             <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="عنوان مطلب..." className="w-full bg-transparent text-2xl font-black outline-none placeholder:text-white/18 sm:text-3xl"/>
             <div className="mt-5 flex items-center gap-2 rounded-xl bg-[#06151e] px-3 py-2 text-[10px] text-white/30">
               <span dir="ltr">snookeria.ir/discover/</span>
-              <input dir="ltr" value={slug} onChange={e=>{setSlugTouched(true);setSlug(makeSlug(e.target.value))}} className="min-w-0 flex-1 bg-transparent text-left text-[#55d49a] outline-none"/>
+              <input dir="ltr" value={slug} onChange={e=>{setSlugTouched(true);setSlug(makeEnglishSlug(e.target.value))}} className="min-w-0 flex-1 bg-transparent text-left text-[#55d49a] outline-none"/>
             </div>
             <textarea value={excerpt} onChange={e=>setExcerpt(e.target.value)} rows={3} placeholder="خلاصه کوتاه مطلب..." className="mt-4 w-full resize-none rounded-2xl border border-white/[.07] bg-[#071821] p-4 text-sm leading-7 outline-none placeholder:text-white/20 focus:border-[#1b9b68]/35"/>
           </section>
