@@ -1,63 +1,39 @@
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
-import { ArrowLeft, BookOpen, Compass } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 
-const cms = createClient(
-  process.env.NEXT_PUBLIC_CMS_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_CMS_SUPABASE_ANON_KEY!,
-  { auth: { persistSession: false } }
-);
+const cms=createClient(process.env.NEXT_PUBLIC_CMS_SUPABASE_URL!,process.env.NEXT_PUBLIC_CMS_SUPABASE_ANON_KEY!,{auth:{persistSession:false}});
+const labels:Record<string,string>={article:"مقاله",story:"داستان",news:"خبر",video:"ویدئو","147":"147"};
+export const revalidate=60;
 
-const categoryLabel: Record<string,string> = {
-  article:"مقاله", story:"داستان", news:"خبر", video:"ویدئو", "147":"147"
-};
+export default async function DiscoverPage(){
+ const {data}=await cms.from("posts").select("id,title,slug,excerpt,cover_image_url,category,published_at,is_featured").eq("status","published").order("published_at",{ascending:false});
+ const posts=data??[];
+ return <main dir="rtl" className="min-h-screen bg-[#06111c] pb-28 text-white">
+   <div className="mx-auto max-w-3xl px-4 sm:px-6">
+     <div className="flex h-16 items-center justify-between">
+       <div><p className="text-[9px] font-black tracking-[.16em] text-[#55d49a]">DISCOVER</p><h1 className="mt-0.5 text-xl font-black">کشف</h1></div>
+       <span className="rounded-full bg-[#0a2927] px-3 py-1.5 text-[9px] text-[#55d49a]">{posts.length.toLocaleString("fa-IR")} مطلب</span>
+     </div>
 
-export const revalidate = 60;
+     <div className="flex gap-2 overflow-x-auto pb-4 [scrollbar-width:none]">
+       {["همه","مقاله","داستان","ویدئو","147"].map((x,i)=><span key={x} className={`shrink-0 rounded-full px-3.5 py-2 text-[10px] font-bold ${i===0?"bg-[#e3222b] text-white":"border border-white/[.07] bg-[#0a1b25] text-white/40"}`}>{x}</span>)}
+     </div>
 
-export default async function DiscoverPage() {
-  const { data: posts } = await cms
-    .from("posts")
-    .select("id,title,slug,excerpt,cover_image_url,category,published_at,is_featured")
-    .eq("status","published")
-    .order("published_at",{ascending:false});
-
-  const items=posts ?? [];
-
-  return (
-    <main dir="rtl" className="min-h-screen bg-[#06111c] px-4 pb-28 pt-8 text-white">
-      <div className="mx-auto max-w-5xl">
-        <header className="relative overflow-hidden rounded-[32px] border border-[#15905f]/15 bg-gradient-to-br from-[#0b302d] via-[#091e29] to-[#10131c] px-6 py-10 sm:px-10">
-          <div className="absolute -left-16 -top-20 h-64 w-64 rounded-full bg-[#e3222b]/10 blur-[80px]"/>
-          <div className="absolute -bottom-20 right-0 h-64 w-64 rounded-full bg-[#20a86b]/15 blur-[80px]"/>
-          <div className="relative">
-            <p dir="ltr" className="text-[10px] font-black tracking-[.25em] text-[#55d49a]">DISCOVER SNOOKERIA</p>
-            <h1 className="mt-3 text-3xl font-black sm:text-4xl">دنیای اسنوکر را کشف کن</h1>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-white/45">داستان، آموزش، تحلیل و چیزهایی که اسنوکر را از یک بازی به بخشی از زندگی تبدیل می‌کنند.</p>
-          </div>
-        </header>
-
-        {items.length===0 ? (
-          <section className="mt-6 rounded-[28px] border border-white/[.08] bg-[#091b25] px-6 py-14 text-center">
-            <Compass size={28} className="mx-auto text-white/20"/>
-            <h2 className="mt-4 font-bold">هنوز محتوایی منتشر نشده.</h2>
-          </section>
-        ) : (
-          <section className="mt-7 grid gap-4 sm:grid-cols-2">
-            {items.map((post,index)=>(
-              <Link key={post.id} href={`/discover/${post.slug}`} className={`group overflow-hidden rounded-[28px] border border-white/[.07] bg-[#091b25] transition hover:-translate-y-1 hover:border-[#20a86b]/25 ${index===0 && post.is_featured ? "sm:col-span-2" : ""}`}>
-                {post.cover_image_url ? <img src={post.cover_image_url} alt={post.title} className={`w-full object-cover transition duration-500 group-hover:scale-[1.02] ${index===0&&post.is_featured?"aspect-[2/1]":"aspect-video"}`}/> :
-                <div className="flex aspect-video items-center justify-center bg-[#0a2927]"><BookOpen className="text-[#55d49a]/40"/></div>}
-                <div className="p-5">
-                  <div className="flex items-center justify-between"><span className="text-[9px] font-bold text-[#55d49a]">{categoryLabel[post.category]??post.category}</span>{post.is_featured&&<span className="rounded-full bg-[#e3222b]/10 px-2 py-1 text-[8px] text-[#ff5964]">منتخب</span>}</div>
-                  <h2 className="mt-3 text-lg font-black leading-8">{post.title}</h2>
-                  {post.excerpt&&<p className="mt-2 line-clamp-2 text-xs leading-6 text-white/38">{post.excerpt}</p>}
-                  <div className="mt-4 flex items-center gap-1 text-[10px] font-bold text-[#55d49a]">ادامه مطلب <ArrowLeft size={12}/></div>
-                </div>
-              </Link>
-            ))}
-          </section>
-        )}
-      </div>
-    </main>
-  );
+     {posts.length===0 ? <div className="mt-3 flex min-h-56 flex-col items-center justify-center rounded-[24px] bg-[#091b25]"><BookOpen size={22} className="text-white/15"/><p className="mt-3 text-xs text-white/35">هنوز محتوایی منتشر نشده.</p></div>:
+     <section className="space-y-2.5">
+       {posts.map(post=><Link key={post.id} href={`/discover/${post.slug}`} className="group flex min-h-[112px] gap-3 rounded-[22px] border border-white/[.055] bg-[#091b25]/85 p-2.5 transition active:scale-[.99] sm:min-h-[126px]">
+         <div className="h-[92px] w-[118px] shrink-0 overflow-hidden rounded-[16px] bg-[#0a2927] sm:h-[106px] sm:w-[150px]">
+           {post.cover_image_url?<img src={post.cover_image_url} alt={post.title} className="h-full w-full object-cover"/>:<div className="flex h-full items-center justify-center"><BookOpen size={18} className="text-[#55d49a]/30"/></div>}
+         </div>
+         <div className="flex min-w-0 flex-1 flex-col py-1">
+           <div className="flex items-center gap-2"><span className="text-[8px] font-black text-[#55d49a]">{labels[post.category]??post.category}</span>{post.is_featured&&<span className="h-1 w-1 rounded-full bg-[#e3222b]"/>}</div>
+           <h2 className="mt-1.5 line-clamp-2 text-[13px] font-black leading-6 sm:text-sm">{post.title}</h2>
+           {post.excerpt&&<p className="mt-1 line-clamp-1 text-[10px] text-white/28">{post.excerpt}</p>}
+           <div className="mt-auto flex items-center gap-1 text-[9px] font-bold text-white/25 group-hover:text-[#55d49a]">بخوان <ArrowLeft size={11}/></div>
+         </div>
+       </Link>)}
+     </section>}
+   </div>
+ </main>;
 }
