@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 import {
   ArrowLeft,
   BookOpen,
@@ -111,7 +112,12 @@ function SectionTitle({
   );
 }
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function Home() {
+  const cms = createClient(process.env.NEXT_PUBLIC_CMS_SUPABASE_URL!, process.env.NEXT_PUBLIC_CMS_SUPABASE_ANON_KEY!, { auth:{persistSession:false} });
+  const { data: latestPosts } = await cms.from("posts").select("id,title,slug,excerpt,cover_image_url,category").eq("status","published").order("published_at",{ascending:false}).limit(2);
+  const homePosts = latestPosts ?? [];
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#05090d] pb-28 text-white">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[540px] bg-[radial-gradient(circle_at_75%_0%,rgba(22,163,106,0.10),transparent_38%),radial-gradient(circle_at_25%_5%,rgba(227,34,43,0.13),transparent_42%)]" />
@@ -239,18 +245,26 @@ export default function Home() {
               href="/discover"
               linkLabel="مشاهده همه"
             />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <EmptyCard
-                icon={<BookOpen size={19} />}
-                title="هنوز مقاله‌ای منتشر نشده."
-                description="داستان بازیکنان، اسطوره‌ها، تاریخ اسنوکر و مقالات منتخب اینجا قرار می‌گیرند."
-              />
-              <EmptyCard
-                icon={<Compass size={19} />}
-                title="محتوای تازه در راه است."
-                description="ویدئو، تحلیل، خبر و برنامه 147 از همین بخش قابل دنبال کردن خواهد بود."
-              />
-            </div>
+            {homePosts.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {homePosts.map((post) => (
+                  <Link key={post.id} href={`/discover/${post.slug}`} className="group overflow-hidden rounded-[26px] border border-white/[0.08] bg-[#0a1015] transition hover:-translate-y-0.5 hover:border-[#16a36a]/25">
+                    {post.cover_image_url ? <img src={post.cover_image_url} alt={post.title} className="aspect-video w-full object-cover transition duration-500 group-hover:scale-[1.02]" /> : <div className="flex aspect-video items-center justify-center bg-[#07130f]"><BookOpen size={22} className="text-[#32c889]/40"/></div>}
+                    <div className="p-4">
+                      <p className="text-[9px] font-black text-[#32c889]">DISCOVER</p>
+                      <h3 className="mt-2 text-sm font-black leading-6">{post.title}</h3>
+                      {post.excerpt && <p className="mt-1.5 line-clamp-2 text-[11px] leading-5 text-white/35">{post.excerpt}</p>}
+                      <div className="mt-3 flex items-center gap-1 text-[10px] font-bold text-[#32c889]">ادامه مطلب <ArrowLeft size={12}/></div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <EmptyCard icon={<BookOpen size={19} />} title="هنوز مقاله‌ای منتشر نشده." description="داستان بازیکنان، اسطوره‌ها، تاریخ اسنوکر و مقالات منتخب اینجا قرار می‌گیرند." />
+                <EmptyCard icon={<Compass size={19} />} title="محتوای تازه در راه است." description="ویدئو، تحلیل، خبر و برنامه 147 از همین بخش قابل دنبال کردن خواهد بود." />
+              </div>
+            )}
           </section>
 
           <section className="mb-4">
