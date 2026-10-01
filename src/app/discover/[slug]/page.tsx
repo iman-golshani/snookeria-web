@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
-import { ArrowRight } from "lucide-react";
+import { Share2 } from "lucide-react";
 
 const cms=createClient(process.env.NEXT_PUBLIC_CMS_SUPABASE_URL!,process.env.NEXT_PUBLIC_CMS_SUPABASE_ANON_KEY!,{auth:{persistSession:false}});
 type Params={params:Promise<{slug:string}>};
@@ -44,10 +44,10 @@ export default async function ArticlePage({params}:Params){
   return <main dir="rtl" className="min-h-screen bg-[#06111c] pb-28 text-white">
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema).replace(/</g,"\\u003c")}}/>
     <article className="mx-auto max-w-4xl px-4 pt-6 sm:px-6">
-      <Link href="/discover" className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-[#55d49a]"><ArrowRight size={14}/> بازگشت به کشف</Link>
-      <header className="mt-7">
-        <p className="text-[10px] font-black tracking-[.15em] text-[#55d49a]">SNOOKERIA / DISCOVER</p>
-        <h1 className="mt-3 text-3xl font-black leading-[1.55] sm:text-5xl">{post.title}</h1>
+      <div className="flex items-center justify-between"><span className="text-[9px] font-black tracking-[.16em] text-[#55d49a]">DISCOVER / STORY</span><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0a2029] text-white/35"><Share2 size={14}/></span></div>
+      <header className="mt-5">
+        
+        <h1 className="text-2xl font-black leading-[1.55] sm:text-4xl">{post.title}</h1>
         {post.excerpt&&<p className="mt-4 max-w-3xl text-sm leading-8 text-white/45 sm:text-base">{post.excerpt}</p>}
       </header>
       {post.cover_image_url&&<div className="mt-7 overflow-hidden rounded-[30px] border border-white/[.07] bg-[#091b25]"><img src={post.cover_image_url} alt={post.title} className="aspect-video w-full object-cover"/></div>}
