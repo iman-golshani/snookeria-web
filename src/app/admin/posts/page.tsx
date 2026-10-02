@@ -4,8 +4,8 @@ import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowRight, Check, ChevronDown, ExternalLink, FileText,
-  ImagePlus, Loader2, Plus, Search, Settings2, Upload, X, Pencil, Trash2
+  ArrowRight, Check, ExternalLink, FileText,
+  ImagePlus, Loader2, Plus, Search, Settings2, Upload, X, Pencil, Trash2, ArrowUp, ArrowDown, Images
 } from "lucide-react";
 import { cmsSupabase } from "@/lib/supabase/cms";
 import RichTextEditor from "@/components/admin/RichTextEditor";
