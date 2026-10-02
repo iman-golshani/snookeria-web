@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -11,7 +11,7 @@ import { cmsSupabase } from "@/lib/supabase/cms";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import { makeEnglishSlug } from "@/lib/slug";
 
-type Post = {
+type PostMedia = { id:string; media_url:string; media_type:"image"|"video"; alt_text:string|null; sort_order:number };\n\ntype Post = {
   id: string; title: string; slug: string; category: string; status: string;
   published_at: string | null; created_at: string;
 };
@@ -37,7 +37,7 @@ export default function PostsAdminPage() {
   const [excerpt,setExcerpt] = useState("");
   const [body,setBody] = useState("");
   const [cover,setCover] = useState("");
-  const [featured,setFeatured] = useState(false);
+  const [featured,setFeatured] = useState(false);\n  const [media,setMedia] = useState<PostMedia[]>([]);\n  const [mediaUploading,setMediaUploading] = useState(false);
 
   const [seoTitle,setSeoTitle] = useState("");
   const [seoDescription,setSeoDescription] = useState("");
@@ -77,6 +77,34 @@ export default function PostsAdminPage() {
   const previewDescription = seoDescription.trim() || excerpt.trim() || "توضیحات این مطلب در نتایج جستجو نمایش داده می‌شود.";
   const publicUrl = useMemo(() => `https://snookeria.ir/discover/${slug || "slug"}`,[slug]);
 
+  async function uploadCarousel(event: ChangeEvent<HTMLInputElement>) {
+    const files=Array.from(event.target.files??[]); if(!files.length) return;
+    if(!editingId){ setError("برای افزودن اسلایدها، ابتدا پست را یک‌بار به‌صورت پیش‌نویس ذخیره کنید."); return; }
+    setMediaUploading(true); setError("");
+    for(const file of files){
+      const ext=file.name.split(".").pop()?.toLowerCase()||"jpg";
+      const path=`posts/${editingId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const {error:upErr}=await cmsSupabase.storage.from("cms-media").upload(path,file,{upsert:false});
+      if(upErr){setError("آپلود یکی از رسانه‌ها انجام نشد: "+upErr.message);continue;}
+      const {data:urlData}=cmsSupabase.storage.from("cms-media").getPublicUrl(path);
+      const type=file.type.startsWith("video/")?"video":"image";
+      const {data:row,error:dbErr}=await cmsSupabase.from("post_media").insert({post_id:editingId,media_url:urlData.publicUrl,media_type:type,alt_text:title||null,sort_order:media.length}).select("*").single();
+      if(dbErr)setError("ثبت رسانه انجام نشد: "+dbErr.message); else if(row)setMedia(v=>[...v,row as PostMedia]);
+    }
+    setMediaUploading(false); event.target.value="";
+  }
+
+  async function removeMedia(item:PostMedia){
+    const {error}=await cmsSupabase.from("post_media").delete().eq("id",item.id);
+    if(error){setError(error.message);return;} setMedia(v=>v.filter(x=>x.id!==item.id));
+  }
+  async function moveMedia(index:number,delta:number){
+    const j=index+delta;if(j<0||j>=media.length)return;
+    const next=[...media];[next[index],next[j]]=[next[j],next[index]];
+    setMedia(next);
+    await Promise.all(next.map((m,i)=>cmsSupabase.from("post_media").update({sort_order:i}).eq("id",m.id)));
+  }
+
   async function uploadImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -93,7 +121,7 @@ export default function PostsAdminPage() {
 
   function reset() {
     setEditingId(null); setTitle(""); setSlug(""); setSlugTouched(false); setCategory("article");
-    setExcerpt(""); setBody(""); setCover(""); setFeatured(false);
+    setExcerpt(""); setBody(""); setCover(""); setFeatured(false); setMedia([]);
     setSeoTitle(""); setSeoDescription(""); setFocusKeyword(""); setKeywords("");
     setCanonical(""); setOgTitle(""); setOgDescription(""); setOgImage("");
     setRobotsIndex(true); setRobotsFollow(true); setSchemaType("Article"); setError("");
@@ -137,7 +165,7 @@ export default function PostsAdminPage() {
     setCanonical(data.canonical_url||""); setOgTitle(data.og_title||"");
     setOgDescription(data.og_description||""); setOgImage(data.og_image_url||"");
     setRobotsIndex(data.robots_index!==false); setRobotsFollow(data.robots_follow!==false);
-    setSchemaType(data.schema_type||"Article"); setShowEditor(true);
+    setSchemaType(data.schema_type||"Article");\n    const {data:mediaRows}=await cmsSupabase.from("post_media").select("*").eq("post_id",id).order("sort_order",{ascending:true});\n    setMedia((mediaRows??[]) as PostMedia[]); setShowEditor(true);
   }
 
   async function deletePost(id:string,title:string) {
@@ -258,6 +286,22 @@ export default function PostsAdminPage() {
               <span className="mt-2 text-[10px] text-white/35">{uploading?"در حال آپلود...":"انتخاب و آپلود تصویر"}</span>
               <input type="file" accept="image/*" className="hidden" onChange={uploadImage} disabled={uploading}/>
             </label>}
+          </section>
+
+          <section className="rounded-[24px] border border-white/[.07] bg-[#091b25]/80 p-5">
+            <div className="flex items-center gap-2"><Images size={16} className="text-[#55d49a]"/><p className="text-xs font-bold">اسلایدهای پست</p></div>
+            <p className="mt-2 text-[10px] leading-5 text-white/30">{editingId?"چند عکس یا ویدئو انتخاب کن؛ ترتیب همین لیست در Discover نمایش داده می‌شود.":"اول پست را به‌صورت پیش‌نویس ذخیره کن، سپس برای ویرایش بازش کن و اسلایدها را اضافه کن."}</p>
+            {media.length>0&&<div className="mt-4 space-y-2">{media.map((m,i)=><div key={m.id} className="flex items-center gap-2 rounded-xl bg-[#071821] p-2">
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-black/20">{m.media_type==="video"?<video src={m.media_url} className="h-full w-full object-cover"/>:<img src={m.media_url} alt="" className="h-full w-full object-cover"/>}</div>
+              <span className="flex-1 text-[10px] text-white/45">اسلاید {(i+1).toLocaleString("fa-IR")} · {m.media_type==="video"?"ویدئو":"تصویر"}</span>
+              <button onClick={()=>moveMedia(i,-1)} disabled={i===0} className="p-2 text-white/40 disabled:opacity-15"><ArrowUp size={13}/></button>
+              <button onClick={()=>moveMedia(i,1)} disabled={i===media.length-1} className="p-2 text-white/40 disabled:opacity-15"><ArrowDown size={13}/></button>
+              <button onClick={()=>removeMedia(m)} className="p-2 text-[#ff5964]"><Trash2 size={13}/></button>
+            </div>)}</div>}
+            <label className={`mt-4 flex min-h-20 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-[#35b77d]/25 bg-[#071b1d] text-center ${!editingId?"pointer-events-none opacity-40":""}`}>
+              {mediaUploading?<Loader2 size={19} className="animate-spin text-[#55d49a]"/>:<div><Plus size={18} className="mx-auto text-[#55d49a]"/><span className="mt-1 block text-[10px] text-white/40">افزودن عکس / ویدئو</span></div>}
+              <input type="file" accept="image/*,video/*" multiple className="hidden" onChange={uploadCarousel} disabled={!editingId||mediaUploading}/>
+            </label>
           </section>
 
           <section className="rounded-[24px] border border-white/[.07] bg-[#091b25]/80 p-5">
