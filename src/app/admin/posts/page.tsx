@@ -11,7 +11,9 @@ import { cmsSupabase } from "@/lib/supabase/cms";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import { makeEnglishSlug } from "@/lib/slug";
 
-type PostMedia = { id:string; media_url:string; media_type:"image"|"video"; alt_text:string|null; sort_order:number };\n\ntype Post = {
+type PostMedia = { id:string; media_url:string; media_type:"image"|"video"; alt_text:string|null; sort_order:number };
+
+type Post = {
   id: string; title: string; slug: string; category: string; status: string;
   published_at: string | null; created_at: string;
 };
@@ -37,7 +39,9 @@ export default function PostsAdminPage() {
   const [excerpt,setExcerpt] = useState("");
   const [body,setBody] = useState("");
   const [cover,setCover] = useState("");
-  const [featured,setFeatured] = useState(false);\n  const [media,setMedia] = useState<PostMedia[]>([]);\n  const [mediaUploading,setMediaUploading] = useState(false);
+  const [featured,setFeatured] = useState(false);
+  const [media,setMedia] = useState<PostMedia[]>([]);
+  const [mediaUploading,setMediaUploading] = useState(false);
 
   const [seoTitle,setSeoTitle] = useState("");
   const [seoDescription,setSeoDescription] = useState("");
@@ -165,7 +169,9 @@ export default function PostsAdminPage() {
     setCanonical(data.canonical_url||""); setOgTitle(data.og_title||"");
     setOgDescription(data.og_description||""); setOgImage(data.og_image_url||"");
     setRobotsIndex(data.robots_index!==false); setRobotsFollow(data.robots_follow!==false);
-    setSchemaType(data.schema_type||"Article");\n    const {data:mediaRows}=await cmsSupabase.from("post_media").select("*").eq("post_id",id).order("sort_order",{ascending:true});\n    setMedia((mediaRows??[]) as PostMedia[]); setShowEditor(true);
+    setSchemaType(data.schema_type||"Article");
+    const {data:mediaRows}=await cmsSupabase.from("post_media").select("*").eq("post_id",id).order("sort_order",{ascending:true});
+    setMedia((mediaRows??[]) as PostMedia[]); setShowEditor(true);
   }
 
   async function deletePost(id:string,title:string) {
