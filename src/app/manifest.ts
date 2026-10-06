@@ -13,8 +13,8 @@ export default function manifest(): MetadataRoute.Manifest {
 
     display: "standalone",
 
-    background_color: "#071426",
-    theme_color: "#071426",
+    background_color: "#c90024",
+    theme_color: "#c90024",
 
     orientation: "portrait",
 
@@ -35,7 +35,7 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: "any",
       },
       {
-        src: "/pwa-512x512-maskable.png",
+        src: "/maskable-512x512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
