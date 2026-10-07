@@ -20,5 +20,5 @@ export const metadata: Metadata = {
 export const viewport:Viewport={themeColor:"#06111c",width:"device-width",initialScale:1,viewportFit:"cover"};
 
 export default function RootLayout({children}:{children:React.ReactNode}) {
- return <html lang="fa" dir="rtl" className="bg-[#06111c]"><body className="min-h-screen bg-[#06111c] pt-[calc(54px+env(safe-area-inset-top))] text-white antialiased"><Header/>{children}<BottomNav/><PWARegister/></body></html>;
+ return <html lang="fa" dir="rtl" ><body className="min-h-screen pt-[calc(58px+env(safe-area-inset-top))] antialiased"><script dangerouslySetInnerHTML={{__html:"try{document.documentElement.dataset.theme=localStorage.getItem('snookeria-theme')==='dark'?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}"}}/><Header/>{children}<BottomNav/><PWARegister/></body></html>;
 }
