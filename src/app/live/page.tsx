@@ -190,7 +190,7 @@ export default function LivePage() {
   }, [matches, currentTime]);
 
   return (
-    <main className="min-h-screen bg-[#071426] px-4 pb-28 pt-6 text-white">
+    <main className="min-h-screen bg-[var(--page)] px-4 pb-28 pt-6 text-white">
       <div className="mx-auto max-w-4xl">
         <header className="mb-5 text-center">
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-red-500">
@@ -203,7 +203,7 @@ export default function LivePage() {
 
           <h1 className="mt-1.5 text-2xl font-bold">مسابقات زنده اسنوکریا</h1>
 
-          <p className="mx-auto mt-2 max-w-lg text-xs leading-6 text-white/40">
+          <p className="mx-auto mt-2 max-w-lg text-xs leading-6 text-[var(--muted)]">
             مسابقات Shoot Out آماده شروع و در حال برگزاری را به‌صورت زنده دنبال کنید.
           </p>
         </header>
@@ -221,7 +221,7 @@ export default function LivePage() {
             <h2 className="mt-4 text-base font-semibold">
               در حال حاضر مسابقه‌ای برای پخش زنده وجود ندارد.
             </h2>
-            <p className="mt-2 text-xs leading-6 text-white/40">
+            <p className="mt-2 text-xs leading-6 text-[var(--muted)]">
               با آماده شدن مسابقه، اطلاعات آن در همین صفحه نمایش داده خواهد شد.
             </p>
           </section>
@@ -284,7 +284,7 @@ export default function LivePage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-xs text-white/55">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
                       <Clock3 size={13} />
                       <span
                         dir="ltr"
@@ -321,7 +321,7 @@ export default function LivePage() {
                           />
                         </div>
                       ) : (
-                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/30">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[var(--muted)]">
                           <UserRound size={23} />
                         </div>
                       )}
@@ -360,7 +360,7 @@ export default function LivePage() {
                           />
                         </div>
                       ) : (
-                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/30">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[var(--muted)]">
                           <UserRound size={23} />
                         </div>
                       )}
