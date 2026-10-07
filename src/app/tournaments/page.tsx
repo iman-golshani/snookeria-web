@@ -1,23 +1,2 @@
-import { Trophy } from "lucide-react";
-
-export default function TournamentsPage() {
-  return (
-    <main className="min-h-screen bg-[var(--page)] px-6 pb-32 pt-16 text-[var(--ink)]">
-      <section className="mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center text-center">
-        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 text-red-500">
-          <Trophy size={28} />
-        </div>
-
-        <h1 className="text-3xl font-bold">مسابقات</h1>
-
-        <p className="mt-4 text-sm text-[var(--muted)]">
-          فعلاً مسابقه‌ای وجود ندارد.
-        </p>
-
-        <p className="mt-2 text-xs text-[var(--muted)]">
-          به‌زودی مسابقات اسنوکریا در این بخش نمایش داده می‌شوند.
-        </p>
-      </section>
-    </main>
-  );
-}
+import Link from "next/link";import {Trophy,Radio,ChevronLeft} from "lucide-react";
+export default function TournamentsPage(){return <main className="app-page"><div className="app-shell"><h1 className="mb-5 text-xl font-black">مسابقات</h1><Link href="/live" className="flex items-center gap-3 rounded-2xl border border-[var(--edge)] bg-[var(--surface)] p-4 shadow-[var(--shadow)]"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]"><Radio size={21}/></span><span className="flex-1"><strong className="block text-sm">نتایج زنده</strong><span className="mt-1 block text-xs text-[var(--muted)]">مسابقات در حال برگزاری و نتایج</span></span><ChevronLeft size={17} className="text-[var(--muted)]"/></Link><section className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-[var(--edge)] bg-[var(--surface)] px-4 py-12 text-center"><Trophy size={28} className="text-[var(--accent)]"/><p className="mt-4 text-sm font-bold">رویدادهای مسابقات</p><p className="mt-2 text-xs text-[var(--muted)]">به‌زودی رویدادها در این بخش نمایش داده می‌شوند.</p></section></div></main>}
