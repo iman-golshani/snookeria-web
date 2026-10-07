@@ -1,5 +1,22 @@
 @import "tailwindcss";
-:root{--page:#f5f6f8;--surface:#f9fafb;--ink:#14243a;--muted:#667085;--edge:#e8ebf0;--navy:#07182b;--red:#d71935}
-html[data-theme="dark"]{--page:#07182b;--surface:#10263d;--ink:#f5f7fa;--muted:#a5b1c1;--edge:#24384d}
-*{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--page)}body{margin:0;background:var(--page);color:var(--ink);font-family:Arial,Helvetica,sans-serif}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit}::selection{background:#d71935;color:white}
-.app-page{min-height:100vh;background:var(--page);color:var(--ink);padding-bottom:5rem;transition:background .2s,color .2s}.app-shell{width:100%;max-width:720px;margin:0 auto;padding:18px 16px}.app-card{background:var(--surface);color:var(--ink);border:1px solid var(--edge);border-radius:15px;box-shadow:0 3px 16px rgba(15,30,50,.055);overflow:hidden}.app-card-interactive{transition:transform .2s}.app-card-interactive:active{transform:scale(.985)}.app-label{font-size:10px;font-weight:800;letter-spacing:.12em;color:#d71935}.app-section-title{font-size:18px;font-weight:900;color:var(--ink)}.media-cover{position:relative;overflow:hidden;background:#edf0f4}.media-cover>img,.media-cover>video{width:100%;height:100%;object-fit:cover}.media-landscape{aspect-ratio:16/10}.media-feed{aspect-ratio:4/5}
+/* Snookeria Design System — dark by default */
+:root,html[data-theme="dark"]{
+color-scheme:dark;
+--page:#0b111b;--surface:#151e2b;--surface-raised:#1c2736;--ink:#f3f6fa;--muted:#a0acba;--edge:#2a3647;--nav:#101a29;--accent:#ec3650;--accent-soft:rgba(236,54,80,.12);--shadow:0 8px 28px rgba(0,0,0,.18);--navy:#101a29;--red:#ec3650
+}
+html[data-theme="light"]{
+color-scheme:light;
+--page:#f4f6f9;--surface:#ffffff;--surface-raised:#ffffff;--ink:#182638;--muted:#657386;--edge:#e4e9ef;--nav:#142438;--accent:#ce2440;--accent-soft:rgba(206,36,64,.08);--shadow:0 6px 24px rgba(17,32,53,.055);--navy:#142438;--red:#ce2440
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--page)}body{margin:0;background:var(--page);color:var(--ink);font-family:Arial,Helvetica,sans-serif}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit}::selection{background:var(--accent);color:#fff}
+.app-page{min-height:100vh;background:var(--page);color:var(--ink);padding-bottom:5rem;transition:background .2s,color .2s}.app-shell{width:100%;max-width:720px;margin:0 auto;padding:18px 16px}.app-card{background:var(--surface);color:var(--ink);border:1px solid var(--edge);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}.app-card-interactive{transition:transform .2s}.app-card-interactive:active{transform:scale(.985)}.app-label{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--accent)}.app-section-title{font-size:18px;font-weight:900;color:var(--ink)}.media-cover{position:relative;overflow:hidden;background:var(--surface-raised)}.media-cover>img,.media-cover>video{width:100%;height:100%;object-fit:cover}.media-landscape{aspect-ratio:16/10}.media-feed{aspect-ratio:4/5}
+/* Existing feature screens use legacy utility colors. Normalize their surfaces
+   until each module is migrated to semantic design tokens. */
+html[data-theme] main[class*="bg-[#06111c]"],html[data-theme] main[class*="bg-[#07182b]"],html[data-theme] main[class*="bg-[#07111c]"]{background:var(--page)!important;color:var(--ink)!important}
+html[data-theme] main [class*="bg-[#091b25]"],html[data-theme] main [class*="bg-[#0a1b25]"],html[data-theme] main [class*="bg-[#0b202a]"],html[data-theme] main [class*="bg-[#071821]"],html[data-theme] main [class*="bg-[#07151e]"]{background:var(--surface)!important;border-color:var(--edge)!important}
+html[data-theme] main [class*="text-white/30"],html[data-theme] main [class*="text-white/40"],html[data-theme] main [class*="text-white/50"],html[data-theme] main [class*="text-white/55"]{color:var(--muted)!important}
+html[data-theme="light"] main [class*="text-white"]:not([class*="bg-[#e3222b]"]):not([class*="bg-[#d71935]"]){color:var(--ink)}
+html[data-theme="light"] main [class*="border-white/"]{border-color:var(--edge)}
+html[data-theme="light"] main [class*="bg-white/"]{background:var(--surface-raised)}
+html[data-theme="light"] main input,html[data-theme="light"] main textarea,html[data-theme="light"] main select{color:var(--ink)}
+html[data-theme="dark"] .app-card{box-shadow:0 6px 24px rgba(0,0,0,.16)}
