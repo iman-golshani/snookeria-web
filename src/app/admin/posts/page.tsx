@@ -188,13 +188,13 @@ export default function PostsAdminPage() {
       <div className="mx-auto max-w-6xl">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin" className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[.08] bg-[#0b202a] text-white/50"><ArrowRight size={17}/></Link>
+            <Link href="/admin" className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[.08] bg-[#0b202a] text-white/50"><ArrowRight size={17}/></Link>
             <div><p className="text-[10px] text-[#55d49a]">CONTENT</p><h1 className="mt-1 text-2xl font-black">مطالب</h1></div>
           </div>
-          <button onClick={()=>{reset();setShowEditor(true)}} className="flex h-10 items-center gap-2 rounded-2xl bg-[#e3222b] px-4 text-xs font-bold shadow-[0_8px_30px_rgba(227,34,43,.18)]"><Plus size={16}/> مطلب جدید</button>
+          <button onClick={()=>{reset();setShowEditor(true)}} className="flex h-10 items-center gap-2 rounded-xl bg-[#e3222b] px-4 text-xs font-bold shadow-[0_8px_30px_rgba(227,34,43,.18)]"><Plus size={16}/> مطلب جدید</button>
         </header>
 
-        <div className="mt-7 overflow-hidden rounded-[26px] border border-white/[.07] bg-[#091b25]/80">
+        <div className="mt-7 overflow-hidden rounded-[20px] border border-white/[.08] bg-[#091b25]/90 shadow-[0_18px_50px_rgba(0,0,0,.18)]">
           {posts.length === 0 ? (
             <div className="flex min-h-72 flex-col items-center justify-center p-8 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#169260]/12 text-[#55d49a]"><FileText size={20}/></div>
@@ -202,7 +202,7 @@ export default function PostsAdminPage() {
               <p className="mt-2 text-xs text-white/30">اولین محتوای واقعی اسنوکریا را بساز.</p>
             </div>
           ) : posts.map(post=>(
-            <div key={post.id} className="flex items-center justify-between border-b border-white/[.055] px-4 py-4 last:border-0 sm:px-5">
+            <div key={post.id} className="group flex items-center justify-between border-b border-white/[.055] px-4 py-4 transition hover:bg-white/[.025] last:border-0 sm:px-5">
               <div className="min-w-0"><p className="truncate text-sm font-bold">{post.title}</p><p dir="ltr" className="mt-1 truncate text-left text-[10px] text-white/25">{post.slug}</p></div>
               <div className="mr-4 flex shrink-0 items-center gap-2">
                 <span className={`rounded-full px-2.5 py-1 text-[9px] ${post.status==="published"?"bg-[#169260]/12 text-[#55d49a]":"bg-white/[.05] text-white/35"}`}>{post.status==="published"?"منتشر شده":"پیش‌نویس"}</span>
@@ -233,7 +233,7 @@ export default function PostsAdminPage() {
         <div className="space-y-5">
           {error && <div className="rounded-2xl border border-[#e3222b]/20 bg-[#e3222b]/8 px-4 py-3 text-xs text-[#ff6871]">{error}</div>}
 
-          <section className="rounded-[26px] border border-white/[.07] bg-[#091b25]/75 p-5 sm:p-6">
+          <section className="rounded-[20px] border border-white/[.08] bg-[#091b25]/90 shadow-[0_14px_40px_rgba(0,0,0,.14)] p-5 sm:p-6">
             <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="عنوان مطلب..." className="w-full bg-transparent text-2xl font-black outline-none placeholder:text-white/18 sm:text-3xl"/>
             <div className="mt-5 flex items-center gap-2 rounded-xl bg-[#06151e] px-3 py-2 text-[10px] text-white/30">
               <span dir="ltr">snookeria.ir/discover/</span>
@@ -247,7 +247,7 @@ export default function PostsAdminPage() {
             <RichTextEditor value={body} onChange={setBody}/>
           </section>
 
-          <section className="rounded-[26px] border border-[#1b9b68]/15 bg-gradient-to-br from-[#0b292b]/80 to-[#081923]/90 p-5 sm:p-6">
+          <section className="rounded-[20px] border border-[#1b9b68]/15 bg-gradient-to-br from-[#0b292b]/80 to-[#081923]/90 p-5 sm:p-6">
             <div className="flex items-center gap-3"><Search size={18} className="text-[#55d49a]"/><div><p className="text-[10px] text-[#55d49a]">SEO</p><h2 className="text-base font-black">بهینه‌سازی برای گوگل</h2></div></div>
             <div className="mt-5 grid gap-4">
               <Field label="عنوان سئو" value={seoTitle} set={setSeoTitle} hint={`${seoTitle.length}/60`}/>
@@ -278,13 +278,13 @@ export default function PostsAdminPage() {
         </div>
 
         <aside className="space-y-4">
-          <section className="rounded-[24px] border border-white/[.07] bg-[#091b25]/80 p-5">
+          <section className="rounded-[20px] border border-white/[.07] bg-[#091b25]/80 p-5">
             <p className="text-xs font-bold">تنظیمات انتشار</p>
             <label className="mt-4 block text-[10px] text-white/35">دسته‌بندی<select value={category} onChange={e=>setCategory(e.target.value)} className="mt-2 h-11 w-full rounded-xl border border-white/[.08] bg-[#071821] px-3 text-xs text-white outline-none">{categories.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
             <label className="mt-4 flex items-center justify-between rounded-xl bg-[#071821] px-3 py-3 text-xs text-white/55"><span>مطلب ویژه</span><input type="checkbox" checked={featured} onChange={e=>setFeatured(e.target.checked)} className="accent-[#20a86b]"/></label>
           </section>
 
-          <section className="rounded-[24px] border border-[#1b9b68]/14 bg-[#092522]/70 p-5">
+          <section className="rounded-[20px] border border-[#1b9b68]/14 bg-[#092522]/70 p-5">
             <div className="flex items-center gap-2"><ImagePlus size={16} className="text-[#55d49a]"/><p className="text-xs font-bold">تصویر شاخص</p></div>
             {cover ? <div className="mt-4 overflow-hidden rounded-2xl border border-white/[.07]"><img src={cover} alt="" className="aspect-video w-full object-cover"/><button onClick={()=>setCover("")} className="w-full bg-[#071821] py-2 text-[10px] text-[#ff6871]">حذف تصویر</button></div> :
             <label className="mt-4 flex aspect-video cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#35b77d]/25 bg-[#071b1d] text-center">
@@ -294,7 +294,7 @@ export default function PostsAdminPage() {
             </label>}
           </section>
 
-          <section className="rounded-[24px] border border-white/[.07] bg-[#091b25]/80 p-5">
+          <section className="rounded-[20px] border border-white/[.07] bg-[#091b25]/80 p-5">
             <div className="flex items-center gap-2"><Images size={16} className="text-[#55d49a]"/><p className="text-xs font-bold">اسلایدهای پست</p></div>
             <p className="mt-2 text-[10px] leading-5 text-white/30">{editingId?"چند عکس یا ویدئو انتخاب کن؛ ترتیب همین لیست در Discover نمایش داده می‌شود.":"اول پست را به‌صورت پیش‌نویس ذخیره کن، سپس برای ویرایش بازش کن و اسلایدها را اضافه کن."}</p>
             {media.length>0&&<div className="mt-4 space-y-2">{media.map((m,i)=><div key={m.id} className="flex items-center gap-2 rounded-xl bg-[#071821] p-2">
@@ -310,7 +310,7 @@ export default function PostsAdminPage() {
             </label>
           </section>
 
-          <section className="rounded-[24px] border border-white/[.07] bg-[#091b25]/80 p-5">
+          <section className="rounded-[20px] border border-white/[.07] bg-[#091b25]/80 p-5">
             <div className="flex items-center gap-2"><Settings2 size={15} className="text-white/35"/><p className="text-xs font-bold">وضعیت SEO</p></div>
             <div className="mt-4 space-y-2 text-[10px]">
               <SeoCheck ok={title.length>10} text="عنوان مناسب"/>
