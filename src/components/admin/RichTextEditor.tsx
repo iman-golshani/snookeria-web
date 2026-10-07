@@ -36,6 +36,7 @@ export default function RichTextEditor({ value, onChange }: Props) {
     `flex h-8 w-8 items-center justify-center rounded-lg transition ${active ? "bg-[#1b9b68]/20 text-[#5ddd9f]" : "text-white/45 hover:bg-white/[0.05] hover:text-white"}`;
 
   function setLink() {
+    if (!editor) return;
     const previous = editor.getAttributes("link").href as string | undefined;
     const url = window.prompt("آدرس لینک را وارد کنید", previous || "https://");
     if (url === null) return;
