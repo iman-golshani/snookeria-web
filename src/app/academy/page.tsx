@@ -20,7 +20,7 @@ export default function AcademyPage() {
           <p className="mt-5 text-sm text-[var(--ink)]/65">زیر نظر <Link href="/coach/iman-golshani" className="font-bold text-[var(--ink)] underline decoration-red-500/50 underline-offset-4">ایمان گلشنی</Link>، مربی و داور رسمی فدراسیون</p>
         </header>
 
-        <section className="mt-10 grid gap-3 sm:grid-cols-2">
+        <section className="mx-auto mt-8 max-w-2xl rounded-2xl border border-[var(--edge)] bg-[var(--surface)] px-5 py-6 text-center shadow-[var(--shadow)]"><p className="text-sm font-semibold leading-8 text-[var(--ink)]">ضربه قبلی تموم شده ، چیزی که هنوز دست توست ، ضربه بعدیه</p></section>\n\n        <section className="mt-10 grid gap-3 sm:grid-cols-2">
           <div className="rounded-[26px] border border-white/10 bg-white/[0.03] p-5"><Target className="text-red-500" size={22}/><h2 className="mt-4 font-bold">Shot of the Day</h2><p className="mt-2 text-xs leading-6 text-[var(--ink)]/35">تمرین‌ها و موقعیت‌های واقعی مسابقه بعداً از پنل مدیریت در این بخش منتشر می‌شوند.</p></div>
           <Link href="/workshops" className="group rounded-[26px] border border-white/10 bg-white/[0.03] p-5"><Presentation className="text-red-500" size={22}/><h2 className="mt-4 font-bold">کارگاه‌های آموزشی</h2><p className="mt-2 text-xs leading-6 text-[var(--ink)]/35">کارگاه‌های فعال و امکان ثبت‌نام در این بخش قرار می‌گیرد.</p><ArrowLeft size={15} className="mt-4 text-[var(--muted)] transition group-hover:-translate-x-1 group-hover:text-red-500"/></Link>
         </section>
