@@ -161,7 +161,6 @@ export default function PostsAdminPage() {
     const links=[...new Set(["snookeria",...selectedCategories])].filter(x=>x!=="snookeria").map(category_slug=>({post_id:postId,category_slug}));
     if(links.length){const {error:linkError}=await cmsSupabase.from("post_category_links").upsert(links,{onConflict:"post_id,category_slug"});if(linkError){setSaving(false);setError("مطلب ذخیره شد ولی دسته‌بندی‌های اضافی ثبت نشدند: "+linkError.message);return;}}}
     setSaving(false);
-    if (saveError) { setError(saveError.code === "23505" ? "این Slug قبلاً استفاده شده است." : saveError.message); return; }
     reset(); setShowEditor(false); await loadPosts();
   }
 
