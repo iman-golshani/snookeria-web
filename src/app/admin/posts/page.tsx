@@ -28,6 +28,8 @@ export default function PostsAdminPage() {
   const router = useRouter();
   const [ready,setReady] = useState(false);
   const [posts,setPosts] = useState<Post[]>([]);
+  const [postSearch,setPostSearch]=useState("");
+  const [postFilter,setPostFilter]=useState<"all"|"published"|"draft">("all");
   const [categories,setCategories] = useState<string[][]>(defaultCategories);
   const [showEditor,setShowEditor] = useState(false);
   const [saving,setSaving] = useState(false);
@@ -189,69 +191,78 @@ export default function PostsAdminPage() {
     if(!window.confirm(`مطلب «${title}» حذف شود؟ این کار قابل بازگشت نیست.`)) return;
     const { error } = await cmsSupabase.from("posts").delete().eq("id",id);
     if(error) { setError("حذف مطلب انجام نشد: "+error.message); return; }
+    if(editingId===id){reset();setShowEditor(false)}
     await loadPosts();
   }
+
+  const filteredPosts=posts.filter(p=>(postFilter==="all"||(postFilter==="published"?p.status==="published":p.status!=="published"))&&(!postSearch.trim()||p.title.toLowerCase().includes(postSearch.trim().toLowerCase())||p.slug.toLowerCase().includes(postSearch.trim().toLowerCase())));
 
   if (!ready) return <main className="min-h-screen bg-[var(--page)]"/>;
 
   if (!showEditor) return (
-    <main dir="rtl" className="min-h-screen bg-[var(--page)] px-4 py-6 text-white sm:px-7">
-      <div className="mx-auto max-w-6xl">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/admin" className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[.08] bg-[var(--surface-raised)] text-[var(--muted)]"><ArrowRight size={17}/></Link>
-            <div><p className="text-[10px] text-[#55d49a]">CONTENT</p><h1 className="mt-1 text-2xl font-black">مطالب</h1></div>
-          </div>
-          <button onClick={()=>{reset();setShowEditor(true)}} className="flex h-10 items-center gap-2 rounded-xl bg-[#e3222b] px-4 text-xs font-bold shadow-[0_8px_30px_rgba(227,34,43,.18)]"><Plus size={16}/> مطلب جدید</button>
-        </header>
-
-        <div className="mt-7 overflow-hidden rounded-[20px] border border-white/[.08] bg-[var(--surface)] shadow-[0_18px_50px_rgba(0,0,0,.18)]">
-          {posts.length === 0 ? (
-            <div className="flex min-h-72 flex-col items-center justify-center p-8 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#169260]/12 text-[#55d49a]"><FileText size={20}/></div>
-              <h2 className="mt-4 text-sm font-bold">هنوز مطلبی نداریم</h2>
-              <p className="mt-2 text-xs text-[var(--muted)]">اولین محتوای واقعی اسنوکریا را بساز.</p>
-            </div>
-          ) : posts.map(post=>(
-            <div key={post.id} className="group flex items-center justify-between border-b border-white/[.055] px-4 py-4 transition hover:bg-white/[.025] last:border-0 sm:px-5">
-              <div className="min-w-0"><p className="truncate text-sm font-bold">{post.title}</p><p dir="ltr" className="mt-1 truncate text-left text-[10px] text-white/25">{post.slug}</p></div>
-              <div className="mr-4 flex shrink-0 items-center gap-2">
-                <span className={`rounded-full px-2.5 py-1 text-[9px] ${post.status==="published"?"bg-[#169260]/12 text-[#55d49a]":"bg-white/[.05] text-white/35"}`}>{post.status==="published"?"منتشر شده":"پیش‌نویس"}</span>
-                {post.status==="published" && <Link href={`/discover/${post.slug}`} target="_blank" className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#15905f]/10 text-[#55d49a]" title="مشاهده"><ExternalLink size={13}/></Link>}
-                <button onClick={()=>editPost(post.id)} className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[.04] text-white/45 hover:text-white" title="ویرایش"><Pencil size={13}/></button>
-                <button onClick={()=>deletePost(post.id,post.title)} className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#e3222b]/8 text-[#ff5964]/70 hover:text-[#ff5964]" title="حذف"><Trash2 size={13}/></button>
-              </div>
-            </div>
-          ))}
+    <main dir="rtl" className="min-h-screen bg-[var(--page)] pb-20 text-[var(--ink)]">
+      <header className="sticky top-0 z-40 border-b border-[var(--edge)] bg-[var(--page)]/95 px-4 py-3 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3"><Link href="/admin" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--edge)] bg-[var(--surface)]" aria-label="بازگشت"><ArrowRight size={17}/></Link><div><p className="text-[10px] font-bold text-[var(--accent)]">SNOOKERIA STUDIO</p><h1 className="text-lg font-black">مدیریت مطالب</h1></div></div>
+          <button onClick={()=>{reset();setShowEditor(true)}} className="flex h-11 shrink-0 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 text-xs font-bold text-white"><Plus size={17}/> مطلب جدید</button>
         </div>
+      </header>
+      <div className="mx-auto max-w-6xl space-y-5 px-4 py-6 sm:px-7">
+        {error&&<p role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">{error}</p>}
+        <section className="grid grid-cols-3 gap-3">{[{label:"کل مطالب",value:posts.length},{label:"منتشرشده",value:posts.filter(p=>p.status==="published").length},{label:"پیش‌نویس",value:posts.filter(p=>p.status!=="published").length}].map(item=><div key={item.label} className="rounded-2xl border border-[var(--edge)] bg-[var(--surface)] p-3 shadow-sm sm:p-5"><p className="text-[10px] text-[var(--muted)] sm:text-xs">{item.label}</p><p className="mt-3 text-2xl font-black">{item.value.toLocaleString("fa-IR")}</p></div>)}</section>
+        <section className="rounded-2xl border border-[var(--edge)] bg-[var(--surface)] p-3 sm:p-4">
+          <div className="flex items-center gap-2 rounded-xl border border-[var(--edge)] bg-[var(--surface-raised)] px-3"><Search size={16} className="text-[var(--muted)]"/><input value={postSearch} onChange={e=>setPostSearch(e.target.value)} placeholder="جستجوی عنوان یا شناسه مطلب" className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none"/></div>
+          <div className="mt-3 flex flex-wrap gap-2">{([{key:"all",label:"همه"},{key:"published",label:"منتشرشده"},{key:"draft",label:"پیش‌نویس"}] as const).map(f=><button key={f.key} onClick={()=>setPostFilter(f.key)} className={`rounded-xl px-4 py-2 text-xs font-bold ${postFilter===f.key?"bg-[var(--accent)] text-white":"bg-[var(--surface-raised)] text-[var(--muted)]"}`}>{f.label}</button>)}</div>
+        </section>
+        <section className="space-y-3">{filteredPosts.map(post=><article key={post.id} className="rounded-2xl border border-[var(--edge)] bg-[var(--surface)] p-4 shadow-sm sm:p-5">
+          <div className="flex items-start justify-between gap-3"><div className="min-w-0 flex-1"><div className="mb-2 flex items-center gap-2"><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${post.status==="published"?"bg-emerald-500/10 text-emerald-500":"bg-amber-500/10 text-amber-500"}`}>{post.status==="published"?"منتشرشده":"پیش‌نویس"}</span><span className="text-[10px] text-[var(--muted)]">{new Date(post.created_at).toLocaleDateString("fa-IR")}</span></div><h2 className="text-sm font-bold leading-7 sm:text-base">{post.title}</h2><p dir="ltr" className="mt-1 truncate text-left text-[11px] text-[var(--muted)]">{post.slug}</p></div><FileText size={20} className="shrink-0 text-[var(--muted)]"/></div>
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[var(--edge)] pt-3"><button onClick={()=>void editPost(post.id)} className="flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 text-xs font-bold text-white sm:flex-none"><Pencil size={15}/> ویرایش کامل</button>{post.status==="published"&&<Link href={`/discover/${post.slug}`} target="_blank" className="flex min-h-10 items-center gap-2 rounded-xl border border-[var(--edge)] px-3 text-xs"><ExternalLink size={15}/> مشاهده</Link>}<button onClick={()=>void deletePost(post.id,post.title)} className="mr-auto flex min-h-10 items-center gap-2 rounded-xl bg-red-500/10 px-3 text-xs text-red-500"><Trash2 size={15}/> حذف</button></div>
+        </article>)}{filteredPosts.length===0&&<div className="rounded-2xl border border-dashed border-[var(--edge)] p-12 text-center text-sm text-[var(--muted)]">مطلبی پیدا نشد.</div>}</section>
       </div>
     </main>
   );
 
   return (
     <main dir="rtl" className="min-h-screen bg-[var(--page)] text-white">
-      <div className="sticky top-0 z-30 border-b border-white/[.07] bg-[var(--page)]/90 px-4 py-3 backdrop-blur-xl sm:px-7">
+      <div className="sticky top-0 z-40 border-b border-[var(--edge)] bg-[var(--page)]/95 px-4 py-3 backdrop-blur-xl sm:px-7">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <button onClick={()=>setShowEditor(false)} className="flex items-center gap-2 text-xs text-[var(--muted)]"><X size={17}/> بستن</button>
           <div className="flex gap-2">
-            <button disabled={saving} onClick={()=>save("draft")} className="h-10 rounded-xl border border-white/[.09] bg-[var(--surface-raised)] px-4 text-xs font-bold text-white/65">ذخیره پیش‌نویس</button>
+            <button disabled={saving||uploading||mediaUploading} onClick={()=>save("draft")} className="h-10 rounded-xl border border-white/[.09] bg-[var(--surface-raised)] px-4 text-xs font-bold text-white/65">ذخیره پیش‌نویس</button>
             <button disabled={saving} onClick={()=>save("published")} className="flex h-10 items-center gap-2 rounded-xl bg-[#e3222b] px-4 text-xs font-black disabled:opacity-50">{saving?<Loader2 className="animate-spin" size={15}/>:<Check size={15}/>} {editingId?"به‌روزرسانی و انتشار":"انتشار"}</button>
           </div>
         </div>
       </div>
 
       {cropFile&&<SquareImageCropper file={cropFile} onCancel={()=>setCropFile(null)} onDone={file=>void uploadCroppedCover(file)}/>}
-      <div className="mx-auto grid max-w-7xl gap-5 px-4 py-6 sm:px-7 xl:grid-cols-[1fr_360px]">
-        <div className="space-y-5">
-                    <section className="rounded-[20px] border border-[#1b9b68]/14 bg-[#092522]/70 p-5">
+      <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-7"><div className="mb-4 flex items-center justify-between"><div><p className="text-[10px] font-bold text-[var(--accent)]">CONTENT EDITOR</p><h1 className="mt-1 text-xl font-black">{editingId?"ویرایش کامل مطلب":"مطلب جدید"}</h1></div>{editingId&&<button onClick={()=>void deletePost(editingId,title)} className="rounded-xl bg-red-500/10 px-3 py-2 text-xs text-red-500">حذف مطلب</button>}</div><div className="grid gap-4 lg:grid-cols-2">          <section className="rounded-[20px] border border-[var(--edge)] bg-[var(--surface)] p-5">
             <div className="flex items-center gap-2"><ImagePlus size={16} className="text-[#55d49a]"/><p className="text-xs font-bold">تصویر شاخص</p></div>
-            {cover ? <div className="mt-4 overflow-hidden rounded-2xl border border-white/[.07]"><img src={cover} alt="" className="aspect-square w-full object-cover"/><button onClick={()=>setCover("")} className="w-full bg-[var(--surface-raised)] py-2 text-[10px] text-[#ff6871]">حذف تصویر</button></div> :
+            {cover ? <div className="mt-4 overflow-hidden rounded-2xl border border-white/[.07]"><img src={cover} alt="" className="aspect-square max-h-72 w-full object-contain bg-black/20"/><button onClick={()=>setCover("")} className="w-full bg-[var(--surface-raised)] py-2 text-[10px] text-[#ff6871]">حذف تصویر</button><label className="block cursor-pointer bg-[var(--surface-raised)] py-3 text-center text-xs">تعویض تصویر<input type="file" accept="image/*" className="hidden" onChange={uploadImage} disabled={uploading}/></label></div> :
             <label className="mt-4 flex aspect-square max-h-72 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#35b77d]/25 bg-[#071b1d] text-center">
               {uploading?<Loader2 size={20} className="animate-spin text-[#55d49a]"/>:<Upload size={20} className="text-[#55d49a]"/>}
               <span className="mt-2 text-[10px] text-white/35">{uploading?"در حال آپلود...":"انتخاب و آپلود تصویر"}</span>
               <input type="file" accept="image/*" className="hidden" onChange={uploadImage} disabled={uploading}/>
             </label>}
           </section>
+          <section className="rounded-[20px] border border-white/[.07] bg-[var(--surface)] p-5">
+            <div className="flex items-center gap-2"><Images size={16} className="text-[#55d49a]"/><p className="text-xs font-bold">اسلایدهای پست</p></div>
+            {mediaUploading&&mediaProgress!==null&&<div className="mt-3 text-xs"><div className="mb-2 flex justify-between"><span>آپلود اسلاید</span><span>{mediaProgress}٪</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-red-500 transition-all" style={{width:mediaProgress+"%"}}/></div></div>}
+            <p className="mt-2 text-[10px] leading-5 text-[var(--muted)]">{editingId?"چند عکس یا ویدئو انتخاب کن؛ ترتیب همین لیست در Discover نمایش داده می‌شود.":"اول پست را به‌صورت پیش‌نویس ذخیره کن، سپس برای ویرایش بازش کن و اسلایدها را اضافه کن."}</p>
+            {media.length>0&&<div className="mt-4 space-y-2">{media.map((m,i)=><div key={m.id} className="flex items-center gap-2 rounded-xl bg-[var(--surface-raised)] p-2">
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-black/20">{m.media_type==="video"?<video src={m.media_url} className="h-full w-full object-cover"/>:<img src={m.media_url} alt="" className="h-full w-full object-cover"/>}</div>
+              <span className="flex-1 text-[10px] text-white/45">اسلاید {(i+1).toLocaleString("fa-IR")} · {m.media_type==="video"?"ویدئو":"تصویر"}</span>
+              <button onClick={()=>moveMedia(i,-1)} disabled={i===0} className="p-2 text-[var(--muted)] disabled:opacity-15"><ArrowUp size={13}/></button>
+              <button onClick={()=>moveMedia(i,1)} disabled={i===media.length-1} className="p-2 text-[var(--muted)] disabled:opacity-15"><ArrowDown size={13}/></button>
+              <button onClick={()=>removeMedia(m)} className="p-2 text-[#ff5964]"><Trash2 size={13}/></button>
+            </div>)}</div>}
+            <label className={`mt-4 flex min-h-20 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-[#35b77d]/25 bg-[#071b1d] text-center ${!editingId?"pointer-events-none opacity-40":""}`}>
+              {mediaUploading?<Loader2 size={19} className="animate-spin text-[#55d49a]"/>:<div><Plus size={18} className="mx-auto text-[#55d49a]"/><span className="mt-1 block text-[10px] text-[var(--muted)]">افزودن عکس / ویدئو</span></div>}
+              <input type="file" accept="image/*,video/*" multiple className="hidden" onChange={uploadCarousel} disabled={!editingId||mediaUploading}/>
+            </label>
+          </section></div></div>
+      <div className="mx-auto grid max-w-7xl gap-5 px-4 py-6 sm:px-7 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-5">
+          
 
 
           {uploading&&uploadProgress!==null&&<div className="rounded-xl border border-[var(--edge)] bg-[var(--surface)] p-3 text-xs"><div className="mb-2 flex justify-between"><span>آپلود تصویر شاخص</span><span>{uploadProgress}٪</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-red-500 transition-all" style={{width:uploadProgress+"%"}}/></div></div>}
@@ -308,22 +319,7 @@ export default function PostsAdminPage() {
             <label className="mt-4 flex items-center justify-between rounded-xl bg-[var(--surface-raised)] px-3 py-3 text-xs text-[var(--muted)]"><span>مطلب ویژه</span><input type="checkbox" checked={featured} onChange={e=>setFeatured(e.target.checked)} className="accent-[#20a86b]"/></label>
           </section>
 
-          <section className="rounded-[20px] border border-white/[.07] bg-[var(--surface)] p-5">
-            <div className="flex items-center gap-2"><Images size={16} className="text-[#55d49a]"/><p className="text-xs font-bold">اسلایدهای پست</p></div>
-            {mediaUploading&&mediaProgress!==null&&<div className="mt-3 text-xs"><div className="mb-2 flex justify-between"><span>آپلود اسلاید</span><span>{mediaProgress}٪</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-red-500 transition-all" style={{width:mediaProgress+"%"}}/></div></div>}
-            <p className="mt-2 text-[10px] leading-5 text-[var(--muted)]">{editingId?"چند عکس یا ویدئو انتخاب کن؛ ترتیب همین لیست در Discover نمایش داده می‌شود.":"اول پست را به‌صورت پیش‌نویس ذخیره کن، سپس برای ویرایش بازش کن و اسلایدها را اضافه کن."}</p>
-            {media.length>0&&<div className="mt-4 space-y-2">{media.map((m,i)=><div key={m.id} className="flex items-center gap-2 rounded-xl bg-[var(--surface-raised)] p-2">
-              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-black/20">{m.media_type==="video"?<video src={m.media_url} className="h-full w-full object-cover"/>:<img src={m.media_url} alt="" className="h-full w-full object-cover"/>}</div>
-              <span className="flex-1 text-[10px] text-white/45">اسلاید {(i+1).toLocaleString("fa-IR")} · {m.media_type==="video"?"ویدئو":"تصویر"}</span>
-              <button onClick={()=>moveMedia(i,-1)} disabled={i===0} className="p-2 text-[var(--muted)] disabled:opacity-15"><ArrowUp size={13}/></button>
-              <button onClick={()=>moveMedia(i,1)} disabled={i===media.length-1} className="p-2 text-[var(--muted)] disabled:opacity-15"><ArrowDown size={13}/></button>
-              <button onClick={()=>removeMedia(m)} className="p-2 text-[#ff5964]"><Trash2 size={13}/></button>
-            </div>)}</div>}
-            <label className={`mt-4 flex min-h-20 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-[#35b77d]/25 bg-[#071b1d] text-center ${!editingId?"pointer-events-none opacity-40":""}`}>
-              {mediaUploading?<Loader2 size={19} className="animate-spin text-[#55d49a]"/>:<div><Plus size={18} className="mx-auto text-[#55d49a]"/><span className="mt-1 block text-[10px] text-[var(--muted)]">افزودن عکس / ویدئو</span></div>}
-              <input type="file" accept="image/*,video/*" multiple className="hidden" onChange={uploadCarousel} disabled={!editingId||mediaUploading}/>
-            </label>
-          </section>
+
 
           <section className="rounded-[20px] border border-white/[.07] bg-[var(--surface)] p-5">
             <div className="flex items-center gap-2"><Settings2 size={15} className="text-white/35"/><p className="text-xs font-bold">وضعیت SEO</p></div>
