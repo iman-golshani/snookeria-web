@@ -18,7 +18,7 @@ type Post = {
   published_at: string | null; created_at: string;
 };
 
-const categories = [
+const defaultCategories = [
   ["article","مقاله"],["story","داستان"],["news","خبر"],["video","ویدئو"],["147","147"],
 ];
 
@@ -26,6 +26,7 @@ export default function PostsAdminPage() {
   const router = useRouter();
   const [ready,setReady] = useState(false);
   const [posts,setPosts] = useState<Post[]>([]);
+  const [categories,setCategories] = useState<string[][]>(defaultCategories);
   const [showEditor,setShowEditor] = useState(false);
   const [saving,setSaving] = useState(false);
   const [uploading,setUploading] = useState(false);
@@ -68,6 +69,8 @@ export default function PostsAdminPage() {
       const { data } = await cmsSupabase.auth.getSession();
       if (!data.session) { router.replace("/admin/login"); return; }
       await loadPosts();
+      const {data:cats}=await cmsSupabase.from("post_categories").select("slug,name").eq("is_active",true).order("sort_order");
+      if(cats?.length)setCategories(cats.map(c=>[c.slug,c.name]));
       setReady(true);
     }
     boot();
@@ -124,7 +127,7 @@ export default function PostsAdminPage() {
   }
 
   function reset() {
-    setEditingId(null); setTitle(""); setSlug(""); setSlugTouched(false); setCategory("article");
+    setEditingId(null); setTitle(""); setSlug(""); setSlugTouched(false); setCategory(categories[0]?.[0]||"article");
     setExcerpt(""); setBody(""); setCover(""); setFeatured(false); setMedia([]);
     setSeoTitle(""); setSeoDescription(""); setFocusKeyword(""); setKeywords("");
     setCanonical(""); setOgTitle(""); setOgDescription(""); setOgImage("");
@@ -280,7 +283,7 @@ export default function PostsAdminPage() {
         <aside className="space-y-4">
           <section className="rounded-[20px] border border-white/[.07] bg-[var(--surface)] p-5">
             <p className="text-xs font-bold">تنظیمات انتشار</p>
-            <label className="mt-4 block text-[10px] text-white/35">دسته‌بندی<select value={category} onChange={e=>setCategory(e.target.value)} className="mt-2 h-11 w-full rounded-xl border border-white/[.08] bg-[var(--surface-raised)] px-3 text-xs text-white outline-none">{categories.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
+            <Link href="/admin/categories" className="mt-3 block text-xs text-red-400">مدیریت دسته‌بندی‌ها</Link><label className="mt-4 block text-[10px] text-white/35">دسته‌بندی<select value={category} onChange={e=>setCategory(e.target.value)} className="mt-2 h-11 w-full rounded-xl border border-white/[.08] bg-[var(--surface-raised)] px-3 text-xs text-white outline-none">{!categories.some(([v])=>v===category)&&<option value={category}>{category}</option>}{categories.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
             <label className="mt-4 flex items-center justify-between rounded-xl bg-[var(--surface-raised)] px-3 py-3 text-xs text-[var(--muted)]"><span>مطلب ویژه</span><input type="checkbox" checked={featured} onChange={e=>setFeatured(e.target.checked)} className="accent-[#20a86b]"/></label>
           </section>
 
