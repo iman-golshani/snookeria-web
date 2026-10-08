@@ -12,7 +12,7 @@ export default function AcademyPage() {
     <main className="min-h-screen bg-[var(--page)] px-4 pb-28 pt-8 text-[var(--ink)]">
       <div className="mx-auto max-w-5xl">
         <header className="text-center">
-          <div className="mx-auto h-24 w-24 overflow-hidden rounded-full shadow-[0_0_45px_rgba(220,20,60,0.18)]"><img src="/snookeria-logo.png" alt="آکادمی اسنوکریا" className="h-full w-full object-cover" /></div>
+          <div className="mx-auto h-24 w-24 overflow-hidden rounded-full shadow-[0_0_45px_rgba(220,20,60,0.18)]"><img src="/snookeria-circle-transparent.png" alt="آکادمی اسنوکریا" className="h-full w-full object-cover" /></div>
           <p className="mt-5 text-[10px] font-bold tracking-[0.3em] text-red-500">SNOOKERIA ACADEMY</p>
           <h1 className="mt-2 text-3xl font-black">آکادمی اسنوکریا</h1>
           <p className="mt-3 text-sm text-[var(--muted)]">مدرسه تخصصی اسنوکر</p>
