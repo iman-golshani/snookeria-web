@@ -1,54 +1,15 @@
 @import "tailwindcss";
-
-:root {
-  --background: #050505;
-  --foreground: #f5f5f5;
-  --muted: #a1a1aa;
-  --card: #0d0d0f;
-  --card-hover: #141416;
-  --border: rgba(255, 255, 255, 0.08);
-  --accent: #e21d2f;
-  --accent-dark: #b91524;
+/* Snookeria Design System — dark only */
+:root,html{
+color-scheme:dark;
+--page:#0b111b;--surface:#151e2b;--surface-raised:#1c2736;--ink:#f3f6fa;--muted:#a0acba;--edge:#2a3647;--nav:#101a29;--accent:#ec3650;--accent-soft:rgba(236,54,80,.12);--shadow:0 8px 28px rgba(0,0,0,.18);--navy:#101a29;--red:#ec3650
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
-
-button {
-  font: inherit;
-}
-
-::selection {
-  background: var(--accent);
-  color: white;
-}
-
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #050505;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #29292d;
-  border-radius: 999px;
-}
+*{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--page)}body{margin:0;background:var(--page);color:var(--ink);font-family:Arial,Helvetica,sans-serif}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit}::selection{background:var(--accent);color:#fff}
+.app-page{min-height:100vh;background:var(--page);color:var(--ink);padding-bottom:5rem;transition:background .2s,color .2s}.app-shell{width:100%;max-width:720px;margin:0 auto;padding:18px 16px}.app-card{background:var(--surface);color:var(--ink);border:1px solid var(--edge);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}.app-card-interactive{transition:transform .2s}.app-card-interactive:active{transform:scale(.985)}.app-label{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--accent)}.app-section-title{font-size:18px;font-weight:900;color:var(--ink)}.media-cover{position:relative;overflow:hidden;background:var(--surface-raised)}.media-cover>img,.media-cover>video{width:100%;height:100%;object-fit:cover}.media-landscape{aspect-ratio:16/10}.media-feed{aspect-ratio:4/5}
+/* Existing feature screens use legacy utility colors. Normalize their surfaces
+   until each module is migrated to semantic design tokens. */
+html main[class*="bg-[#06111c]"],html main[class*="bg-[#07182b]"],html main[class*="bg-[#07111c]"]{background:var(--page)!important;color:var(--ink)!important}
+html main [class*="bg-[#091b25]"],html main [class*="bg-[#0a1b25]"],html main [class*="bg-[#0b202a]"],html main [class*="bg-[#071821]"],html main [class*="bg-[#07151e]"]{background:var(--surface)!important;border-color:var(--edge)!important}
+html main [class*="text-white/30"],html main [class*="text-white/40"],html main [class*="text-white/50"],html main [class*="text-white/55"]{color:var(--muted)!important}
+html .app-card{box-shadow:0 6px 24px rgba(0,0,0,.16)}
