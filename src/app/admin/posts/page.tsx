@@ -50,6 +50,8 @@ export default function PostsAdminPage() {
   const [featured,setFeatured] = useState(false);
   const [media,setMedia] = useState<PostMedia[]>([]);
   const [mediaUploading,setMediaUploading] = useState(false);
+  const [pendingSlides,setPendingSlides]=useState<{id:string;file:File;url:string}[]>([]);
+  const [uploadLabel,setUploadLabel]=useState("");
 
   const [seoTitle,setSeoTitle] = useState("");
   const [seoDescription,setSeoDescription] = useState("");
@@ -91,20 +93,22 @@ export default function PostsAdminPage() {
   const previewDescription = seoDescription.trim() || excerpt.trim() || "توضیحات این مطلب در نتایج جستجو نمایش داده می‌شود.";
   const publicUrl = useMemo(() => `https://snookeria.ir/discover/${slug || "slug"}`,[slug]);
 
-  async function uploadCarousel(event: ChangeEvent<HTMLInputElement>) {
-    const files=Array.from(event.target.files??[]); if(!files.length) return;
-    if(!editingId){ setError("برای افزودن اسلایدها، ابتدا پست را یک‌بار به‌صورت پیش‌نویس ذخیره کنید."); return; }
-    setMediaUploading(true); setError("");
-    for(const file of files){
-      const ext=file.name.split(".").pop()?.toLowerCase()||"jpg";
-      const path=`posts/${editingId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-      try{await uploadWithProgress(path,file,p=>setMediaProgress(p))}catch(e){setError("آپلود یکی از رسانه‌ها انجام نشد: "+(e instanceof Error?e.message:String(e)));continue;}
-      const {data:urlData}=cmsSupabase.storage.from("cms-media").getPublicUrl(path);
-      const type=file.type.startsWith("video/")?"video":"image";
-      const {data:row,error:dbErr}=await cmsSupabase.from("post_media").insert({post_id:editingId,media_url:urlData.publicUrl,media_type:type,alt_text:title||null,sort_order:media.length}).select("*").single();
-      if(dbErr)setError("ثبت رسانه انجام نشد: "+dbErr.message); else if(row)setMedia(v=>[...v,row as PostMedia]);
-    }
-    setMediaUploading(false);setMediaProgress(null); event.target.value="";
+  function uploadCarousel(event:ChangeEvent<HTMLInputElement>){
+    const files=Array.from(event.target.files??[]);event.target.value="";
+    if(!files.length)return;
+    const images=files.filter(f=>f.type.startsWith("image/"));
+    if(images.length!==files.length){setError("فقط تصویر برای اسلایدها قابل انتخاب است.");return;}
+    const available=Math.max(0,10-media.length-pendingSlides.length-(cover?1:0));
+    if(images.length>available){setError(`حداکثر ۱۰ تصویر شامل تصویر اصلی مجاز است. ظرفیت باقی‌مانده: ${available.toLocaleString("fa-IR")}`);return;}
+    setError("");
+    setPendingSlides(prev=>[...prev,...images.map(file=>({id:crypto.randomUUID(),file,url:URL.createObjectURL(file)}))]);
+  }
+  function movePending(index:number,delta:number){
+    const j=index+delta;if(j<0||j>=pendingSlides.length)return;
+    setPendingSlides(prev=>{const next=[...prev];[next[index],next[j]]=[next[j],next[index]];return next});
+  }
+  function removePending(id:string){
+    setPendingSlides(prev=>{const target=prev.find(x=>x.id===id);if(target)URL.revokeObjectURL(target.url);return prev.filter(x=>x.id!==id)});
   }
 
   async function removeMedia(item:PostMedia){
@@ -133,6 +137,7 @@ export default function PostsAdminPage() {
   function reset() {
     setEditingId(null); setTitle(""); setSlug(""); setSlugTouched(false); setSelectedCategories(["snookeria"]);
     setExcerpt(""); setBody(""); setCover(""); setFeatured(false); setMedia([]);
+    setPendingSlides(old=>{old.forEach(x=>URL.revokeObjectURL(x.url));return []});
     setSeoTitle(""); setSeoDescription(""); setFocusKeyword(""); setKeywords("");
     setCanonical(""); setOgTitle(""); setOgDescription(""); setOgImage("");
     setRobotsIndex(true); setRobotsFollow(true); setSchemaType("Article"); setError("");
@@ -145,8 +150,8 @@ export default function PostsAdminPage() {
     const now = new Date().toISOString();
     const payload = {
       title:title.trim(), slug:slug.trim(), excerpt:excerpt.trim() || null, body:body || null,
-      cover_image_url:cover || null, category:selectedCategories.find(x=>x!=="snookeria")||"snookeria", status, is_featured:featured,
-      published_at: status === "published" ? now : null, updated_at:now,
+      cover_image_url:cover || null, category:selectedCategories.find(x=>x!=="snookeria")||"snookeria", status:pendingSlides.length?"draft":status, is_featured:featured,
+      published_at: status === "published" && !pendingSlides.length ? now : null, updated_at:now,
       seo_title:seoTitle.trim() || null, seo_description:seoDescription.trim() || null,
       focus_keyword:focusKeyword.trim() || null,
       seo_keywords:keywords.split(",").map(x=>x.trim()).filter(Boolean),
@@ -164,6 +169,29 @@ export default function PostsAdminPage() {
     if(postId){const {error:deleteError}=await cmsSupabase.from("post_category_links").delete().eq("post_id",postId).neq("category_slug","snookeria");if(deleteError){setSaving(false);setError("ذخیره مطلب انجام شد اما دسته‌بندی‌ها به‌روزرسانی نشدند: "+deleteError.message);return;}
     const links=[...new Set(["snookeria",...selectedCategories])].filter(x=>x!=="snookeria").map(category_slug=>({post_id:postId,category_slug}));
     if(links.length){const {error:linkError}=await cmsSupabase.from("post_category_links").upsert(links,{onConflict:"post_id,category_slug"});if(linkError){setSaving(false);setError("مطلب ذخیره شد ولی دسته‌بندی‌های اضافی ثبت نشدند: "+linkError.message);return;}}}
+    if(postId&&pendingSlides.length){
+      setMediaUploading(true);
+      let order=media.length;
+      for(let i=0;i<pendingSlides.length;i++){
+        const slide=pendingSlides[i];setUploadLabel(`تصویر ${i+1} از ${pendingSlides.length}`);setMediaProgress(0);
+        const ext=slide.file.name.split(".").pop()?.toLowerCase()||"jpg";
+        const path=`posts/${postId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+        try{
+          await uploadWithProgress(path,slide.file,p=>setMediaProgress(p));
+          const {data:url}=cmsSupabase.storage.from("cms-media").getPublicUrl(path);
+          const {error:mediaError}=await cmsSupabase.from("post_media").insert({post_id:postId,media_url:url.publicUrl,media_type:"image",alt_text:title||null,sort_order:order++});
+          if(mediaError)throw new Error(mediaError.message);
+        }catch(e){
+          setSaving(false);setMediaUploading(false);setError("مطلب به‌صورت پیش‌نویس ذخیره شد اما آپلود اسلایدها کامل نشد: "+(e instanceof Error?e.message:String(e)));
+          setEditingId(postId);setMediaProgress(null);return;
+        }
+      }
+      setMediaUploading(false);setMediaProgress(null);
+    }
+    if(postId&&status==="published"){
+      const {error:publishError}=await cmsSupabase.from("posts").update({status:"published",published_at:now}).eq("id",postId);
+      if(publishError){setSaving(false);setError("تصاویر ثبت شدند اما انتشار نهایی انجام نشد: "+publishError.message);setEditingId(postId);return;}
+    }
     setSaving(false);
     reset(); setShowEditor(false); await loadPosts();
   }
@@ -244,21 +272,17 @@ export default function PostsAdminPage() {
               <input type="file" accept="image/*" className="hidden" onChange={uploadImage} disabled={uploading}/>
             </label>}
           </section>
-          <section className="rounded-[20px] border border-white/[.07] bg-[var(--surface)] p-5">
-            <div className="flex items-center gap-2"><Images size={16} className="text-[#55d49a]"/><p className="text-xs font-bold">اسلایدهای پست</p></div>
-            {mediaUploading&&mediaProgress!==null&&<div className="mt-3 text-xs"><div className="mb-2 flex justify-between"><span>آپلود اسلاید</span><span>{mediaProgress}٪</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-red-500 transition-all" style={{width:mediaProgress+"%"}}/></div></div>}
-            <p className="mt-2 text-[10px] leading-5 text-[var(--muted)]">{editingId?"چند عکس یا ویدئو انتخاب کن؛ ترتیب همین لیست در Discover نمایش داده می‌شود.":"اول پست را به‌صورت پیش‌نویس ذخیره کن، سپس برای ویرایش بازش کن و اسلایدها را اضافه کن."}</p>
-            {media.length>0&&<div className="mt-4 space-y-2">{media.map((m,i)=><div key={m.id} className="flex items-center gap-2 rounded-xl bg-[var(--surface-raised)] p-2">
-              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-black/20">{m.media_type==="video"?<video src={m.media_url} className="h-full w-full object-cover"/>:<img src={m.media_url} alt="" className="h-full w-full object-cover"/>}</div>
-              <span className="flex-1 text-[10px] text-white/45">اسلاید {(i+1).toLocaleString("fa-IR")} · {m.media_type==="video"?"ویدئو":"تصویر"}</span>
-              <button onClick={()=>moveMedia(i,-1)} disabled={i===0} className="p-2 text-[var(--muted)] disabled:opacity-15"><ArrowUp size={13}/></button>
-              <button onClick={()=>moveMedia(i,1)} disabled={i===media.length-1} className="p-2 text-[var(--muted)] disabled:opacity-15"><ArrowDown size={13}/></button>
-              <button onClick={()=>removeMedia(m)} className="p-2 text-[#ff5964]"><Trash2 size={13}/></button>
-            </div>)}</div>}
-            <label className={`mt-4 flex min-h-20 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-[#35b77d]/25 bg-[#071b1d] text-center ${!editingId?"pointer-events-none opacity-40":""}`}>
-              {mediaUploading?<Loader2 size={19} className="animate-spin text-[#55d49a]"/>:<div><Plus size={18} className="mx-auto text-[#55d49a]"/><span className="mt-1 block text-[10px] text-[var(--muted)]">افزودن عکس / ویدئو</span></div>}
-              <input type="file" accept="image/*,video/*" multiple className="hidden" onChange={uploadCarousel} disabled={!editingId||mediaUploading}/>
-            </label>
+          <section className="rounded-[20px] border border-[var(--edge)] bg-[var(--surface)] p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><Images size={17} className="text-[var(--accent)]"/><h2 className="text-sm font-bold">گالری تصاویر پست</h2></div><span className="rounded-full bg-[var(--surface-raised)] px-3 py-1 text-xs">{(media.length+pendingSlides.length+(cover?1:0)).toLocaleString("fa-IR")} / ۱۰</span></div>
+            <p className="mt-2 text-xs leading-6 text-[var(--muted)]">تصویر شاخص، عکس اصلی و اولین اسلاید است. تصاویر بعدی را به ترتیب دلخواه انتخاب و مرتب کن.</p>
+            {mediaUploading&&<div className="mt-4 rounded-xl bg-[var(--surface-raised)] p-3 text-xs"><div className="mb-2 flex justify-between"><span>{uploadLabel||"در حال آپلود تصاویر"}</span><span>{mediaProgress??0}٪</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{width:(mediaProgress??0)+"%"}}/></div></div>}
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {cover&&<div className="relative overflow-hidden rounded-xl border-2 border-[var(--accent)] bg-[var(--surface-raised)]"><img src={cover} alt="تصویر اصلی" className="aspect-square w-full object-cover"/><span className="absolute right-2 top-2 rounded-lg bg-[var(--accent)] px-2 py-1 text-[10px] font-bold text-white">تصویر اصلی</span></div>}
+              {media.map((m,i)=><div key={m.id} className="overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--surface-raised)]"><div className="relative"><img src={m.media_url} alt="" className="aspect-square w-full object-cover"/>{!cover&&i===0&&<span className="absolute right-2 top-2 rounded-lg bg-[var(--accent)] px-2 py-1 text-[10px] text-white">اولین اسلاید</span>}</div><div className="flex items-center justify-between px-1 py-1"><button type="button" aria-label="انتقال به قبل" disabled={i===0} onClick={()=>void moveMedia(i,-1)} className="rounded-lg p-2 disabled:opacity-20"><ArrowUp size={16}/></button><span className="text-[10px] text-[var(--muted)]">{i+1}</span><button type="button" aria-label="انتقال به بعد" disabled={i===media.length-1} onClick={()=>void moveMedia(i,1)} className="rounded-lg p-2 disabled:opacity-20"><ArrowDown size={16}/></button><button type="button" aria-label="حذف تصویر" onClick={()=>void removeMedia(m)} className="rounded-lg p-2 text-red-400"><Trash2 size={16}/></button></div></div>)}
+              {pendingSlides.map((m,i)=><div key={m.id} className="overflow-hidden rounded-xl border border-dashed border-[var(--accent)] bg-[var(--surface-raised)]"><img src={m.url} alt="" className="aspect-square w-full object-cover"/><div className="flex items-center justify-between px-1 py-1"><button type="button" aria-label="انتقال به قبل" disabled={i===0} onClick={()=>movePending(i,-1)} className="rounded-lg p-2 disabled:opacity-20"><ArrowUp size={16}/></button><span className="text-[10px] text-[var(--muted)]">جدید</span><button type="button" aria-label="انتقال به بعد" disabled={i===pendingSlides.length-1} onClick={()=>movePending(i,1)} className="rounded-lg p-2 disabled:opacity-20"><ArrowDown size={16}/></button><button type="button" aria-label="حذف تصویر" onClick={()=>removePending(m.id)} className="rounded-lg p-2 text-red-400"><Trash2 size={16}/></button></div></div>)}
+              {media.length+pendingSlides.length+(cover?1:0)<10&&<label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--edge)] bg-[var(--surface-raised)] text-[var(--muted)]"><ImagePlus size={25}/><span className="text-center text-xs">افزودن تصاویر</span><input type="file" accept="image/*" multiple className="hidden" onChange={uploadCarousel} disabled={saving||mediaUploading}/></label>}
+            </div>
+            {pendingSlides.length>0&&<p className="mt-3 text-xs text-[var(--muted)]">تصاویر جدید هنگام ذخیره یا انتشار مطلب، به‌ترتیب آپلود می‌شوند.</p>}
           </section></div></div>
       <div className="mx-auto grid max-w-7xl gap-5 px-4 py-6 sm:px-7 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-5">
