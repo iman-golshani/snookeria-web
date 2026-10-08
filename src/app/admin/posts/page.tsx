@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { cmsSupabase } from "@/lib/supabase/cms";
 import RichTextEditor from "@/components/admin/RichTextEditor";
+import SquareImageCropper from "@/components/admin/SquareImageCropper";
 import { makeEnglishSlug } from "@/lib/slug";
 
 type PostMedia = { id:string; media_url:string; media_type:"image"|"video"; alt_text:string|null; sort_order:number };
@@ -30,6 +31,7 @@ export default function PostsAdminPage() {
   const [showEditor,setShowEditor] = useState(false);
   const [saving,setSaving] = useState(false);
   const [uploading,setUploading] = useState(false);
+  const [cropFile,setCropFile] = useState<File|null>(null);
   const [error,setError] = useState("");
   const [slugTouched,setSlugTouched] = useState(false);
   const [editingId,setEditingId] = useState<string | null>(null);
@@ -112,18 +114,17 @@ export default function PostsAdminPage() {
     await Promise.all(next.map((m,i)=>cmsSupabase.from("post_media").update({sort_order:i}).eq("id",m.id)));
   }
 
-  async function uploadImage(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setUploading(true); setError("");
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `posts/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-    const { error: uploadError } = await cmsSupabase.storage.from("cms-media").upload(path,file,{upsert:false});
-    if (uploadError) { setError("آپلود تصویر انجام نشد: " + uploadError.message); setUploading(false); return; }
-    const { data } = cmsSupabase.storage.from("cms-media").getPublicUrl(path);
-    setCover(data.publicUrl);
-    if (!ogImage) setOgImage(data.publicUrl);
-    setUploading(false);
+  function uploadImage(event: ChangeEvent<HTMLInputElement>) {
+    const file=event.target.files?.[0];event.target.value="";
+    if(file){setError("");setCropFile(file)}
+  }
+  async function uploadCroppedCover(file:File){
+    setCropFile(null);setUploading(true);setError("");
+    const path="posts/"+Date.now()+"-"+crypto.randomUUID()+".jpg";
+    const {error:uploadError}=await cmsSupabase.storage.from("cms-media").upload(path,file,{contentType:"image/jpeg",upsert:false});
+    if(uploadError){setError("آپلود تصویر انجام نشد: "+uploadError.message);setUploading(false);return}
+    const {data}=cmsSupabase.storage.from("cms-media").getPublicUrl(path);
+    setCover(data.publicUrl);if(!ogImage)setOgImage(data.publicUrl);setUploading(false);
   }
 
   function reset() {
@@ -238,8 +239,20 @@ export default function PostsAdminPage() {
         </div>
       </div>
 
+      {cropFile&&<SquareImageCropper file={cropFile} onCancel={()=>setCropFile(null)} onDone={file=>void uploadCroppedCover(file)}/>}
       <div className="mx-auto grid max-w-7xl gap-5 px-4 py-6 sm:px-7 xl:grid-cols-[1fr_360px]">
         <div className="space-y-5">
+                    <section className="rounded-[20px] border border-[#1b9b68]/14 bg-[#092522]/70 p-5">
+            <div className="flex items-center gap-2"><ImagePlus size={16} className="text-[#55d49a]"/><p className="text-xs font-bold">تصویر شاخص</p></div>
+            {cover ? <div className="mt-4 overflow-hidden rounded-2xl border border-white/[.07]"><img src={cover} alt="" className="aspect-square w-full object-cover"/><button onClick={()=>setCover("")} className="w-full bg-[var(--surface-raised)] py-2 text-[10px] text-[#ff6871]">حذف تصویر</button></div> :
+            <label className="mt-4 flex aspect-square max-h-72 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#35b77d]/25 bg-[#071b1d] text-center">
+              {uploading?<Loader2 size={20} className="animate-spin text-[#55d49a]"/>:<Upload size={20} className="text-[#55d49a]"/>}
+              <span className="mt-2 text-[10px] text-white/35">{uploading?"در حال آپلود...":"انتخاب و آپلود تصویر"}</span>
+              <input type="file" accept="image/*" className="hidden" onChange={uploadImage} disabled={uploading}/>
+            </label>}
+          </section>
+
+
           {error && <div className="rounded-2xl border border-[#e3222b]/20 bg-[#e3222b]/8 px-4 py-3 text-xs text-[#ff6871]">{error}</div>}
 
           <section className="rounded-[20px] border border-white/[.08] bg-[var(--surface)] shadow-[0_14px_40px_rgba(0,0,0,.14)] p-5 sm:p-6">
@@ -291,16 +304,6 @@ export default function PostsAdminPage() {
             <p className="text-xs font-bold">تنظیمات انتشار</p>
             <Link href="/admin/categories" className="mt-3 block text-xs text-red-400">مدیریت دسته‌بندی‌ها</Link><div className="mt-4 space-y-3"><p className="text-xs text-white/60">دسته‌بندی‌های مطلب (امکان انتخاب چند مورد)</p><label className="flex items-center gap-2 text-xs text-white"><input type="checkbox" checked disabled className="accent-red-500"/>اسنوکریا — دسته اصلی تمام مطالب</label>{categories.filter(([v])=>v!=="snookeria").map(([v,l])=><label key={v} className="flex items-center gap-2 text-xs text-white/75"><input type="checkbox" checked={selectedCategories.includes(v)} onChange={e=>setSelectedCategories(prev=>e.target.checked?[...new Set([...prev,v])]:prev.filter(x=>x!==v))} className="accent-red-500"/>{l}</label>)}</div>
             <label className="mt-4 flex items-center justify-between rounded-xl bg-[var(--surface-raised)] px-3 py-3 text-xs text-[var(--muted)]"><span>مطلب ویژه</span><input type="checkbox" checked={featured} onChange={e=>setFeatured(e.target.checked)} className="accent-[#20a86b]"/></label>
-          </section>
-
-          <section className="rounded-[20px] border border-[#1b9b68]/14 bg-[#092522]/70 p-5">
-            <div className="flex items-center gap-2"><ImagePlus size={16} className="text-[#55d49a]"/><p className="text-xs font-bold">تصویر شاخص</p></div>
-            {cover ? <div className="mt-4 overflow-hidden rounded-2xl border border-white/[.07]"><img src={cover} alt="" className="aspect-video w-full object-cover"/><button onClick={()=>setCover("")} className="w-full bg-[var(--surface-raised)] py-2 text-[10px] text-[#ff6871]">حذف تصویر</button></div> :
-            <label className="mt-4 flex aspect-video cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#35b77d]/25 bg-[#071b1d] text-center">
-              {uploading?<Loader2 size={20} className="animate-spin text-[#55d49a]"/>:<Upload size={20} className="text-[#55d49a]"/>}
-              <span className="mt-2 text-[10px] text-white/35">{uploading?"در حال آپلود...":"انتخاب و آپلود تصویر"}</span>
-              <input type="file" accept="image/*" className="hidden" onChange={uploadImage} disabled={uploading}/>
-            </label>}
           </section>
 
           <section className="rounded-[20px] border border-white/[.07] bg-[var(--surface)] p-5">
