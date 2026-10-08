@@ -36,7 +36,7 @@ export default function PostsAdminPage() {
 
   const [title,setTitle] = useState("");
   const [slug,setSlug] = useState("");
-  const [category,setCategory] = useState("article");
+  const [selectedCategories,setSelectedCategories] = useState<string[]>(["snookeria"]);
   const [excerpt,setExcerpt] = useState("");
   const [body,setBody] = useState("");
   const [cover,setCover] = useState("");
@@ -127,7 +127,7 @@ export default function PostsAdminPage() {
   }
 
   function reset() {
-    setEditingId(null); setTitle(""); setSlug(""); setSlugTouched(false); setCategory(categories[0]?.[0]||"article");
+    setEditingId(null); setTitle(""); setSlug(""); setSlugTouched(false); setSelectedCategories(["snookeria"]);
     setExcerpt(""); setBody(""); setCover(""); setFeatured(false); setMedia([]);
     setSeoTitle(""); setSeoDescription(""); setFocusKeyword(""); setKeywords("");
     setCanonical(""); setOgTitle(""); setOgDescription(""); setOgImage("");
@@ -141,7 +141,7 @@ export default function PostsAdminPage() {
     const now = new Date().toISOString();
     const payload = {
       title:title.trim(), slug:slug.trim(), excerpt:excerpt.trim() || null, body:body || null,
-      cover_image_url:cover || null, category, status, is_featured:featured,
+      cover_image_url:cover || null, category:selectedCategories.find(x=>x!=="snookeria")||"snookeria", status, is_featured:featured,
       published_at: status === "published" ? now : null, updated_at:now,
       seo_title:seoTitle.trim() || null, seo_description:seoDescription.trim() || null,
       focus_keyword:focusKeyword.trim() || null,
@@ -152,9 +152,14 @@ export default function PostsAdminPage() {
       robots_index:robotsIndex, robots_follow:robotsFollow, schema_type:schemaType,
     };
     const query = editingId
-      ? cmsSupabase.from("posts").update(payload).eq("id", editingId)
-      : cmsSupabase.from("posts").insert(payload);
-    const { error: saveError } = await query;
+      ? cmsSupabase.from("posts").update(payload).eq("id", editingId).select("id").single()
+      : cmsSupabase.from("posts").insert(payload).select("id").single();
+    const {data:savedPost,error:saveError}=await query;
+    if (saveError){setSaving(false);setError(saveError.code === "23505" ? "این Slug قبلاً استفاده شده است." : saveError.message);return;}
+    const postId=savedPost?.id;
+    if(postId){const {error:deleteError}=await cmsSupabase.from("post_category_links").delete().eq("post_id",postId).neq("category_slug","snookeria");if(deleteError){setSaving(false);setError("ذخیره مطلب انجام شد اما دسته‌بندی‌ها به‌روزرسانی نشدند: "+deleteError.message);return;}
+    const links=[...new Set(["snookeria",...selectedCategories])].filter(x=>x!=="snookeria").map(category_slug=>({post_id:postId,category_slug}));
+    if(links.length){const {error:linkError}=await cmsSupabase.from("post_category_links").upsert(links,{onConflict:"post_id,category_slug"});if(linkError){setSaving(false);setError("مطلب ذخیره شد ولی دسته‌بندی‌های اضافی ثبت نشدند: "+linkError.message);return;}}}
     setSaving(false);
     if (saveError) { setError(saveError.code === "23505" ? "این Slug قبلاً استفاده شده است." : saveError.message); return; }
     reset(); setShowEditor(false); await loadPosts();
@@ -165,7 +170,7 @@ export default function PostsAdminPage() {
     const { data, error } = await cmsSupabase.from("posts").select("*").eq("id",id).single();
     if(error || !data) { setError("بارگذاری مطلب انجام نشد."); return; }
     setEditingId(data.id); setTitle(data.title||""); setSlug(data.slug||""); setSlugTouched(true);
-    setCategory(data.category||"article"); setExcerpt(data.excerpt||""); setBody(data.body||"");
+    setSelectedCategories(["snookeria",...(data.category&&data.category!=="snookeria"?[data.category]:[])]); setExcerpt(data.excerpt||""); setBody(data.body||"");
     setCover(data.cover_image_url||""); setFeatured(!!data.is_featured);
     setSeoTitle(data.seo_title||""); setSeoDescription(data.seo_description||"");
     setFocusKeyword(data.focus_keyword||""); setKeywords((data.seo_keywords||[]).join(", "));
@@ -173,6 +178,8 @@ export default function PostsAdminPage() {
     setOgDescription(data.og_description||""); setOgImage(data.og_image_url||"");
     setRobotsIndex(data.robots_index!==false); setRobotsFollow(data.robots_follow!==false);
     setSchemaType(data.schema_type||"Article");
+    const {data:assigned}=await cmsSupabase.from("post_category_links").select("category_slug").eq("post_id",id);
+    if(assigned)setSelectedCategories([...new Set(["snookeria",...assigned.map(x=>x.category_slug)])]);
     const {data:mediaRows}=await cmsSupabase.from("post_media").select("*").eq("post_id",id).order("sort_order",{ascending:true});
     setMedia((mediaRows??[]) as PostMedia[]); setShowEditor(true);
   }
@@ -283,7 +290,7 @@ export default function PostsAdminPage() {
         <aside className="space-y-4">
           <section className="rounded-[20px] border border-white/[.07] bg-[var(--surface)] p-5">
             <p className="text-xs font-bold">تنظیمات انتشار</p>
-            <Link href="/admin/categories" className="mt-3 block text-xs text-red-400">مدیریت دسته‌بندی‌ها</Link><label className="mt-4 block text-[10px] text-white/35">دسته‌بندی<select value={category} onChange={e=>setCategory(e.target.value)} className="mt-2 h-11 w-full rounded-xl border border-white/[.08] bg-[var(--surface-raised)] px-3 text-xs text-white outline-none">{!categories.some(([v])=>v===category)&&<option value={category}>{category}</option>}{categories.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
+            <Link href="/admin/categories" className="mt-3 block text-xs text-red-400">مدیریت دسته‌بندی‌ها</Link><div className="mt-4 space-y-3"><p className="text-xs text-white/60">دسته‌بندی‌های مطلب (امکان انتخاب چند مورد)</p><label className="flex items-center gap-2 text-xs text-white"><input type="checkbox" checked disabled className="accent-red-500"/>اسنوکریا — دسته اصلی تمام مطالب</label>{categories.filter(([v])=>v!=="snookeria").map(([v,l])=><label key={v} className="flex items-center gap-2 text-xs text-white/75"><input type="checkbox" checked={selectedCategories.includes(v)} onChange={e=>setSelectedCategories(prev=>e.target.checked?[...new Set([...prev,v])]:prev.filter(x=>x!==v))} className="accent-red-500"/>{l}</label>)}</div>
             <label className="mt-4 flex items-center justify-between rounded-xl bg-[var(--surface-raised)] px-3 py-3 text-xs text-[var(--muted)]"><span>مطلب ویژه</span><input type="checkbox" checked={featured} onChange={e=>setFeatured(e.target.checked)} className="accent-[#20a86b]"/></label>
           </section>
 
