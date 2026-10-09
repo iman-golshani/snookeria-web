@@ -40,6 +40,8 @@ export default function ImanGolshaniPage() {
       alternateName: "Iman Golshani",
 
       url: "https://snookeria.ir/coach/iman-golshani",
+      sameAs: ["https://www.instagram.com/snookeria/", "https://www.youtube.com/@snookeria"],
+      worksFor: {"@id":"https://snookeria.ir/#organization"},
 
       jobTitle: "مربی و داور رسمی فدراسیون",
 
@@ -50,6 +52,7 @@ export default function ImanGolshaniPage() {
         "@type": "Organization",
         name: "آکادمی اسنوکریا",
         url: "https://snookeria.ir",
+        "@id": "https://snookeria.ir/#organization",
       },
 
       knowsAbout: [
@@ -98,6 +101,11 @@ export default function ImanGolshaniPage() {
             <Clock3 size={16} className="text-red-500" />
             شروع فعالیت از سال ۱۳۹۶
           </div>
+
+          <nav aria-label="شبکه‌های اجتماعی اسنوکریا" className="mt-5 flex flex-wrap items-center justify-center gap-3 text-sm">
+            <a href="https://www.instagram.com/snookeria/" target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-white/75 hover:border-red-500/50 hover:text-white">اینستاگرام @snookeria</a>
+            <a href="https://www.youtube.com/@snookeria" target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-white/75 hover:border-red-500/50 hover:text-white">یوتیوب @snookeria</a>
+          </nav>
 
           <div className="mx-auto mt-8 max-w-2xl">
             <figure className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035]">
