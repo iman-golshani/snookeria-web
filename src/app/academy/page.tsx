@@ -1,3 +1,11 @@
+import type {Metadata} from "next";
+export const metadata:Metadata={
+ title:{absolute:"آکادمی اسنوکریا | Snookeria Academy – آموزش تخصصی اسنوکر"},
+ description:"آکادمی اسنوکریا (Snookeria Academy)، مدرسه تخصصی آموزش اسنوکر زیر نظر ایمان گلشنی؛ دوره‌های مبتدی، پیشرفته و حرفه‌ای با تمرین هدفمند و تحلیل بازی.",
+ alternates:{canonical:"/academy"},
+ openGraph:{title:"آکادمی اسنوکریا | Snookeria Academy",description:"آموزش تخصصی اسنوکر از مبتدی تا حرفه‌ای زیر نظر ایمان گلشنی.",url:"/academy",type:"website"}
+};
+const academySchema={"@context":"https://schema.org","@type":"EducationalOrganization",name:"آکادمی اسنوکریا",alternateName:"Snookeria Academy",url:"https://snookeria.ir/academy",parentOrganization:{name:"اسنوکریا",url:"https://snookeria.ir"}};
 import Link from "next/link";
 import { CheckCircle2, GraduationCap } from "lucide-react";
 
@@ -10,7 +18,7 @@ const courses = [
 export default function AcademyPage() {
   return (
     <main className="min-h-screen bg-[var(--page)] px-4 pb-28 pt-8 text-[var(--ink)]">
-      <div className="mx-auto max-w-5xl">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(academySchema)}}/><div className="mx-auto max-w-5xl">
         <header className="text-center">
           <div className="mx-auto h-24 w-24 overflow-hidden rounded-full shadow-[0_0_45px_rgba(220,20,60,0.18)]"><img src="/snookeria-circle-transparent.png" alt="آکادمی اسنوکریا" className="h-full w-full object-cover" /></div>
           <p className="mt-5 text-[10px] font-bold tracking-[0.3em] text-red-500">SNOOKERIA ACADEMY</p>
