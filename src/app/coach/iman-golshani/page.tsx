@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "ایمان گلشنی | مربی و داور اسنوکر",
+  title: {absolute:"ایمان گلشنی | Iman Golshani – مربی و داور اسنوکر"},
   description:
-    "ایمان گلشنی، مربی و داور رسمی فدراسیون و مؤسس آکادمی اسنوکریا؛ فعال در آموزش تخصصی اسنوکر از سال ۱۳۹۶ با تمرکز بر رشد هدفمند بازیکنان.",
+    "ایمان گلشنی (Iman Golshani)، مربی و داور اسنوکر و مؤسس آکادمی اسنوکریا؛ آشنایی با سوابق، روش آموزش و کوچینگ تخصصی اسنوکر.",
 
   alternates: {
     canonical: "/coach/iman-golshani",
@@ -37,6 +37,7 @@ export default function ImanGolshaniPage() {
       "@id": "https://snookeria.ir/coach/iman-golshani#person",
 
       name: "ایمان گلشنی",
+      alternateName: "Iman Golshani",
 
       url: "https://snookeria.ir/coach/iman-golshani",
 
