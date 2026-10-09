@@ -267,6 +267,10 @@ export default function ImanGolshaniPage() {
           </Link>
         </div>
       </section>
+
+      <section className="px-5 pt-10 text-center" aria-label="تماس با مربی">
+        <a href="tel:09196353060" className="mx-auto inline-flex min-h-12 items-center justify-center rounded-full bg-red-600 px-8 py-3 text-base font-bold text-white transition hover:bg-red-500">تماس با مربی</a>
+      </section>
     </main>
   );
 }
