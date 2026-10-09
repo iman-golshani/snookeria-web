@@ -37,7 +37,7 @@ export default function PostsAdminPage() {
   const [uploadProgress,setUploadProgress]=useState<number|null>(null);
   const [mediaProgress,setMediaProgress]=useState<number|null>(null);
   const [cropFile,setCropFile] = useState<File|null>(null);
-  const [cropMode,setCropMode]=useState<"cover"|"new-slide"|"edit-slide">("cover");
+  const [cropMode,setCropMode]=useState<"cover"|"new-slide"|"edit-slide"|"saved-slide">("cover");
   const [cropQueue,setCropQueue]=useState<File[]>([]);
   const [cropSlideId,setCropSlideId]=useState<string|null>(null);
   const [cropSavedId,setCropSavedId]=useState<string|null>(null);
