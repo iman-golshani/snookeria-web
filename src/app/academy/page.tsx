@@ -8,6 +8,8 @@ export const metadata:Metadata={
 };
 const academySchema={"@context":"https://schema.org","@type":"EducationalOrganization",name:"آکادمی اسنوکریا",alternateName:"Snookeria Academy",description:"آموزش اسنوکر در دوره‌های مبتدی، پیشرفته و حرفه‌ای زیر نظر ایمان گلشنی.",url:"https://snookeria.ir/academy",parentOrganization:{name:"اسنوکریا",url:"https://snookeria.ir"}};
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
+export const revalidate = 60;
 import { CheckCircle2, GraduationCap } from "lucide-react";
 
 const courses = [
@@ -16,7 +18,9 @@ const courses = [
   { title: "دوره حرفه‌ای", subtitle: "کوچینگ ویژه بازیکنان سطح بالا", features: ["برنامه تمرینی اختصاصی", "آنالیز کامل بازی‌ها", "آمادگی ذهنی پیشرفته", "آماده‌سازی برای مسابقات"] },
 ];
 
-export default function AcademyPage() {
+export default async function AcademyPage() {
+  const cms = createClient(process.env.NEXT_PUBLIC_CMS_SUPABASE_URL!, process.env.NEXT_PUBLIC_CMS_SUPABASE_ANON_KEY!, {auth:{persistSession:false}});
+  const {data:dailyQuote} = await cms.from("academy_daily_quote").select("quote,author").eq("id",1).eq("is_active",true).maybeSingle();
   return (
     <main className="min-h-screen bg-[var(--page)] px-4 pb-28 pt-8 text-[var(--ink)]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(academySchema)}}/><div className="mx-auto max-w-5xl">
@@ -29,6 +33,7 @@ export default function AcademyPage() {
           <p className="mt-5 text-sm text-[var(--muted)]">زیر نظر <Link href="/coach/iman-golshani" className="font-bold text-[var(--ink)] underline decoration-red-500/50 underline-offset-4">ایمان گلشنی</Link>، مربی و داور رسمی فدراسیون</p>
         </header>
 
+        {dailyQuote?.quote && <section aria-label="جمله روز اسنوکریا" className="mx-auto mt-12 max-w-2xl rounded-[24px] border border-red-500/20 bg-red-500/[0.04] px-6 py-7 text-center"><p className="text-xs font-bold text-red-400">جمله روز</p><blockquote className="mt-3 whitespace-pre-line text-base font-bold leading-9 text-[var(--ink)]">«{dailyQuote.quote}»</blockquote>{dailyQuote.author && <p className="mt-3 text-xs text-[var(--muted)]">— {dailyQuote.author}</p>}</section>}
         <section className="mt-14">
           <div className="text-center"><GraduationCap size={24} className="mx-auto text-red-500"/><h2 className="mt-3 text-2xl font-bold">کلاس‌ها و دوره‌های آموزش اسنوکر</h2></div>
           <div className="mt-7 grid gap-4 md:grid-cols-3">
