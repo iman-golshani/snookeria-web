@@ -98,6 +98,13 @@ export default function ImanGolshaniPage() {
             <Clock3 size={16} className="text-red-500" />
             شروع فعالیت از سال ۱۳۹۶
           </div>
+
+          <div className="mx-auto mt-8 max-w-2xl">
+            <figure className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035]">
+              <img src="/images/coach/iman-golshani-portrait.webp" alt="ایمان گلشنی در کنار میز اسنوکر" width={1400} height={1034} draggable={false} onContextMenu={undefined} className="aspect-[4/3] w-full select-none object-cover" />
+              <figcaption className="px-5 py-4 text-sm text-white/60">ایمان گلشنی؛ مربی و داور اسنوکر</figcaption>
+            </figure>
+          </div>
         </div>
       </section>
 
@@ -126,26 +133,6 @@ export default function ImanGolshaniPage() {
         </div>
       </section>
 
-      {/* Photo gallery */}
-      <section className="px-5 pb-14" aria-labelledby="coach-gallery-title">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-6 text-center">
-            <p className="text-xs font-semibold tracking-[0.25em] text-red-500">SNOOKER IN PRACTICE</p>
-            <h2 id="coach-gallery-title" className="mt-3 text-2xl font-bold">لحظه‌هایی از دنیای اسنوکر</h2>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <figure className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035]">
-              <img src="/images/coach/iman-golshani-portrait.webp" alt="ایمان گلشنی در کنار میز اسنوکر" width={1400} height={1034} draggable={false} onContextMenu={undefined} className="aspect-[4/3] w-full select-none object-cover" />
-              <figcaption className="px-5 py-4 text-sm text-white/60">ایمان گلشنی؛ مربی و داور اسنوکر</figcaption>
-            </figure>
-            <figure className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035]">
-              <img src="/images/coach/snooker-training-room.webp" alt="فضای تمرین اسنوکر و میز استاندارد مسابقه" width={788} height={1400} draggable={false} className="aspect-[4/3] w-full select-none object-cover" />
-              <figcaption className="px-5 py-4 text-sm text-white/60">تمرین و تجربه در فضای واقعی اسنوکر</figcaption>
-            </figure>
-          </div>
-        </div>
-      </section>
-
       {/* Philosophy */}
       <section className="px-5 pb-14">
         <div className="mx-auto max-w-3xl rounded-3xl border border-red-600/20 bg-red-600/[0.06] p-7 sm:p-10">
@@ -165,6 +152,12 @@ export default function ImanGolshaniPage() {
             هدف، رشد سریع‌تر بازیکن بدون اتلاف وقت است.
           </p>
         </div>
+      </section>
+
+      <section className="px-5 pb-14">
+        <div className="mx-auto max-w-3xl"><figure className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035]">
+              <img src="/images/coach/snooker-training-room.webp" alt="فضای تمرین اسنوکر و میز استاندارد مسابقه" width={788} height={1400} draggable={false} className="aspect-[4/3] w-full select-none object-cover" />
+            </figure></div>
       </section>
 
       {/* Coaching principles */}
