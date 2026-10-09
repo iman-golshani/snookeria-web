@@ -7,18 +7,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const {data:posts}=await cms.from("posts").select("slug,updated_at").eq("status","published");
 
   const staticPages:MetadataRoute.Sitemap=[
-    {url:baseUrl,lastModified:new Date(),changeFrequency:"weekly",priority:1},
-    {url:`${baseUrl}/academy`,lastModified:new Date(),changeFrequency:"monthly",priority:.9},
-    {url:`${baseUrl}/discover`,lastModified:new Date(),changeFrequency:"daily",priority:.9},
-    {url:`${baseUrl}/coach/iman-golshani`,lastModified:new Date(),changeFrequency:"monthly",priority:.9},
-    {url:`${baseUrl}/tournaments`,lastModified:new Date(),changeFrequency:"daily",priority:.9},
-    {url:`${baseUrl}/live`,lastModified:new Date(),changeFrequency:"always",priority:.8},
-    {url:`${baseUrl}/workshops`,lastModified:new Date(),changeFrequency:"weekly",priority:.8},
+    {url:baseUrl,changeFrequency:"weekly",priority:1},
+    {url:`${baseUrl}/academy`,changeFrequency:"monthly",priority:.9},
+    {url:`${baseUrl}/discover`,changeFrequency:"daily",priority:.9},
+    {url:`${baseUrl}/coach/iman-golshani`,changeFrequency:"monthly",priority:.9},
+    {url:`${baseUrl}/tournaments`,changeFrequency:"daily",priority:.9},
+    {url:`${baseUrl}/live`,changeFrequency:"always",priority:.8},
+    {url:`${baseUrl}/workshops`,changeFrequency:"weekly",priority:.8},
   ];
 
   const articlePages:MetadataRoute.Sitemap=(posts??[]).map(post=>({
     url:`${baseUrl}/discover/${post.slug}`,
-    lastModified:post.updated_at?new Date(post.updated_at):new Date(),
+    ...(post.updated_at?{lastModified:new Date(post.updated_at)}:{}),
     changeFrequency:"monthly",
     priority:.8,
   }));
