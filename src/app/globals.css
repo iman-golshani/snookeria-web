@@ -1,4 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,900&display=swap");
 @import "tailwindcss";
+:root{--font-playfair:"Playfair Display";}
 /* Snookeria Design System — dark only */
 :root,html{
 color-scheme:dark;
