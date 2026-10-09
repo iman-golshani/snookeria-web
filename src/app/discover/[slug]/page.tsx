@@ -50,7 +50,7 @@ export default async function ArticlePage({params}:Params){
         <h1 className="text-2xl font-black leading-[1.55] sm:text-4xl">{post.title}</h1>
         {post.excerpt&&<p className="mt-4 max-w-3xl text-sm leading-8 text-white/45 sm:text-base">{post.excerpt}</p>}
       </header>
-      {post.cover_image_url&&<div className="mt-7 overflow-hidden rounded-[30px] border border-white/[.07] bg-[#091b25]"><img src={post.cover_image_url} alt={post.title} className="aspect-video w-full object-cover"/></div>}
+      {post.cover_image_url&&<div className="mt-7 overflow-hidden rounded-[30px] border border-white/[.07] bg-[#091b25]"><img src={post.cover_image_url} alt={post.title} className="mx-auto aspect-square w-full max-w-[720px] object-cover"/></div>}
       <div className="mt-8 rounded-[28px] border border-white/[.06] bg-[#091b25]/65 px-5 py-6 sm:px-9 sm:py-9">
         <div className="article-content text-[15px] leading-9 text-white/78 [&_a]:text-[#55d49a] [&_a]:underline [&_blockquote]:my-7 [&_blockquote]:border-r-2 [&_blockquote]:border-[#20a86b] [&_blockquote]:pr-5 [&_blockquote]:text-white/55 [&_h2]:mb-3 [&_h2]:mt-10 [&_h2]:text-2xl [&_h2]:font-black [&_h3]:mb-2 [&_h3]:mt-8 [&_h3]:text-xl [&_h3]:font-bold [&_li]:my-1 [&_ol]:my-5 [&_ol]:mr-5 [&_ol]:list-decimal [&_p]:my-4 [&_ul]:my-5 [&_ul]:mr-5 [&_ul]:list-disc" dangerouslySetInnerHTML={{__html:post.body||""}}/>
       </div>
