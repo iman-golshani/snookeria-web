@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowDown, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 const TRIGGER = 78;
 export default function PWAPullToRefresh() {
@@ -67,8 +67,8 @@ export default function PWAPullToRefresh() {
   return (
     <div className="pointer-events-none fixed inset-x-0 top-[calc(48px+env(safe-area-inset-top))] z-[70] flex justify-center" aria-live="polite">
       <div className="flex items-center gap-2 rounded-b-2xl border border-white/10 bg-[#101a29] px-4 py-2 text-xs text-white shadow-xl" style={{ transform: `translateY(${Math.min(0, pull - 35)}px)` }}>
-        {refreshing ? <LoaderCircle size={17} className="animate-spin text-red-500"/> : <ArrowDown size={17} className="text-red-500" />}
-        <span>{refreshing ? "در حال تازه‌سازی..." : pull >= TRIGGER ? "رها کن تا تازه شود" : "برای تازه‌سازی پایین بکش"}</span>
+        {refreshing ? <LoaderCircle size={17} className="animate-spin text-red-500"/> : <span className="h-2 w-2 rounded-full bg-red-500" />}
+        
       </div>
     </div>
   );
