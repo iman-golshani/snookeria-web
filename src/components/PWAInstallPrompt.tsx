@@ -5,8 +5,7 @@ import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 
 type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: "accepted" | "dismissed" }> };
-const KEY = "snookeria-install-dismissed-until";
-const WEEK = 7 * 24 * 60 * 60 * 1000;
+const INSTALLED_KEY = "snookeria-pwa-installed";
 
 export default function PWAInstallPrompt() {
   const pathname = usePathname();
@@ -14,14 +13,14 @@ export default function PWAInstallPrompt() {
   const [deferred, setDeferred] = useState<InstallPromptEvent | null>(null);
   const [ios, setIos] = useState(false);
   const [help, setHelp] = useState(false);
+  const [closed, setClosed] = useState(false);
 
   useEffect(() => {
     const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     const standalone = window.matchMedia("(display-mode: standalone)").matches ||
       ("standalone" in navigator && (navigator as Navigator & { standalone?: boolean }).standalone === true);
     if (!mobile || standalone || pathname.startsWith("/admin")) return;
-    const dismissed = Number(localStorage.getItem(KEY) || 0);
-    if (dismissed > Date.now()) return;
+    if (closed || localStorage.getItem(INSTALLED_KEY) === "yes") return;
     const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     setIos(isIos);
     let event: InstallPromptEvent | null = null;
@@ -31,7 +30,7 @@ export default function PWAInstallPrompt() {
       setDeferred(event);
     };
     const onInstalled = () => {
-      localStorage.setItem(KEY, String(Date.now() + 365 * 24 * 60 * 60 * 1000));
+      localStorage.setItem(INSTALLED_KEY, "yes");
       setVisible(false);
     };
     window.addEventListener("beforeinstallprompt", onPrompt);
@@ -44,10 +43,10 @@ export default function PWAInstallPrompt() {
       window.removeEventListener("beforeinstallprompt", onPrompt);
       window.removeEventListener("appinstalled", onInstalled);
     };
-  }, [pathname]);
+  }, [pathname, closed]);
 
   const dismiss = () => {
-    localStorage.setItem(KEY, String(Date.now() + WEEK));
+    setClosed(true);
     setVisible(false);
   };
   const install = async () => {
@@ -56,7 +55,7 @@ export default function PWAInstallPrompt() {
     await deferred.prompt();
     const choice = await deferred.userChoice;
     setDeferred(null);
-    if (choice.outcome === "accepted") setVisible(false);
+    if (choice.outcome === "accepted") { localStorage.setItem(INSTALLED_KEY, "yes"); setVisible(false); }
     else dismiss();
   };
   if (!visible || pathname.startsWith("/admin")) return null;
