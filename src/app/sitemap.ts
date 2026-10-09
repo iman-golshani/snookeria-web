@@ -8,6 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticPages:MetadataRoute.Sitemap=[
     {url:baseUrl,lastModified:new Date(),changeFrequency:"weekly",priority:1},
+    {url:`${baseUrl}/academy`,lastModified:new Date(),changeFrequency:"monthly",priority:.9},
     {url:`${baseUrl}/discover`,lastModified:new Date(),changeFrequency:"daily",priority:.9},
     {url:`${baseUrl}/coach/iman-golshani`,lastModified:new Date(),changeFrequency:"monthly",priority:.9},
     {url:`${baseUrl}/tournaments`,lastModified:new Date(),changeFrequency:"daily",priority:.9},
