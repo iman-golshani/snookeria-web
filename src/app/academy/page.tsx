@@ -1,11 +1,12 @@
 import type {Metadata} from "next";
 export const metadata:Metadata={
- title:{absolute:"آکادمی اسنوکریا | Snookeria Academy – آموزش تخصصی اسنوکر"},
- description:"آکادمی اسنوکریا (Snookeria Academy)، مدرسه تخصصی آموزش اسنوکر زیر نظر ایمان گلشنی؛ دوره‌های مبتدی، پیشرفته و حرفه‌ای با تمرین هدفمند و تحلیل بازی.",
+ title:{absolute:"آموزش اسنوکر | دوره‌های مبتدی تا حرفه‌ای آکادمی اسنوکریا"},
+ description:"آموزش اسنوکر از مبتدی تا حرفه‌ای در آکادمی اسنوکریا زیر نظر ایمان گلشنی؛ معرفی دوره‌های آموزش اسنوکر، تمرین هدفمند، آنالیز بازی و آمادگی مسابقات.",
+ keywords:["آموزش اسنوکر","کلاس آموزش اسنوکر","دوره آموزش اسنوکر","آموزش اسنوکر مبتدی","آموزش اسنوکر حرفه‌ای","آکادمی اسنوکریا"],
  alternates:{canonical:"/academy"},
- openGraph:{title:"آکادمی اسنوکریا | Snookeria Academy",description:"آموزش تخصصی اسنوکر از مبتدی تا حرفه‌ای زیر نظر ایمان گلشنی.",url:"/academy",type:"website"}
+ openGraph:{title:"آموزش اسنوکر از مبتدی تا حرفه‌ای | آکادمی اسنوکریا",description:"دوره‌های آموزش اسنوکر با برنامه تمرینی هدفمند و تحلیل بازی، زیر نظر ایمان گلشنی.",url:"/academy",type:"website"}
 };
-const academySchema={"@context":"https://schema.org","@type":"EducationalOrganization",name:"آکادمی اسنوکریا",alternateName:"Snookeria Academy",url:"https://snookeria.ir/academy",parentOrganization:{name:"اسنوکریا",url:"https://snookeria.ir"}};
+const academySchema={"@context":"https://schema.org","@type":"EducationalOrganization",name:"آکادمی اسنوکریا",alternateName:"Snookeria Academy",description:"آموزش اسنوکر در دوره‌های مبتدی، پیشرفته و حرفه‌ای زیر نظر ایمان گلشنی.",url:"https://snookeria.ir/academy",parentOrganization:{name:"اسنوکریا",url:"https://snookeria.ir"}};
 import Link from "next/link";
 import { CheckCircle2, GraduationCap } from "lucide-react";
 
@@ -22,14 +23,14 @@ export default function AcademyPage() {
         <header className="text-center">
           <div className="mx-auto h-24 w-24 overflow-hidden rounded-full shadow-[0_0_45px_rgba(220,20,60,0.18)]"><img src="/snookeria-circle-transparent.png" alt="آکادمی اسنوکریا" className="h-full w-full object-cover" /></div>
           <p className="mt-5 text-[10px] font-bold tracking-[0.3em] text-red-500">SNOOKERIA ACADEMY</p>
-          <h1 className="mt-2 text-3xl font-black">آکادمی اسنوکریا</h1>
+          <h1 className="mt-2 text-3xl font-black">آموزش اسنوکر در آکادمی اسنوکریا</h1>
           <p className="mt-3 text-sm text-[var(--muted)]">مدرسه تخصصی اسنوکر</p>
-          <p className="mx-auto mt-5 max-w-2xl text-sm leading-8 text-[var(--muted)]">جایی برای آموزش اصولی، تمرین هدفمند، تحلیل بازی و رشد بازیکن؛ از شروع مسیر تا آماده‌سازی برای رقابت.</p>
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-8 text-[var(--muted)]">در دوره‌های آموزش اسنوکر آکادمی اسنوکریا، از یادگیری اصول و تکنیک‌های پایه تا تمرین هدفمند، تحلیل بازی و آمادگی مسابقه، مسیر پیشرفت متناسب با سطح بازیکن دنبال می‌شود.</p>
           <p className="mt-5 text-sm text-[var(--muted)]">زیر نظر <Link href="/coach/iman-golshani" className="font-bold text-[var(--ink)] underline decoration-red-500/50 underline-offset-4">ایمان گلشنی</Link>، مربی و داور رسمی فدراسیون</p>
         </header>
 
         <section className="mt-14">
-          <div className="text-center"><GraduationCap size={24} className="mx-auto text-red-500"/><h2 className="mt-3 text-2xl font-bold">دوره‌های آموزش اسنوکر</h2></div>
+          <div className="text-center"><GraduationCap size={24} className="mx-auto text-red-500"/><h2 className="mt-3 text-2xl font-bold">کلاس‌ها و دوره‌های آموزش اسنوکر</h2></div>
           <div className="mt-7 grid gap-4 md:grid-cols-3">
             {courses.map((course, index)=>(
               <article key={course.title} className={`rounded-[26px] border p-5 ${index===2?"border-red-500/30 bg-red-500/[0.055]":"border-white/10 bg-white/[0.03]"}`}>
