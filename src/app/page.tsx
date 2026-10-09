@@ -1,3 +1,5 @@
+import type {Metadata} from "next";
+export const metadata:Metadata={title:{absolute:"اسنوکریا | Snookeria – دنیای اسنوکر"},description:"اسنوکریا (Snookeria)؛ دنیای اسنوکر، آموزش تخصصی در آکادمی اسنوکریا، اخبار و مطالب آموزشی اسنوکر با ایمان گلشنی.",alternates:{canonical:"/"},openGraph:{title:"اسنوکریا | Snookeria",url:"/",type:"website"}};
 import {createClient} from "@supabase/supabase-js";
 import HomeFeed from "@/components/discover/HomeFeed";
 import type {FeedPost} from "@/components/discover/DiscoverFeed";
