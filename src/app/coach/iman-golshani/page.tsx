@@ -238,7 +238,7 @@ export default function ImanGolshaniPage() {
           </p>
 
           <Link
-            href="/"
+            href="/academy"
             className="mt-7 inline-flex items-center gap-2 rounded-full bg-red-600 px-6 py-3 text-sm font-bold transition hover:bg-red-500"
           >
             مشاهده آکادمی
