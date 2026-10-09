@@ -45,6 +45,7 @@ export default function PostsAdminPage() {
   const [error,setError] = useState("");
   const [slugTouched,setSlugTouched] = useState(false);
   const [editingId,setEditingId] = useState<string | null>(null);
+  const [originalPublishedAt,setOriginalPublishedAt] = useState<string | null>(null);
 
   const [title,setTitle] = useState("");
   const [slug,setSlug] = useState("");
@@ -189,7 +190,7 @@ export default function PostsAdminPage() {
   }
 
   function reset() {
-    setEditingId(null); setTitle(""); setSlug(""); setSlugTouched(false); setSelectedCategories(["snookeria"]);
+    setEditingId(null); setOriginalPublishedAt(null); setTitle(""); setSlug(""); setSlugTouched(false); setSelectedCategories(["snookeria"]);
     setExcerpt(""); setBody(""); setCover(""); setFeatured(false); setMedia([]);
     setPendingSlides(old=>{old.forEach(x=>URL.revokeObjectURL(x.url));return []});setMainSlide(null);setCropFile(null);setCropQueue([]);setCropSlideId(null);
     setSeoTitle(""); setSeoDescription(""); setFocusKeyword(""); setKeywords("");
@@ -206,7 +207,7 @@ export default function PostsAdminPage() {
     const payload = {
       title:title.trim(), slug:slug.trim(), excerpt:excerpt.trim() || null, body:body || null,
       cover_image_url:cover || null, category:selectedCategories.find(x=>x!=="snookeria")||"snookeria", status:pendingSlides.length?"draft":status, is_featured:featured,
-      published_at: status === "published" && !pendingSlides.length ? now : null, updated_at:now,
+      published_at: status === "published" ? (originalPublishedAt ?? now) : (editingId ? originalPublishedAt : null), updated_at:now,
       seo_title:seoTitle.trim() || null, seo_description:seoDescription.trim() || null,
       focus_keyword:focusKeyword.trim() || null,
       seo_keywords:keywords.split(",").map(x=>x.trim()).filter(Boolean),
@@ -255,7 +256,7 @@ export default function PostsAdminPage() {
       if(chosen){const {error:mainError}=await cmsSupabase.from("posts").update({cover_image_url:chosen,og_image_url:ogImage.trim()||chosen}).eq("id",postId);if(mainError){setSaving(false);setError("تعیین تصویر اصلی انجام نشد: "+mainError.message);setEditingId(postId);return;}}
     }
     if(postId&&status==="published"){
-      const {error:publishError}=await cmsSupabase.from("posts").update({status:"published",published_at:now}).eq("id",postId);
+      const {error:publishError}=await cmsSupabase.from("posts").update({status:"published",published_at:originalPublishedAt ?? now}).eq("id",postId);
       if(publishError){setSaving(false);setError("تصاویر ثبت شدند اما انتشار نهایی انجام نشد: "+publishError.message);setEditingId(postId);return;}
     }
     setSaving(false);
@@ -266,7 +267,7 @@ export default function PostsAdminPage() {
     setError("");setMainSlide(null);setPendingSlides(prev=>{prev.forEach(p=>URL.revokeObjectURL(p.url));return []});
     const { data, error } = await cmsSupabase.from("posts").select("*").eq("id",id).single();
     if(error || !data) { setError("بارگذاری مطلب انجام نشد."); return; }
-    setEditingId(data.id); setTitle(data.title||""); setSlug(data.slug||""); setSlugTouched(true);
+    setEditingId(data.id); setOriginalPublishedAt(data.published_at ?? null); setTitle(data.title||""); setSlug(data.slug||""); setSlugTouched(true);
     setSelectedCategories(["snookeria",...(data.category&&data.category!=="snookeria"?[data.category]:[])]); setExcerpt(data.excerpt||""); setBody(data.body||"");
     setCover(data.cover_image_url||""); setFeatured(!!data.is_featured);
     setSeoTitle(data.seo_title||""); setSeoDescription(data.seo_description||"");
