@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
 import PWARegister from "@/components/PWARegister";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import PWAPullToRefresh from "@/components/PWAPullToRefresh";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://snookeria.ir"),
@@ -22,5 +23,5 @@ export const metadata: Metadata = {
 export const viewport:Viewport={themeColor:"#101a29",width:"device-width",initialScale:1,viewportFit:"cover"};
 
 export default function RootLayout({children}:{children:React.ReactNode}) {
- return <html lang="fa" dir="rtl" data-theme="dark"><body className="min-h-screen pt-[calc(48px+env(safe-area-inset-top))] antialiased"><Header/>{children}<BottomNav/><PWARegister/><PWAInstallPrompt/></body></html>;
+ return <html lang="fa" dir="rtl" data-theme="dark"><body className="min-h-screen pt-[calc(48px+env(safe-area-inset-top))] antialiased"><Header/>{children}<BottomNav/><PWARegister/><PWAInstallPrompt/><PWAPullToRefresh/></body></html>;
 }
