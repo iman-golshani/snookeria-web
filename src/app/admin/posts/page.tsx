@@ -40,6 +40,8 @@ export default function PostsAdminPage() {
   const [cropMode,setCropMode]=useState<"cover"|"new-slide"|"edit-slide">("cover");
   const [cropQueue,setCropQueue]=useState<File[]>([]);
   const [cropSlideId,setCropSlideId]=useState<string|null>(null);
+  const [cropSavedId,setCropSavedId]=useState<string|null>(null);
+  const [savedCropUploading,setSavedCropUploading]=useState(false);
   const [error,setError] = useState("");
   const [slugTouched,setSlugTouched] = useState(false);
   const [editingId,setEditingId] = useState<string | null>(null);
@@ -106,15 +108,49 @@ export default function PostsAdminPage() {
     setError("");setCropMode("new-slide");setCropQueue(files.slice(1));setCropFile(files[0]);
   }
   function nextCrop(){setCropQueue(prev=>{const [first,...rest]=prev;setCropFile(first??null);return rest;});}
-  function cancelCrop(){setCropFile(null);setCropQueue([]);setCropSlideId(null);}
+  function cancelCrop(){if(savedCropUploading)return;setCropFile(null);setCropQueue([]);setCropSlideId(null);setCropSavedId(null);setCropSavedId(null);}
   function finishCrop(file:File){
     if(cropMode==="cover"){void uploadCroppedCover(file);return;}
+    if(cropMode==="saved-slide"&&cropSavedId){void saveRecroppedMedia(cropSavedId,file);return;}
     if(cropMode==="edit-slide"&&cropSlideId){
       const id=cropSlideId;setPendingSlides(prev=>prev.map(p=>{if(p.id!==id)return p;URL.revokeObjectURL(p.url);return {...p,file,url:URL.createObjectURL(file)};}));
       setCropSlideId(null);setCropFile(null);return;
     }
     setPendingSlides(prev=>[...prev,{id:crypto.randomUUID(),file,url:URL.createObjectURL(file)}]);
     nextCrop();
+  }
+  async function recropSaved(item:PostMedia){
+    if(savedCropUploading)return;
+    setError("");
+    try{
+      const response=await fetch(item.media_url);
+      if(!response.ok)throw new Error("دریافت تصویر قبلی ممکن نشد.");
+      const blob=await response.blob();
+      if(!blob.type.startsWith("image/"))throw new Error("این فایل تصویری نیست.");
+      setCropQueue([]);setCropSavedId(item.id);setCropMode("saved-slide");
+      setCropFile(new File([blob],"existing-slide-"+item.id+".jpg",{type:blob.type}));
+    }catch(e){setError("باز کردن تصویر برای برش: "+(e instanceof Error?e.message:String(e)));}
+  }
+  async function saveRecroppedMedia(id:string,file:File){
+    const previous=media.find(m=>m.id===id);if(!previous)return;
+    setSavedCropUploading(true);setMediaProgress(0);setUploadLabel("آپلود تصویر ویرایش‌شده");
+    const path=`posts/${editingId||"gallery"}/${Date.now()}-${crypto.randomUUID()}.jpg`;
+    try{
+      await uploadWithProgress(path,file,p=>setMediaProgress(p));
+      const {data}=cmsSupabase.storage.from("cms-media").getPublicUrl(path);
+      const url=data.publicUrl;
+      const {error:dbError}=await cmsSupabase.from("post_media").update({media_url:url}).eq("id",id);
+      if(dbError)throw new Error(dbError.message);
+      const isCover=cover===previous.media_url||mainSlide===id;
+      if(isCover&&editingId){
+        const {error:coverError}=await cmsSupabase.from("posts").update({cover_image_url:url}).eq("id",editingId);
+        if(coverError)throw new Error(coverError.message);
+        setCover(url);
+      }
+      setMedia(prev=>prev.map(m=>m.id===id?{...m,media_url:url}:m));
+      setCropFile(null);setCropSavedId(null);setError("");
+    }catch(e){setError("ذخیره برش تصویر انجام نشد: "+(e instanceof Error?e.message:String(e)));}
+    finally{setSavedCropUploading(false);setMediaProgress(null);}
   }
   function recropPending(id:string){
     const slide=pendingSlides.find(p=>p.id===id);if(!slide)return;
@@ -305,10 +341,10 @@ export default function PostsAdminPage() {
           <section className="rounded-[20px] border border-[var(--edge)] bg-[var(--surface)] p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><Images size={17} className="text-[var(--accent)]"/><h2 className="text-sm font-bold">گالری تصاویر پست</h2></div><span className="rounded-full bg-[var(--surface-raised)] px-3 py-1 text-xs">{(media.length+pendingSlides.length+(cover?1:0)).toLocaleString("fa-IR")} / ۱۰</span></div>
             <p className="mt-2 text-xs leading-6 text-[var(--muted)]">روی «انتخاب به‌عنوان اصلی» بزن تا همان عکس اولین اسلاید شود. ترتیب بقیه تصاویر با فلش‌ها قابل تغییر است.</p>
-            {mediaUploading&&<div className="mt-4 rounded-xl bg-[var(--surface-raised)] p-3 text-xs"><div className="mb-2 flex justify-between"><span>{uploadLabel||"در حال آپلود تصاویر"}</span><span>{mediaProgress??0}٪</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{width:(mediaProgress??0)+"%"}}/></div></div>}
+            {(mediaUploading||savedCropUploading)&&<div className="mt-4 rounded-xl bg-[var(--surface-raised)] p-3 text-xs"><div className="mb-2 flex justify-between"><span>{uploadLabel||"در حال آپلود تصاویر"}</span><span>{mediaProgress??0}٪</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{width:(mediaProgress??0)+"%"}}/></div></div>}
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {cover&&<div className="relative overflow-hidden rounded-xl border-2 border-[var(--accent)] bg-[var(--surface-raised)]"><img src={cover} alt="تصویر اصلی" className="aspect-square w-full object-cover"/><span className="absolute right-2 top-2 rounded-lg bg-[var(--accent)] px-2 py-1 text-[10px] font-bold text-white">تصویر اصلی</span></div>}
-              {media.map((m,i)=><div key={m.id} className="overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--surface-raised)]"><div className="relative"><img src={m.media_url} alt="" className="aspect-square w-full object-cover"/>{(mainSlide===m.id||(!mainSlide&&!cover&&i===0))&&<span className="absolute right-2 top-2 rounded-lg bg-[var(--accent)] px-2 py-1 text-[10px] text-white">اولین اسلاید</span>}</div><button type="button" onClick={()=>setMainSlide(m.id)} className="w-full bg-[var(--surface)] py-2 text-[10px] font-bold text-[var(--accent)]">{mainSlide===m.id?"تصویر اصلی ✓":"انتخاب به‌عنوان اصلی"}</button><div className="flex items-center justify-between px-1 py-1"><button type="button" aria-label="انتقال به قبل" disabled={i===0} onClick={()=>void moveMedia(i,-1)} className="rounded-lg p-2 disabled:opacity-20"><ArrowUp size={16}/></button><span className="text-[10px] text-[var(--muted)]">{i+1}</span><button type="button" aria-label="انتقال به بعد" disabled={i===media.length-1} onClick={()=>void moveMedia(i,1)} className="rounded-lg p-2 disabled:opacity-20"><ArrowDown size={16}/></button><button type="button" aria-label="حذف تصویر" onClick={()=>void removeMedia(m)} className="rounded-lg p-2 text-red-400"><Trash2 size={16}/></button></div></div>)}
+              {media.map((m,i)=><div key={m.id} className="overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--surface-raised)]"><div className="relative"><img src={m.media_url} alt="" className="aspect-square w-full object-cover"/>{(mainSlide===m.id||(!mainSlide&&!cover&&i===0))&&<span className="absolute right-2 top-2 rounded-lg bg-[var(--accent)] px-2 py-1 text-[10px] text-white">اولین اسلاید</span>}</div><button type="button" onClick={()=>void recropSaved(m)} className="w-full bg-[var(--surface-raised)] py-2 text-[10px] font-bold">برش مجدد تصویر</button><button type="button" onClick={()=>setMainSlide(m.id)} className="w-full bg-[var(--surface)] py-2 text-[10px] font-bold text-[var(--accent)]">{mainSlide===m.id?"تصویر اصلی ✓":"انتخاب به‌عنوان اصلی"}</button><div className="flex items-center justify-between px-1 py-1"><button type="button" aria-label="انتقال به قبل" disabled={i===0} onClick={()=>void moveMedia(i,-1)} className="rounded-lg p-2 disabled:opacity-20"><ArrowUp size={16}/></button><span className="text-[10px] text-[var(--muted)]">{i+1}</span><button type="button" aria-label="انتقال به بعد" disabled={i===media.length-1} onClick={()=>void moveMedia(i,1)} className="rounded-lg p-2 disabled:opacity-20"><ArrowDown size={16}/></button><button type="button" aria-label="حذف تصویر" onClick={()=>void removeMedia(m)} className="rounded-lg p-2 text-red-400"><Trash2 size={16}/></button></div></div>)}
               {pendingSlides.map((m,i)=><div key={m.id} className="overflow-hidden rounded-xl border border-dashed border-[var(--accent)] bg-[var(--surface-raised)]"><img src={m.url} alt="" className="aspect-square w-full object-cover"/><button type="button" onClick={()=>recropPending(m.id)} className="w-full bg-[var(--surface-raised)] py-2 text-[10px] font-bold">برش مجدد تصویر</button><button type="button" onClick={()=>setMainSlide("pending:"+m.id)} className="w-full bg-[var(--surface)] py-2 text-[10px] font-bold text-[var(--accent)]">{mainSlide==="pending:"+m.id?"تصویر اصلی ✓":"انتخاب به‌عنوان اصلی"}</button><div className="flex items-center justify-between px-1 py-1"><button type="button" aria-label="انتقال به قبل" disabled={i===0} onClick={()=>movePending(i,-1)} className="rounded-lg p-2 disabled:opacity-20"><ArrowUp size={16}/></button><span className="text-[10px] text-[var(--muted)]">جدید</span><button type="button" aria-label="انتقال به بعد" disabled={i===pendingSlides.length-1} onClick={()=>movePending(i,1)} className="rounded-lg p-2 disabled:opacity-20"><ArrowDown size={16}/></button><button type="button" aria-label="حذف تصویر" onClick={()=>removePending(m.id)} className="rounded-lg p-2 text-red-400"><Trash2 size={16}/></button></div></div>)}
               {media.length+pendingSlides.length+(cover?1:0)<10&&<label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--edge)] bg-[var(--surface-raised)] text-[var(--muted)]"><ImagePlus size={25}/><span className="text-center text-xs">افزودن تصاویر</span><input type="file" accept="image/*" multiple className="hidden" onChange={uploadCarousel} disabled={saving||mediaUploading}/></label>}
             </div>
