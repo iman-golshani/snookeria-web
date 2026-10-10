@@ -8,6 +8,27 @@ function HomeCard({post}:{post:FeedPost}){const[expanded,setExpanded]=useCardSta
 type Category={slug:string;name:string;image_url:string|null};
 const SIZE=5;
 export default function HomeFeed({initialPosts}:{initialPosts:FeedPost[]}){const[categories,setCategories]=useState<Category[]>([]),[selected,setSelected]=useState("snookeria"),[posts,setPosts]=useState(initialPosts),[loading,setLoading]=useState(false),[hasMore,setHasMore]=useState(initialPosts.length===SIZE),[error,setError]=useState(false);const loadingRef=useRef(false),offsetRef=useRef(initialPosts.length),endRef=useRef<HTMLDivElement>(null);
+const restoredRef=useRef(false);
+useEffect(()=>{
+ try{
+  const raw=sessionStorage.getItem("snookeria-home-feed-state");
+  if(raw){
+   const saved=JSON.parse(raw) as {posts:FeedPost[];selected:string;offset:number;hasMore:boolean;scrollY:number;at:number};
+   if(Date.now()-saved.at<30*60*1000&&Array.isArray(saved.posts)){
+    restoredRef.current=true;
+    setPosts(saved.posts);setSelected(saved.selected);offsetRef.current=saved.offset;setHasMore(saved.hasMore);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:saved.scrollY,behavior:"instant"})));
+   }
+  }
+ }catch{}
+},[]);
+useEffect(()=>{
+ const save=()=>{
+  try{sessionStorage.setItem("snookeria-home-feed-state",JSON.stringify({posts,selected,offset:offsetRef.current,hasMore,scrollY:window.scrollY,at:Date.now()}))}catch{}
+ };
+ window.addEventListener("pagehide",save);
+ return()=>{save();window.removeEventListener("pagehide",save)};
+},[posts,selected,hasMore]);
 useEffect(()=>{void (async()=>{const [{data:cats},{data:latest}]=await Promise.all([cmsSupabase.from("post_categories").select("slug,name,image_url").eq("is_active",true),cmsSupabase.from("posts").select("published_at,post_category_links(category_slug)").eq("status","published").order("published_at",{ascending:false}).limit(1000)]);if(cats){const rank=new Map<string,number>();(latest??[]).forEach((post,i)=>{for(const link of post.post_category_links??[]){if(!rank.has(link.category_slug))rank.set(link.category_slug,i)}});setCategories([...cats].sort((a,b)=>a.slug==="snookeria"?-1:b.slug==="snookeria"?1:(rank.get(a.slug)??Number.MAX_SAFE_INTEGER)-(rank.get(b.slug)??Number.MAX_SAFE_INTEGER)||a.name.localeCompare(b.name,"fa")))}})()},[]);
 async function selectCategory(slug:string){if(slug===selected)return;setSelected(slug);setLoading(true);setError(false);loadingRef.current=true;try{let query=cmsSupabase.from("posts").select("id,title,slug,excerpt,body,cover_image_url,category,post_media(id,media_url,media_type,alt_text,sort_order),post_category_links!inner(category_slug)").eq("status","published");if(slug!=="snookeria")query=query.eq("post_category_links.category_slug",slug);let {data,error:e}=await query.order("published_at",{ascending:false}).order("id",{ascending:false}).range(0,SIZE-1);if(e){let fallback=cmsSupabase.from("posts").select("id,title,slug,excerpt,body,cover_image_url,category").eq("status","published");if(slug!=="snookeria")fallback=fallback.eq("category",slug);const f=await fallback.order("published_at",{ascending:false}).order("id",{ascending:false}).range(0,SIZE-1);data=f.data as typeof data;e=f.error}if(e)throw e;setPosts((data??[]) as FeedPost[]);offsetRef.current=(data??[]).length;setHasMore((data??[]).length===SIZE)}catch{setError(true)}finally{loadingRef.current=false;setLoading(false)}}
 const loadMore=useCallback(async()=>{if(loadingRef.current||!hasMore)return;loadingRef.current=true;setLoading(true);setError(false);try{const from=offsetRef.current;let query=cmsSupabase.from("posts").select("id,title,slug,excerpt,body,cover_image_url,category,post_media(id,media_url,media_type,alt_text,sort_order)").eq("status","published");if(selected!=="snookeria")query=query.eq("post_category_links.category_slug",selected);let {data,error:queryError}=await query.order("published_at",{ascending:false}).order("id",{ascending:false}).range(from,from+SIZE-1);if(queryError){let fallbackQuery=cmsSupabase.from("posts").select("id,title,slug,excerpt,body,cover_image_url,category").eq("status","published");if(selected!=="snookeria")fallbackQuery=fallbackQuery.eq("category",selected);const fallback=await fallbackQuery.order("published_at",{ascending:false}).order("id",{ascending:false}).range(from,from+SIZE-1);data=fallback.data as typeof data;queryError=fallback.error}if(queryError)throw queryError;const batch=(data??[]) as FeedPost[];offsetRef.current+=batch.length;setPosts(prev=>{const known=new Set(prev.map(p=>p.id));return [...prev,...batch.filter(p=>!known.has(p.id))]});setHasMore(batch.length===SIZE)}catch{setError(true)}finally{loadingRef.current=false;setLoading(false)}},[hasMore,selected]);
