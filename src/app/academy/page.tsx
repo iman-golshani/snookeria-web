@@ -9,7 +9,7 @@ export const metadata:Metadata={
 const academySchema={"@context":"https://schema.org","@type":"EducationalOrganization",name:"آکادمی اسنوکریا",alternateName:"Snookeria Academy",description:"آموزش اسنوکر در دوره‌های مبتدی، پیشرفته و حرفه‌ای زیر نظر ایمان گلشنی.",url:"https://snookeria.ir/academy",parentOrganization:{name:"اسنوکریا",url:"https://snookeria.ir"}};
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 import { CheckCircle2, GraduationCap } from "lucide-react";
 
 const courses = [
