@@ -9,13 +9,15 @@ type Category={slug:string;name:string;image_url:string|null};
 const SIZE=5;
 export default function HomeFeed({initialPosts}:{initialPosts:FeedPost[]}){const[categories,setCategories]=useState<Category[]>([]),[selected,setSelected]=useState("snookeria"),[posts,setPosts]=useState(initialPosts),[loading,setLoading]=useState(false),[hasMore,setHasMore]=useState(initialPosts.length===SIZE),[error,setError]=useState(false);const loadingRef=useRef(false),offsetRef=useRef(initialPosts.length),endRef=useRef<HTMLDivElement>(null);
 const restoredRef=useRef(false);
+const scrollRef=useRef(0);
+useEffect(()=>{const onScroll=()=>{scrollRef.current=window.scrollY};window.addEventListener("scroll",onScroll,{passive:true});return()=>window.removeEventListener("scroll",onScroll)},[]);
 useEffect(()=>{
  try{
   const raw=sessionStorage.getItem("snookeria-home-feed-state");
   if(raw){
    const saved=JSON.parse(raw) as {posts:FeedPost[];selected:string;offset:number;hasMore:boolean;scrollY:number;at:number};
    if(Date.now()-saved.at<30*60*1000&&Array.isArray(saved.posts)){
-    restoredRef.current=true;
+    restoredRef.current=true;scrollRef.current=saved.scrollY;
     setPosts(saved.posts);setSelected(saved.selected);offsetRef.current=saved.offset;setHasMore(saved.hasMore);
     requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:saved.scrollY,behavior:"instant"})));
    }
@@ -24,7 +26,7 @@ useEffect(()=>{
 },[]);
 useEffect(()=>{
  const save=()=>{
-  try{sessionStorage.setItem("snookeria-home-feed-state",JSON.stringify({posts,selected,offset:offsetRef.current,hasMore,scrollY:window.scrollY,at:Date.now()}))}catch{}
+  try{sessionStorage.setItem("snookeria-home-feed-state",JSON.stringify({posts,selected,offset:offsetRef.current,hasMore,scrollY:scrollRef.current,at:Date.now()}))}catch{}
  };
  window.addEventListener("pagehide",save);
  return()=>{save();window.removeEventListener("pagehide",save)};
