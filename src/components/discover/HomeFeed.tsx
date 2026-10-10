@@ -9,10 +9,22 @@ type Category={slug:string;name:string;image_url:string|null};
 const SIZE=5;
 export default function HomeFeed({initialPosts}:{initialPosts:FeedPost[]}){const[categories,setCategories]=useState<Category[]>([]),[selected,setSelected]=useState("snookeria"),[posts,setPosts]=useState(initialPosts),[loading,setLoading]=useState(false),[hasMore,setHasMore]=useState(initialPosts.length===SIZE),[error,setError]=useState(false);const loadingRef=useRef(false),offsetRef=useRef(initialPosts.length),endRef=useRef<HTMLDivElement>(null);
 const restoredRef=useRef(false);
+useEffect(()=>{
+ if(sessionStorage.getItem("snookeria-home-force-top")==="1"){
+  sessionStorage.removeItem("snookeria-home-force-top");
+  sessionStorage.removeItem("snookeria-home-feed-state");
+  if("scrollRestoration" in history)history.scrollRestoration="manual";
+  window.scrollTo(0,0);
+  requestAnimationFrame(()=>window.scrollTo(0,0));
+  setTimeout(()=>window.scrollTo(0,0),120);
+ }
+},[]);
 const scrollRef=useRef(0);
 useEffect(()=>{const onScroll=()=>{scrollRef.current=window.scrollY};window.addEventListener("scroll",onScroll,{passive:true});return()=>window.removeEventListener("scroll",onScroll)},[]);
 useEffect(()=>{
  try{
+  const forceTop=new URLSearchParams(window.location.search).has("feed-refresh");
+  if(forceTop){sessionStorage.removeItem("snookeria-home-feed-state");window.scrollTo(0,0);return;}
   const raw=sessionStorage.getItem("snookeria-home-feed-state");
   if(raw){
    const saved=JSON.parse(raw) as {posts:FeedPost[];selected:string;offset:number;hasMore:boolean;scrollY:number;at:number};
