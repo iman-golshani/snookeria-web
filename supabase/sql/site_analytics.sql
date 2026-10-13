@@ -26,7 +26,7 @@ returns void language plpgsql security definer set search_path=public as $$
 declare v_path text;v_device text;
 begin
  if p_visitor is null or length(coalesce(p_path,''))>300 or length(coalesce(p_referrer,''))>200 then return; end if;
- v_path:=split_part(split_part(coalesce(p_path,'/'),'? ',1),'#',1);
+ v_path:=split_part(split_part(coalesce(p_path,'/'),'?',1),'#',1);
  if left(v_path,1)<>'/' then return; end if;
  if v_path like '/admin%' or v_path like '/api%' then return; end if;
  v_device:=case when p_device in ('mobile','tablet','desktop') then p_device else 'desktop' end;
