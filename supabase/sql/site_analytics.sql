@@ -55,7 +55,7 @@ begin
  'period_visitors',(select count(distinct visitor_id) from public.site_analytics_views where created_at>=v_start),
  'all_views',(select count(*) from public.site_analytics_views),
  'all_visitors',(select count(*) from public.site_analytics_visitors),
- 'daily',(select coalesce(jsonb_agg(jsonb_build_object('day',day,'views',views,'visitors',visitors) order by day),'[]'::jsonb) from (select (created_at at time zone 'Asia/Tehran')::date day,count(*) views,count(distinct visitor_id) visitors from public.site_analytics_views where created_at>=v_start group by 1) d),
+ 'daily',(select coalesce(jsonb_agg(jsonb_build_object('day',d.day,'views',d.views,'visitors',d.visitors) order by d.day),'[]'::jsonb) from (select (created_at at time zone 'Asia/Tehran')::date as day,count(*) as views,count(distinct visitor_id) as visitors from public.site_analytics_views where created_at>=v_start group by 1) d),
  'top_pages',(select coalesce(jsonb_agg(jsonb_build_object('path',path,'views',views,'visitors',visitors) order by views desc),'[]'::jsonb) from (select path,count(*) views,count(distinct visitor_id) visitors from public.site_analytics_views where created_at>=v_start group by path order by views desc limit 12) p),
  'devices',(select coalesce(jsonb_agg(jsonb_build_object('device',device,'views',views) order by views desc),'[]'::jsonb) from (select device,count(*) views from public.site_analytics_views where created_at>=v_start group by device) t),
  'referrers',(select coalesce(jsonb_agg(jsonb_build_object('referrer',referrer,'views',views) order by views desc),'[]'::jsonb) from (select coalesce(nullif(referrer,''),'مستقیم / نامشخص') referrer,count(*) views from public.site_analytics_views where created_at>=v_start group by 1 order by views desc limit 8) r)
