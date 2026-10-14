@@ -1,0 +1,20 @@
+"use client";
+import {useState,type FormEvent} from "react";
+import {cmsSupabase} from "@/lib/supabase/cms";
+const field="w-full rounded-xl border border-[var(--edge)] bg-[var(--page)] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-red-500";
+export default function ConsultationForm(){
+ const [name,setName]=useState("");const [phone,setPhone]=useState("");const [level,setLevel]=useState("beginner");const [experience,setExperience]=useState("");const [goal,setGoal]=useState("learning");const [notes,setNotes]=useState("");const [busy,setBusy]=useState(false);const [success,setSuccess]=useState(false);const [error,setError]=useState("");
+ async function submit(e:FormEvent){e.preventDefault();if(busy)return;setBusy(true);setError("");const {error:err}=await cmsSupabase.rpc("submit_academy_consultation",{p_name:name.trim(),p_phone:phone.trim(),p_level:level,p_experience:experience.trim(),p_goal:goal,p_notes:notes.trim()});setBusy(false);if(err){setError("ثبت درخواست انجام نشد. لطفاً شماره موبایل را بررسی کنید یا چند دقیقه دیگر تلاش کنید.");return}setSuccess(true)}
+ return <section id="consultation" className="mx-auto mt-14 max-w-2xl scroll-mt-20 rounded-[28px] border border-red-500/25 bg-[var(--surface)] p-5 sm:p-8"><p className="text-xs font-bold tracking-widest text-red-400">FREE CONSULTATION</p><h2 className="mt-2 text-xl font-black">درخواست مشاوره اولیه رایگان</h2><p className="mt-3 text-sm leading-7 text-[var(--muted)]">برای بررسی مسیر یادگیری و هماهنگی آموزش خصوصی، اطلاعات کوتاه زیر را ثبت کنید تا برای مشاوره اولیه با شما تماس بگیریم.</p>
+ {success?<div role="status" className="mt-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-sm leading-7 text-emerald-400">درخواست شما با موفقیت ثبت شد. برای هماهنگی مشاوره اولیه با شما تماس می‌گیریم.</div>:
+ <form onSubmit={submit} className="mt-6 grid gap-4 sm:grid-cols-2">
+ <label className="space-y-2 text-xs font-bold">نام و نام خانوادگی *<input required minLength={2} maxLength={100} value={name} onChange={e=>setName(e.target.value)} className={field} placeholder="نام شما"/></label>
+ <label className="space-y-2 text-xs font-bold">شماره موبایل *<input required type="tel" inputMode="tel" dir="ltr" value={phone} onChange={e=>setPhone(e.target.value)} className={field} placeholder="0912xxxxxxx"/></label>
+ <label className="space-y-2 text-xs font-bold">سطح فعلی بازی *<select className={field} value={level} onChange={e=>setLevel(e.target.value)}><option value="beginner">مبتدی</option><option value="intermediate">متوسط</option><option value="advanced">پیشرفته</option></select></label>
+ <label className="space-y-2 text-xs font-bold">سابقه بازی<input maxLength={80} className={field} value={experience} onChange={e=>setExperience(e.target.value)} placeholder="مثلاً ۲ سال"/></label>
+ <label className="space-y-2 text-xs font-bold sm:col-span-2">هدف از آموزش *<select className={field} value={goal} onChange={e=>setGoal(e.target.value)}><option value="learning">یادگیری اصولی اسنوکر</option><option value="technique">اصلاح تکنیک و پیشرفت</option><option value="competition">آمادگی مسابقات</option><option value="other">سایر اهداف</option></select></label>
+ <label className="space-y-2 text-xs font-bold sm:col-span-2">توضیحات تکمیلی (اختیاری)<textarea rows={3} maxLength={1000} className={field} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="اگر موضوع خاصی مدنظرتان است بنویسید..."/></label>
+ {error&&<p role="alert" className="text-xs text-red-400 sm:col-span-2">{error}</p>}
+ <button disabled={busy} className="min-h-12 rounded-xl bg-red-600 px-6 font-bold text-white disabled:opacity-60 sm:col-span-2">{busy?"در حال ثبت...":"ثبت درخواست مشاوره رایگان"}</button><p className="text-xs leading-6 text-[var(--muted)] sm:col-span-2">شماره شما فقط برای هماهنگی مشاوره و پیگیری درخواست استفاده می‌شود.</p>
+ </form>}</section>
+}
