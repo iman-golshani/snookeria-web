@@ -8,6 +8,7 @@ export const metadata:Metadata={
 };
 const academySchema={"@context":"https://schema.org","@type":"EducationalOrganization",name:"آکادمی اسنوکریا",alternateName:"Snookeria Academy",description:"آموزش خصوصی و تخصصی اسنوکر با ارزیابی تکنیک و برنامه تمرینی اختصاصی زیر نظر ایمان گلشنی.",url:"https://snookeria.ir/academy",parentOrganization:{name:"اسنوکریا",url:"https://snookeria.ir"}};
 import Link from "next/link";
+import ConsultationForm from "@/components/academy/ConsultationForm";
 import { createClient } from "@supabase/supabase-js";
 export const dynamic = "force-dynamic";
 import { CheckCircle2, GraduationCap, Target, Activity, ClipboardCheck, ArrowLeft } from "lucide-react";
@@ -47,10 +48,11 @@ export default async function AcademyPage() {
           <div className="mt-8 grid gap-4 md:grid-cols-3">{skills.map(group=><article key={group.title} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-6"><h3 className="text-base font-black">{group.title}</h3><div className="mt-5 space-y-4">{group.items.map(item=><div key={item} className="flex items-start gap-3 text-sm leading-7 text-[var(--muted)]"><CheckCircle2 size={17} className="mt-1 shrink-0 text-red-500"/><span>{item}</span></div>)}</div></article>)}</div>
         </section>
         <section className="mt-14 grid gap-5 rounded-[28px] border border-red-500/20 bg-red-500/[0.045] p-6 md:grid-cols-[auto_1fr] md:items-start md:p-8"><ClipboardCheck size={29} className="text-red-500"/><div><h2 className="text-xl font-black">جلسه ارزیابی و آموزش خصوصی</h2><p className="mt-3 text-sm leading-8 text-[var(--muted)]">اگر می‌خواهید سطح بازی خود را ارتقا دهید، می‌توانید برای بررسی تکنیک، شناسایی اولویت‌های تمرینی و برنامه‌ریزی مسیر پیشرفت، جلسه خصوصی هماهنگ کنید. این آموزش برای علاقه‌مندان تازه‌کار، بازیکنان باشگاهی و بازیکنان مسابقاتی مناسب است.</p><p className="mt-3 text-xs leading-6 text-[var(--muted)]">محل برگزاری: باشگاه اسنوکر، با هماهنگی قبلی</p><Link href="/coach/iman-golshani" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-red-400">آشنایی با مربی <ArrowLeft size={16}/></Link></div></section>
+        <ConsultationForm/>
         <section className="mx-auto mt-12 max-w-2xl rounded-[28px] border border-red-500/20 bg-red-500/[0.05] p-6 text-center"><h2 className="text-lg font-bold">اسنوکر برای ما فقط یه بازی نیست</h2><p className="mt-1 text-lg font-bold text-red-500">یه سبک زندگیه</p><p className="mt-3 text-xs leading-6 text-[var(--muted)]">ما با اسنوکر تو زندگی رشد می‌کنیم.</p></section>
       </div>
       <section className="px-5 pt-10 text-center" aria-label="تماس با مربی">
-        <a href="tel:09196353060" className="mx-auto inline-flex min-h-12 items-center justify-center rounded-full bg-red-600 px-8 py-3 text-base font-bold text-white transition hover:bg-red-500">تماس با مربی</a>
+        <a href="tel:09196353060" className="mx-auto inline-flex min-h-12 items-center justify-center rounded-full bg-red-600 px-8 py-3 text-base font-bold text-white transition hover:bg-red-500">تماس مستقیم با مربی</a>
       </section>
     </main>
   );
