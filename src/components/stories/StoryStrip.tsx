@@ -15,8 +15,8 @@ export default function StoryStrip(){
  cmsSupabase.from("snookeria_highlight_stories").select("highlight_id,story_id,sort_order").order("sort_order")
  ]);if(!live)return;setStories((s.data??[]).filter(x=>x.published_at&&x.published_at<=now) as Story[]);setHighlights(h.data??[]);setMembers(m.data??[])}
  void load();const timer=setInterval(()=>void load(),60000);return()=>{live=false;clearInterval(timer)}},[]);
- const now=Date.now();const active=stories.filter(s=>new Date(s.expires_at).getTime()>now);
- const list=group==="live"?active:group?members.filter(m=>m.highlight_id===group).map(m=>stories.find(s=>s.id===m.story_id)).filter((s):s is Story=>!!s):[];
+ const now=Date.now();const active=stories.filter(s=>s.media_type==="image"&&new Date(s.expires_at).getTime()>now);
+ const list=group==="live"?active:group?members.filter(m=>m.highlight_id===group).map(m=>stories.find(s=>s.id===m.story_id)).filter((s):s is Story=>!!s&&s.media_type==="image"):[];
  const current=list[index];
  useEffect(()=>{if(!current)return;setSeen(old=>{if(old.includes(current.id))return old;const next=[...old,current.id].slice(-300);try{localStorage.setItem(seenKey,JSON.stringify(next))}catch{}return next})},[current?.id]);
  useEffect(()=>{setProgress(0);setVideoDuration(0)},[group,index]);
@@ -26,7 +26,7 @@ export default function StoryStrip(){
  useEffect(()=>{if(!group)return;const key=(e:KeyboardEvent)=>{if(e.key==="Escape")setGroup(null);if(e.key==="ArrowLeft")move(1);if(e.key==="ArrowRight")move(-1)};document.addEventListener("keydown",key);return()=>document.removeEventListener("keydown",key)},[group,index,list.length]);
  function move(delta:number){const next=index+delta;if(next<0)return;if(next>=list.length){setGroup(null);setIndex(0);return}setIndex(next)}
  function open(id:string){setIndex(0);setProgress(0);setPaused(false);setGroup(id)}
- const visibleHighlights=highlights.filter(h=>members.some(m=>m.highlight_id===h.id&&stories.some(s=>s.id===m.story_id)));
+ const visibleHighlights=highlights.filter(h=>members.some(m=>m.highlight_id===h.id&&stories.some(s=>s.id===m.story_id&&s.media_type==="image")));
  return <><div className="mb-4 flex gap-4 overflow-x-auto px-3 py-2" dir="rtl">
  <button type="button" onClick={()=>active.length?open("live"):undefined} className="flex w-[68px] shrink-0 flex-col items-center gap-1" aria-label="استوری‌های اسنوکریا">
  <span className={`flex h-16 w-16 items-center justify-center rounded-full border-[3px] p-[3px] ${active.some(s=>!seen.includes(s.id))?"border-red-500":"border-white/25"}`}>
@@ -42,6 +42,6 @@ export default function StoryStrip(){
  <div className="relative z-10 flex gap-1 px-3 pt-[max(12px,env(safe-area-inset-top))]">{list.map((s,i)=><div key={s.id} className="h-1 flex-1 overflow-hidden rounded-full bg-white/35"><div className="h-full bg-white" style={{width:i<index?"100%":i===index?progress+"%":"0%"}}/></div>)}</div>
  <div className="relative z-10 flex items-center justify-between px-4 py-3"><span className="text-xs font-bold">اسنوکریا · {index+1} / {list.length}</span><button onClick={()=>setGroup(null)} aria-label="بستن استوری" className="rounded-full bg-black/40 px-3 py-2 text-lg">✕</button></div>
  <div className="relative z-10 flex-1" onPointerDown={()=>{hold.current=Date.now();setPaused(true);video.current?.pause()}} onPointerUp={e=>{setPaused(false);void video.current?.play();if(hold.current!==null&&Date.now()-hold.current<250){const rect=e.currentTarget.getBoundingClientRect();move(e.clientX<rect.left+rect.width/2?1:-1)}hold.current=null}} onPointerCancel={()=>{setPaused(false);void video.current?.play()}}><span className="absolute inset-y-0 left-0 w-1/2"/><span className="absolute inset-y-0 right-0 w-1/2"/></div>
- <div className="pointer-events-none relative z-10 px-6 pb-[max(30px,env(safe-area-inset-bottom))] text-center"><h2 className="text-xl font-black leading-8 drop-shadow">{current.title}</h2>{current.body&&<p className="mt-3 whitespace-pre-line text-sm leading-7 drop-shadow">{current.body}</p>}{current.link_url&&<a href={current.link_url} target={current.link_url.startsWith("/")?"_self":"_blank"} rel="noopener noreferrer" className="pointer-events-auto mt-4 inline-block rounded-full bg-white px-5 py-2 text-xs font-bold text-slate-900">مشاهده جزئیات ↗</a>}</div>
+ <div className="pointer-events-none relative z-10 px-6 pb-[max(30px,env(safe-area-inset-bottom))] text-center">{current.link_url&&<a href={current.link_url} target={current.link_url.startsWith("/")?"_self":"_blank"} rel="noopener noreferrer" className="pointer-events-auto mt-4 inline-block rounded-full bg-white px-5 py-2 text-xs font-bold text-slate-900">مشاهده جزئیات ↗</a>}</div>
  </div></div>}</>
 }
