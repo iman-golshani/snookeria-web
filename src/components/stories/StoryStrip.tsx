@@ -7,7 +7,7 @@ const seenKey="snookeria-stories-seen-v1";
 export default function StoryStrip(){
  const [stories,setStories]=useState<Story[]>([]),[highlights,setHighlights]=useState<Highlight[]>([]),[members,setMembers]=useState<{highlight_id:string;story_id:string;sort_order:number}[]>([]);
  const [group,setGroup]=useState<string|null>(null),[index,setIndex]=useState(0),[progress,setProgress]=useState(0),[paused,setPaused]=useState(false),[seen,setSeen]=useState<string[]>([]);
- const video=useRef<HTMLVideoElement>(null);const hold=useRef<number|null>(null);
+ const [videoDuration,setVideoDuration]=useState(0);const video=useRef<HTMLVideoElement>(null);const hold=useRef<number|null>(null);
  useEffect(()=>{try{setSeen(JSON.parse(localStorage.getItem(seenKey)||"[]"))}catch{}},[]);
  useEffect(()=>{let live=true;async function load(){const now=new Date().toISOString();const [s,h,m]=await Promise.all([
  cmsSupabase.from("snookeria_stories").select("id,media_url,media_type,title,body,background,link_url,duration_seconds,published_at,expires_at").eq("status","published").order("published_at",{ascending:true}),
@@ -19,9 +19,9 @@ export default function StoryStrip(){
  const list=group==="live"?active:group?members.filter(m=>m.highlight_id===group).map(m=>stories.find(s=>s.id===m.story_id)).filter((s):s is Story=>!!s):[];
  const current=list[index];
  useEffect(()=>{if(!current)return;setSeen(old=>{if(old.includes(current.id))return old;const next=[...old,current.id].slice(-300);try{localStorage.setItem(seenKey,JSON.stringify(next))}catch{}return next})},[current?.id]);
- useEffect(()=>{setProgress(0)},[group,index]);
- useEffect(()=>{if(!current||paused)return;const duration=current.media_type==="video"?(video.current?.duration&&Number.isFinite(video.current.duration)?video.current.duration:current.duration_seconds):current.duration_seconds;
- const step=50;const timer=setInterval(()=>setProgress(p=>Math.min(100,p+100*step/(duration*1000))),step);return()=>clearInterval(timer)},[current?.id,paused]);
+ useEffect(()=>{setProgress(0);setVideoDuration(0)},[group,index]);
+ useEffect(()=>{if(!current||paused)return;const duration=current.media_type==="video"?(videoDuration>0?videoDuration:current.duration_seconds):current.duration_seconds;
+ const step=50;const timer=setInterval(()=>setProgress(p=>Math.min(100,p+100*step/(duration*1000))),step);return()=>clearInterval(timer)},[current?.id,paused,videoDuration]);
  useEffect(()=>{if(progress<100||!current)return;if(index+1<list.length){setIndex(i=>i+1)}else{setGroup(null);setIndex(0)}},[progress,current?.id,index,list.length]);
  useEffect(()=>{if(!group)return;const key=(e:KeyboardEvent)=>{if(e.key==="Escape")setGroup(null);if(e.key==="ArrowLeft")move(1);if(e.key==="ArrowRight")move(-1)};document.addEventListener("keydown",key);return()=>document.removeEventListener("keydown",key)},[group,index,list.length]);
  function move(delta:number){const next=index+delta;if(next<0)return;if(next>=list.length){setGroup(null);setIndex(0);return}setIndex(next)}
@@ -37,7 +37,7 @@ export default function StoryStrip(){
  {group&&current&&<div role="dialog" aria-modal="true" aria-label="نمایش استوری" className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-0 sm:p-5" dir="rtl">
  <div className="relative flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-[#142136] text-white sm:h-[min(90dvh,820px)] sm:rounded-2xl" style={{backgroundColor:current.background||"#142136"}}>
  {current.media_type==="image"&&current.media_url&&<img src={current.media_url} alt={current.title} className="absolute inset-0 h-full w-full object-contain"/>}
- {current.media_type==="video"&&current.media_url&&<video ref={video} src={current.media_url} autoPlay playsInline onEnded={()=>move(1)} onLoadedMetadata={()=>setProgress(0)} className="absolute inset-0 h-full w-full object-contain" />}
+ {current.media_type==="video"&&current.media_url&&<video ref={video} src={current.media_url} autoPlay playsInline onEnded={()=>move(1)} onLoadedMetadata={e=>{const duration=e.currentTarget.duration;if(Number.isFinite(duration)&&duration>0)setVideoDuration(duration);setProgress(0)}} className="absolute inset-0 h-full w-full object-contain" />}
  <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/70"/>
  <div className="relative z-10 flex gap-1 px-3 pt-[max(12px,env(safe-area-inset-top))]">{list.map((s,i)=><div key={s.id} className="h-1 flex-1 overflow-hidden rounded-full bg-white/35"><div className="h-full bg-white" style={{width:i<index?"100%":i===index?progress+"%":"0%"}}/></div>)}</div>
  <div className="relative z-10 flex items-center justify-between px-4 py-3"><span className="text-xs font-bold">اسنوکریا · {index+1} / {list.length}</span><button onClick={()=>setGroup(null)} aria-label="بستن استوری" className="rounded-full bg-black/40 px-3 py-2 text-lg">✕</button></div>
