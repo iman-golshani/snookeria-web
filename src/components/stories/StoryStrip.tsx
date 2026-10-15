@@ -30,7 +30,7 @@ export default function StoryStrip(){
  return <><div className="mb-4 flex gap-4 overflow-x-auto px-3 py-2" dir="rtl">
  <button type="button" onClick={()=>active.length?open("live"):undefined} className="flex w-[68px] shrink-0 flex-col items-center gap-1" aria-label="استوری‌های اسنوکریا">
  <span className={`flex h-16 w-16 items-center justify-center rounded-full border-[3px] p-[3px] ${active.some(s=>!seen.includes(s.id))?"border-red-500":"border-white/25"}`}>
- <img src="/snookeria-logo-1024.png" alt="" className="h-full w-full rounded-full object-cover" /></span><span className="text-[11px] text-[var(--ink)]">اسنوکریا</span></button>
+ <img src="/snookeria-circle-transparent.png" alt="" className="h-full w-full rounded-full object-cover" /></span><span className="text-[11px] text-[var(--ink)]">اسنوکریا</span></button>
  {visibleHighlights.map(h=><button type="button" key={h.id} onClick={()=>open(h.id)} className="flex w-[68px] shrink-0 flex-col items-center gap-1" aria-label={`هایلایت ${h.title}`}>
  <span className="flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-white/25 p-[3px]">{h.cover_url?<img src={h.cover_url} alt="" className="h-full w-full rounded-full object-cover"/>:<span className="flex h-full w-full items-center justify-center rounded-full bg-red-500/15 text-lg text-red-400">{h.title.slice(0,1)}</span>}</span><span className="max-w-full truncate text-[11px] text-[var(--ink)]">{h.title}</span></button>)}
  </div>
