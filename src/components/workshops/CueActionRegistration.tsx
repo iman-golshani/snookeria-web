@@ -2,10 +2,10 @@
 import {useState,type FormEvent} from "react";
 import {cmsSupabase} from "@/lib/supabase/cms";
 const field="w-full rounded-xl border border-white/15 bg-[#0c1a2d] px-4 py-3 text-sm text-white outline-none focus:border-red-500";
-export default function CueActionRegistration(){
+export default function CueActionRegistration({workshopId}:{workshopId:string}){
 const [name,setName]=useState(""),[phone,setPhone]=useState(""),[experience,setExperience]=useState(""),[busy,setBusy]=useState(false),[success,setSuccess]=useState(false),[error,setError]=useState("");
 async function submit(e:FormEvent){e.preventDefault();if(busy)return;setBusy(true);setError("");
-const {data,error:err}=await cmsSupabase.rpc("register_cue_action_workshop",{p_full_name:name.trim(),p_phone:phone.trim(),p_experience:experience.trim()});
+const {data,error:err}=await cmsSupabase.rpc("register_academy_workshop",{p_workshop_id:workshopId,p_full_name:name.trim(),p_phone:phone.trim(),p_experience:experience.trim()});
 setBusy(false);if(err){setError("ثبت‌نام انجام نشد. لطفاً دوباره تلاش کنید.");return}
 if(data==="full"){setError("ظرفیت این کارگاه تکمیل شده است.");return}
 if(data==="closed"){setError("مهلت ثبت‌نام این کارگاه به پایان رسیده است.");return}
