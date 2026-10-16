@@ -1,0 +1,8 @@
+import {notFound} from "next/navigation";
+import {createClient} from "@supabase/supabase-js";
+import CueActionRegistration from "@/components/workshops/CueActionRegistration";
+export const dynamic="force-dynamic";
+export default async function WorkshopDetail({params}:{params:Promise<{slug:string}>}){
+const {slug}=await params;const cms=createClient(process.env.NEXT_PUBLIC_CMS_SUPABASE_URL!,process.env.NEXT_PUBLIC_CMS_SUPABASE_ANON_KEY!,{auth:{persistSession:false}});
+const {data:w}=await cms.from("academy_workshops").select("*").eq("slug",slug).eq("status","published").maybeSingle();if(!w)notFound();
+return <main dir="rtl" className="min-h-screen bg-[#071426] px-4 pb-32 pt-10 text-white"><div className="mx-auto max-w-2xl space-y-6">{w.cover_url&&<img src={w.cover_url} alt={w.title} className="aspect-video w-full rounded-2xl object-cover"/>}<header><p className="text-xs font-bold text-red-400">SNOOKERIA WORKSHOP</p><h1 className="mt-3 text-2xl font-black leading-10">{w.title}</h1><p className="mt-4 whitespace-pre-line text-sm leading-8 text-white/65">{w.description}</p></header><section className="space-y-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm"><p>تاریخ: {new Date(w.starts_at).toLocaleDateString("fa-IR",{timeZone:"Asia/Tehran"})}</p><p>ساعت: {new Date(w.starts_at).toLocaleTimeString("fa-IR",{timeZone:"Asia/Tehran",hour:"2-digit",minute:"2-digit"})} تا {new Date(w.ends_at).toLocaleTimeString("fa-IR",{timeZone:"Asia/Tehran",hour:"2-digit",minute:"2-digit"})}</p><p>مکان: {w.location}</p><p>ظرفیت: {w.capacity.toLocaleString("fa-IR")} نفر</p><p className="text-lg font-black">هزینه: {Number(w.price_toman).toLocaleString("fa-IR")} تومان</p></section><CueActionRegistration workshopId={w.id}/></div></main>}
