@@ -22,3 +22,7 @@ html,body,input,textarea,select,button{font-family:"Vazirmatn Variable",Tahoma,A
 
 /* Tailwind v4 font-sans token */
 @theme inline { --font-sans: "Vazirmatn Variable", Tahoma, Arial, sans-serif; }
+
+/* Dedicated admin app shell: remove the public site header spacer and respect iPhone safe area. */
+body:has([data-admin-app]){padding-top:0!important}
+[data-admin-app]{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
