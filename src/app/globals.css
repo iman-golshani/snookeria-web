@@ -1,10 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,900&display=swap");
 @import "tailwindcss";
 :root{--font-playfair:"Playfair Display";}
-/* Snookeria Design System — dark only */
+/* Shared Snookeria palette: white, cloth green and red; navy for dark mode only. */
+:root,html{
+color-scheme:light;
+--page:#ffffff;--surface:#ffffff;--surface-raised:#f1faf6;--ink:#142e25;--muted:#657b71;--edge:#e1eee7;--nav:#ffffff;--accent:#da1230;--accent-soft:rgba(218,18,48,.1);--green:#087c43;--green-bright:#19c76a;--shadow:0 6px 20px rgba(0,110,70,.06);--navy:#101f38;--red:#da1230
+}
+@media (prefers-color-scheme:dark) {
 :root,html{
 color-scheme:dark;
---page:#0b111b;--surface:#151e2b;--surface-raised:#1c2736;--ink:#f3f6fa;--muted:#a0acba;--edge:#2a3647;--nav:#101a29;--accent:#ec3650;--accent-soft:rgba(236,54,80,.12);--shadow:0 8px 28px rgba(0,0,0,.18);--navy:#101a29;--red:#ec3650
+--page:#101f38;--surface:#152844;--surface-raised:#1c3150;--ink:#f7fafc;--muted:#adc0d1;--edge:#334967;--nav:#101f38;--accent:#ff3656;--accent-soft:rgba(255,54,86,.14);--green:#19c76a;--green-bright:#19c76a;--shadow:0 8px 28px rgba(0,0,0,.2);--navy:#101f38;--red:#ff3656
+}
 }
 
 *{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--page)}body{margin:0;background:var(--page);color:var(--ink);font-family:"Vazirmatn Variable",Tahoma,Arial,sans-serif}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit}::selection{background:var(--accent);color:#fff}
@@ -26,3 +32,6 @@ html,body,input,textarea,select,button{font-family:"Vazirmatn Variable",Tahoma,A
 /* Dedicated admin app shell: remove the public site header spacer and respect iPhone safe area. */
 body:has([data-admin-app]){padding-top:0!important}
 [data-admin-app]{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+
+/* Soft theme transitions without changing existing page/navigation structure. */
+body,.app-page,.app-card{transition:background-color .2s ease,color .2s ease}

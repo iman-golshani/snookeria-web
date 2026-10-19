@@ -13,8 +13,8 @@ export default function manifest(): MetadataRoute.Manifest {
 
     display: "standalone",
 
-    background_color: "#c90024",
-    theme_color: "#c90024",
+    background_color: "#ffffff",
+    theme_color: "#ffffff",
 
     orientation: "portrait",
 
@@ -22,6 +22,7 @@ export default function manifest(): MetadataRoute.Manifest {
     dir: "rtl",
 
     icons: [
+      { src: "/snookeria-launcher-square.png", sizes: "1254x1254", type: "image/png", purpose: "any" },
       {
         src: "/pwa-192x192.png",
         sizes: "192x192",
