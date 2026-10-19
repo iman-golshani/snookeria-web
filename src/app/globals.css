@@ -33,3 +33,15 @@ body:has([data-admin-app]){padding-top:0!important}
 
 /* Soft theme transitions without changing existing page/navigation structure. */
 body,.app-page,.app-card{transition:background-color .2s ease,color .2s ease}
+
+/* Light/dark parity for legacy internal pages that still use fixed dark utilities. */
+html main[class*="bg-[#071426]"],html main[class*="bg-[#081627]"],
+html main[class*="bg-[#06111c]"],html main[class*="bg-[#07182b]"],
+html main[class*="bg-[#07111c]"]{background:var(--page)!important;color:var(--ink)!important}
+html:not([data-theme="dark"]) main[class*="text-white"]{color:var(--ink)!important}
+html:not([data-theme="dark"]) main [class*="text-white/"]{color:var(--muted)!important}
+html main [class*="bg-[#0a2029]"],html main [class*="bg-[#091b25]"],
+html main [class*="bg-[#0a1b25]"],html main [class*="bg-[#0b202a]"],
+html main [class*="bg-[#071821]"],html main [class*="bg-[#07151e]"],
+html main [class*="bg-white/[.04]"]{background:var(--surface)!important;border-color:var(--edge)!important;color:var(--ink)!important}
+html[data-theme="dark"] main [class*="bg-white"]{border-color:var(--edge)}

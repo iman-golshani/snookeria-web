@@ -12,7 +12,7 @@ export default function Header(){
         <img src="/snookeria-circle-mark.jpg" alt="" className="h-8 w-8 rounded-full object-cover"/>
       </Link>
       <Link href="/" className="flex flex-1 items-center justify-center" dir="ltr">
-        <span className="text-[26px] leading-none tracking-[.025em] text-[var(--ink)]" style={{fontFamily:"var(--font-brand)"}}>SNOOKERIA</span>
+        <span className="text-[26px] leading-none tracking-[.025em] text-[var(--ink)]" style={{fontFamily:"var(--font-brand)"}}>snookeria</span>
       </Link>
       <ThemeToggle/>
     </div>
