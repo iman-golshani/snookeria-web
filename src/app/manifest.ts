@@ -22,25 +22,10 @@ export default function manifest(): MetadataRoute.Manifest {
     dir: "rtl",
 
     icons: [
-      { src: "/snookeria-launcher-square.png", sizes: "1254x1254", type: "image/png", purpose: "any" },
-      {
-        src: "/pwa-192x192.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/pwa-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/maskable-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
+      { src: "/snookeria-official-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/snookeria-official-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/snookeria-official-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/snookeria-official-square.jpg", sizes: "1254x1254", type: "image/jpeg", purpose: "any" },
     ],
   };
 }
