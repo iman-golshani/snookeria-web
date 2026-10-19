@@ -2,7 +2,7 @@ import type {Metadata,Viewport} from "next";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminPWAInstall from "@/components/admin/AdminPWAInstall";
 export const metadata:Metadata={
-title:"مدیریت اسنوکریا",applicationName:"مدیریت اسنوکریا",
+title:"مدیریت اسنوکریا",applicationName:"مدیریت اسنوکریا",robots:{index:false,follow:false},
 manifest:"/admin/manifest.webmanifest",
 appleWebApp:{capable:true,title:"مدیریت اسنوکریا",statusBarStyle:"black-translucent"},
 icons:{icon:"/admin-icon.svg",apple:"/apple-touch-icon.png"}
