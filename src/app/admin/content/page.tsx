@@ -14,7 +14,7 @@ type Dashboard={posts:number;published:number;stories:number;recent:RecentPost[]
 
 const tiles=[
   {href:"/admin/posts",label:"پست و مقاله",detail:"پست، اسلاید، کپشن و پیش‌نویس",icon:Images,accent:"#dc344d",soft:"rgba(220,52,77,.13)"},
-  {href:"/admin/stories",label:"استوری و هایلایت",detail:"تصویر، متن، رنگ و لینک",icon:WandSparkles,accent:"#17a477",soft:"rgba(23,164,119,.12)"},
+  {href:"/admin/stories",label:"استوری و هایلایت",detail:"متن‌های نامحدود، استیکر لینک و هایلایت",icon:WandSparkles,accent:"#17a477",soft:"rgba(23,164,119,.12)"},
   {href:"/admin/categories",label:"دسته‌بندی‌ها",detail:"موضوع‌ها و تصویر هر دسته",icon:Layers3,accent:"#6e9de3",soft:"rgba(110,157,227,.13)"},
 ];
 
@@ -57,9 +57,7 @@ export default function ContentHub(){
           <div className="flex items-center gap-2 text-xs font-semibold text-[#78d4b1]"><Sparkles size={15}/> استودیوی محتوای اسنوکریا</div>
           <h1 className="mt-3 text-2xl font-black leading-relaxed sm:text-3xl">امروز چی منتشر کنیم؟</h1>
           <p className="mt-2 max-w-md text-xs leading-7 text-slate-300">یک‌بار منتشر کن؛ در سایت و اپ اسنوکریا نمایش بده. ساده، سریع و بدون صفحه‌های اضافه.</p>
-          <Link href="/admin/posts" className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#d8304b] px-6 text-sm font-black text-white shadow-lg shadow-red-900/20 transition hover:bg-[#e83c57]">
-            <CirclePlus size={19}/> ایجاد مطلب جدید <ChevronLeft size={17}/>
-          </Link>
+          <div className="mt-6 grid grid-cols-2 gap-2"><Link href="/admin/posts" className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl bg-[#d8304b] px-2 py-3 text-xs font-black text-white shadow-lg shadow-red-900/20 sm:text-sm"><CirclePlus size={18}/> مطلب جدید</Link><Link href="/admin/stories" className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border border-white/20 bg-white/10 px-2 py-3 text-xs font-black text-white sm:text-sm"><WandSparkles size={18}/> ساخت استوری</Link></div>
         </div>
       </section>
 
