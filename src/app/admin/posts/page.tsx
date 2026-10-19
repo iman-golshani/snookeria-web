@@ -135,7 +135,7 @@ export default function PostsAdminPage() {
   async function saveRecroppedMedia(id:string,file:File){
     const previous=media.find(m=>m.id===id);if(!previous)return;
     setSavedCropUploading(true);setMediaProgress(0);setUploadLabel("آپلود تصویر ویرایش‌شده");
-    const path=`posts/${editingId||"gallery"}/${Date.now()}-${crypto.randomUUID()}.jpg`;
+    const path=`posts/${editingId||"gallery"}/${Date.now()}-${crypto.randomUUID()}.webp`;
     try{
       await uploadWithProgress(path,file,p=>setMediaProgress(p));
       const {data}=cmsSupabase.storage.from("cms-media").getPublicUrl(path);
@@ -183,7 +183,7 @@ export default function PostsAdminPage() {
   }
   async function uploadCroppedCover(file:File){
     setCropFile(null);setUploading(true);setError("");
-    const path="posts/"+Date.now()+"-"+crypto.randomUUID()+".jpg";
+    const path="posts/"+Date.now()+"-"+crypto.randomUUID()+".webp";
     try{setUploadProgress(0);await uploadWithProgress(path,file,p=>setUploadProgress(p))}catch(e){setError("آپلود تصویر انجام نشد: "+(e instanceof Error?e.message:String(e)));setUploading(false);setUploadProgress(null);return}
     const {data}=cmsSupabase.storage.from("cms-media").getPublicUrl(path);
     setCover(data.publicUrl);if(!ogImage)setOgImage(data.publicUrl);setUploading(false);setUploadProgress(null);
