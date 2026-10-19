@@ -29,8 +29,8 @@ export default function StoryImageEditor({initialUrl,onPublish,busy,resetKey}:Pr
  for(const l of labels){ctx.font=`700 ${l.size}px ${l.font==="iransans"?'"IRANSans", "Vazirmatn Variable"':'"Vazirmatn Variable"'} , Tahoma, sans-serif`;ctx.fillStyle=l.color;ctx.shadowColor="rgba(0,0,0,.75)";ctx.shadowBlur=10;
  const lines=l.text.split("\n");lines.forEach((line,i)=>ctx.fillText(line,l.x,l.y+(i-(lines.length-1)/2)*l.size*1.35,1000))}
  ctx.shadowBlur=0;
- const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error("Export failed")),"image/jpeg",.92));
- await onPublish(new File([blob],"snookeria-story.jpg",{type:"image/jpeg"}));
+ const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error("Export failed")),"image/webp",.88));
+ await onPublish(new File([blob],"snookeria-story.webp",{type:"image/webp"}));
  }catch(e){alert("آماده‌سازی استوری ناموفق بود: "+String(e))}finally{setSaving(false)}}
  return <div className="space-y-3">
  <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)choose(f);e.target.value=""}}/>
