@@ -29,10 +29,10 @@ export default function StoryStrip(){
  const visibleHighlights=highlights.filter(h=>members.some(m=>m.highlight_id===h.id&&stories.some(s=>s.id===m.story_id&&s.media_type==="image")));
  return <><div className="mb-4 flex gap-4 overflow-x-auto px-3 py-2" dir="rtl">
  <button type="button" onClick={()=>active.length?open("live"):undefined} className="flex w-[68px] shrink-0 flex-col items-center gap-1" aria-label="استوری‌های اسنوکریا">
- <span className={`flex h-16 w-16 items-center justify-center rounded-full border-[3px] p-[3px] ${active.some(s=>!seen.includes(s.id))?"border-red-500":"border-white/25"}`}>
+ <span className={`flex h-16 w-16 items-center justify-center rounded-full border-[3px] p-[3px] ${active.some(s=>!seen.includes(s.id))?"border-red-500":"border-[var(--edge)]"}`}>
  <img src="/snookeria-circle-transparent.png" alt="" className="h-full w-full rounded-full object-cover" /></span><span className="text-[11px] text-[var(--ink)]">اسنوکریا</span></button>
  {visibleHighlights.map(h=><button type="button" key={h.id} onClick={()=>open(h.id)} className="flex w-[68px] shrink-0 flex-col items-center gap-1" aria-label={`هایلایت ${h.title}`}>
- <span className="flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-white/25 p-[3px]">{h.cover_url?<img src={h.cover_url} alt="" className="h-full w-full rounded-full object-cover"/>:<span className="flex h-full w-full items-center justify-center rounded-full bg-red-500/15 text-lg text-red-400">{h.title.slice(0,1)}</span>}</span><span className="max-w-full truncate text-[11px] text-[var(--ink)]">{h.title}</span></button>)}
+ <span className="flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-[var(--edge)] p-[3px]">{h.cover_url?<img src={h.cover_url} alt="" className="h-full w-full rounded-full object-cover"/>:<span className="flex h-full w-full items-center justify-center rounded-full bg-red-500/15 text-lg text-red-400">{h.title.slice(0,1)}</span>}</span><span className="max-w-full truncate text-[11px] text-[var(--ink)]">{h.title}</span></button>)}
  </div>
  {group&&current&&<div role="dialog" aria-modal="true" aria-label="نمایش استوری" className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-0 sm:p-5" dir="rtl">
  <div className="relative flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-[#142136] text-white sm:h-[min(90dvh,820px)] sm:rounded-2xl" style={{backgroundColor:current.background||"#142136"}}>
