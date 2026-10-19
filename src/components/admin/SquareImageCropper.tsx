@@ -14,8 +14,8 @@ export default function SquareImageCropper({file,onCancel,onDone}:Props){
  ctx.fillStyle="#ffffff";ctx.fillRect(0,0,1080,1080);
  const factor=1080/320;
  ctx.drawImage(img.current,(320-width)/2*factor+x*factor,(320-height)/2*factor+y*factor,width*factor,height*factor);
- const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("Crop failed")),"image/jpeg",0.9));
- onDone(new File([blob],"snookeria-cover-"+Date.now()+".jpg",{type:"image/jpeg"}));
+ const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("Crop failed")),"image/webp",0.88));
+ onDone(new File([blob],"snookeria-cover-"+Date.now()+".webp",{type:"image/webp"}));
  }catch{setWorking(false)}}
  return <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-3" dir="rtl"><div className="w-full max-w-md rounded-2xl bg-[#142033] p-4 text-white"><h2 className="mb-2 text-center text-lg font-bold">برش تصویر پست (۱:۱)</h2><p className="mb-4 text-center text-xs text-white/60">عکس را با انگشت جابه‌جا کن و با نوار زیر آن بزرگ‌نمایی را تنظیم کن.</p>
  <div className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-xl bg-black touch-none" style={{width:"min(320px, 100%)"}} onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);drag.current={x:e.clientX,y:e.clientY,ox:x,oy:y}}} onPointerMove={e=>{if(!drag.current)return;const ratio=320/e.currentTarget.getBoundingClientRect().width;setOffset({x:Math.max(-maxX,Math.min(maxX,drag.current.ox+(e.clientX-drag.current.x)*ratio)),y:Math.max(-maxY,Math.min(maxY,drag.current.oy+(e.clientY-drag.current.y)*ratio))})}} onPointerUp={()=>drag.current=null} onPointerCancel={()=>drag.current=null}>
