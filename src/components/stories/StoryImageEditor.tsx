@@ -30,7 +30,7 @@ export default function StoryImageEditor({initialUrl,onPublish,busy,resetKey}:Pr
  for(const l of labels.filter(label=>label.kind!=="link")){ctx.font=`700 ${l.size}px ${l.font==="iransans"?'"IRANSans", "Vazirmatn Variable"':'"Vazirmatn Variable"'} , Tahoma, sans-serif`;ctx.fillStyle=l.color;ctx.shadowColor="rgba(0,0,0,.75)";ctx.shadowBlur=10;
  const lines=l.text.split("\n");lines.forEach((line,i)=>ctx.fillText(line,l.x,l.y+(i-(lines.length-1)/2)*l.size*1.35,1000))}
  ctx.shadowBlur=0;
- const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error("Export failed")),"image/webp",.88));
+ const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error("Export failed")),"image/webp",.80));
  await onPublish(new File([blob],"snookeria-story.webp",{type:"image/webp"}),labels.filter(l=>l.kind==="link"&&l.url).map(l=>({label:l.text,url:l.url!,x:l.x,y:l.y,size:l.size})));
  }catch(e){alert("آماده‌سازی استوری ناموفق بود: "+String(e))}finally{setSaving(false)}}
  return <div className="space-y-3">
