@@ -47,7 +47,7 @@ export default function ContentStudio(){
     void(async()=>{
       const {data}=await cmsSupabase.auth.getSession();
       if(!live)return;
-      if(!data.session){router.replace("/admin/login");return}
+      if(!data.session){router.replace("/admin/login");return}const {data:isAdmin,error:accessError}=await cmsSupabase.rpc("is_cms_admin");if(accessError||!isAdmin){router.replace("/admin");return}
       await load();
       if(live)setLoading(false);
     })();
