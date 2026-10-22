@@ -22,7 +22,7 @@ export default function ReelsAdmin(){
   if(e){setLoaded(false);setError("جدول ریلز هنوز آماده نیست یا دسترسی مدیریت تنظیم نشده است. ابتدا SQL ریلز را در پروژه CMS اجرا کن. ("+e.message+")");return}
   setLoaded(true);setReels((data??[]) as Reel[]);
  }
- useEffect(()=>{let mounted=true;void(async()=>{const{data}=await cmsSupabase.auth.getSession();if(!mounted)return;if(!data.session){router.replace("/admin/login");return}await reload();if(mounted)setReady(true)})();return()=>{mounted=false}},[router]);
+ useEffect(()=>{let mounted=true;void(async()=>{const{data}=await cmsSupabase.auth.getSession();if(!mounted)return;if(!data.session){router.replace("/admin/login");return}const {data:isAdmin,error:accessError}=await cmsSupabase.rpc("is_cms_admin");if(accessError||!isAdmin){router.replace("/admin");return}await reload();if(mounted)setReady(true)})();return()=>{mounted=false}},[router]);
  useEffect(()=>{if(!video)return;const u=URL.createObjectURL(video);setVideoUrl(u);return()=>URL.revokeObjectURL(u)},[video]);
  useEffect(()=>{if(!cover)return;const u=URL.createObjectURL(cover);setCoverUrl(u);return()=>URL.revokeObjectURL(u)},[cover]);
  function reset(){setEditing(null);setTitle("");setCaption("");setStatus("draft");setVideo(null);setCover(null);setVideoUrl("");setCoverUrl("");setProgress(0)}
