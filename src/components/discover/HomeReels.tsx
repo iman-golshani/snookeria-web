@@ -1,26 +1,55 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
-import {Maximize2,Play,RefreshCw,Volume2,VolumeX,X} from "lucide-react";
+import {Play,RefreshCw,Volume2,VolumeX,X} from "lucide-react";
 import {cmsSupabase} from "@/lib/supabase/cms";
 type Reel={id:string;title:string;caption:string|null;video_url:string;cover_url:string|null};
 
 function ReelPreview({reel,onOpen}:{reel:Reel;onOpen:()=>void}){
  const [expanded,setExpanded]=useState(false);
- return <article className="mb-4 overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--surface)]">
-  <button type="button" onClick={onOpen} aria-label={`تماشای ریلز ${reel.title} در تمام صفحه`} className="relative block w-full overflow-hidden bg-[#0c1321]">
-   <div className="relative aspect-[9/13] w-full">
-    {reel.cover_url?<img src={reel.cover_url} alt={reel.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover"/>:<video src={reel.video_url} playsInline muted preload="metadata" className="absolute inset-0 h-full w-full object-cover"/>}
-    <div className="absolute inset-0 flex items-center justify-center"><span className="rounded-full bg-black/55 p-4 text-white"><Play size={28} fill="currentColor"/></span></div>
-    <span className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-2 text-[11px] font-bold text-white"><Maximize2 size={13}/> تمام‌صفحه</span>
-   </div>
-  </button>
+ const [visible,setVisible]=useState(false);
+ const [muted,setMuted]=useState(true);
+ const [failed,setFailed]=useState(false);
+ const wrapper=useRef<HTMLElement>(null);
+ const video=useRef<HTMLVideoElement>(null);
+ useEffect(()=>{
+  const node=wrapper.current;if(!node)return;
+  const observer=new IntersectionObserver(entries=>{
+   setVisible(entries[0]?.intersectionRatio>=.55);
+  },{threshold:[0,.25,.55,.85],rootMargin:"180px 0px"});
+  observer.observe(node);return()=>observer.disconnect();
+ },[]);
+ useEffect(()=>{
+  const node=video.current;if(!node)return;
+  if(visible&&!document.hidden)void node.play().catch(()=>{});
+  else node.pause();
+ },[visible]);
+ useEffect(()=>{
+  const update=()=>{if(document.hidden)video.current?.pause();else if(visible)void video.current?.play().catch(()=>{})};
+  document.addEventListener("visibilitychange",update);
+  return()=>document.removeEventListener("visibilitychange",update);
+ },[visible]);
+ return <article ref={wrapper} className="mb-4 overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--surface)]">
+  <div className="relative aspect-[9/13] w-full overflow-hidden bg-[#0c1321]">
+   {reel.cover_url&&<img src={reel.cover_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover"/>}
+   {(visible||!reel.cover_url)&&<video ref={video} src={reel.video_url} poster={reel.cover_url||undefined}
+    playsInline muted={muted} loop preload={visible?"auto":"metadata"} autoPlay={visible}
+    onError={()=>setFailed(true)}
+    className="absolute inset-0 h-full w-full object-cover"/>}
+   {failed&&<div className="absolute inset-0 flex items-center justify-center bg-black/70 text-xs text-white">پخش ویدیو در دسترس نیست</div>}
+   <button type="button" onClick={onOpen} aria-label={`نمایش ریلز ${reel.title} در صفحه بزرگ`}
+    className="absolute inset-0 w-full" />
+   <button type="button" onClick={()=>setMuted(v=>!v)} aria-label={muted?"فعال‌کردن صدا":"قطع صدا"}
+    className="absolute bottom-3 left-3 rounded-full bg-black/55 p-2.5 text-white">
+     {muted?<VolumeX size={18}/>:<Volume2 size={18}/>}
+   </button>
+  </div>
   <div className="px-4 py-3" dir="rtl">
    <h3 className="text-sm font-black leading-6 text-[var(--ink)]">{reel.title}</h3>
-   {reel.caption&&<><p className={`mt-1 whitespace-pre-line text-xs leading-6 text-[var(--muted)] ${expanded?"":"line-clamp-2"}`}>{reel.caption}</p><button type="button" onClick={()=>setExpanded(v=>!v)} className="mt-1 text-xs font-bold text-[var(--accent)]">{expanded?"بستن کپشن":"بیشتر"}</button></>}
+   {reel.caption&&<><p className={`mt-1 whitespace-pre-line text-xs leading-6 text-[var(--muted)] ${expanded?"":"line-clamp-2"}`}>{reel.caption}</p>
+   <button type="button" onClick={()=>setExpanded(v=>!v)} className="mt-1 text-xs font-bold text-[var(--accent)]">{expanded?"بستن کپشن":"بیشتر"}</button></>}
   </div>
  </article>
 }
-
 function ReelScreen({reels,index,onClose}:{reels:Reel[];index:number;onClose:()=>void}){
  const [active,setActive]=useState(index),[muted,setMuted]=useState(false),[captionOpen,setCaptionOpen]=useState(false),[paused,setPaused]=useState(false);
  const refs=useRef<(HTMLVideoElement|null)[]>([]);
