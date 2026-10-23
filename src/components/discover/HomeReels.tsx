@@ -25,13 +25,13 @@ function ReelScreen({reels,index,onClose}:{reels:Reel[];index:number;onClose:()=
  const [active,setActive]=useState(index),[muted,setMuted]=useState(false),[captionOpen,setCaptionOpen]=useState(false),[paused,setPaused]=useState(false);
  const refs=useRef<(HTMLVideoElement|null)[]>([]);
  const box=useRef<HTMLDivElement>(null);
- useEffect(()=>{const original=document.body.style.overflow;document.body.style.overflow="hidden";return()=>{document.body.style.overflow=original;refs.current.forEach(v=>v?.pause())}},[]);
+  useEffect(()=>{const original=document.body.style.overflow;document.body.style.overflow="hidden";return()=>{document.body.style.overflow=original;refs.current.forEach(v=>v?.pause())}},[]);
  useEffect(()=>{refs.current.forEach((video,i)=>{if(!video)return;video.muted=muted;if(i===active&&!captionOpen&&!paused)void video.play().catch(()=>{});else video.pause()})},[active,muted,captionOpen,paused]);
  useEffect(()=>{const key=(event:KeyboardEvent)=>{if(event.key==="Escape"){if(captionOpen)setCaptionOpen(false);else onClose()}if(event.key==="ArrowDown")setActive(i=>Math.min(i+1,reels.length-1));if(event.key==="ArrowUp")setActive(i=>Math.max(0,i-1))};window.addEventListener("keydown",key);return()=>window.removeEventListener("keydown",key)},[captionOpen,reels.length,onClose]);
  useEffect(()=>{box.current?.querySelector(`[data-reel="${active}"]`)?.scrollIntoView({block:"start",behavior:"instant"})},[active]);
  const current=reels[active];
  return <div className="fixed inset-0 z-[200] bg-black text-white" role="dialog" aria-modal="true" aria-label="تماشای ریلز" dir="rtl">
-  <div ref={box} className="mx-auto h-[100dvh] w-full max-w-[550px] snap-y snap-mandatory overflow-y-auto overscroll-contain">
+  <div ref={box} onScroll={e=>{const root=e.currentTarget;const next=Math.max(0,Math.min(reels.length-1,Math.round(root.scrollTop/root.clientHeight)));if(next!==active){setActive(next);setPaused(false);setCaptionOpen(false)}}} className="mx-auto h-[100dvh] w-full max-w-[550px] snap-y snap-mandatory overflow-y-auto overscroll-contain">
    {reels.map((r,i)=><section key={r.id} data-reel={i} className="relative h-[100dvh] w-full snap-start bg-black">
     <video ref={v=>{refs.current[i]=v}} src={r.video_url} poster={r.cover_url||undefined} playsInline loop preload={Math.abs(i-active)<=1?"metadata":"none"} muted={muted} onClick={()=>{const v=refs.current[i];if(!v)return;if(v.paused){void v.play().catch(()=>{});setPaused(false)}else{v.pause();setPaused(true)}}} className="h-full w-full object-contain"/>
     {i===active&&<div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/70 to-transparent"/>}
