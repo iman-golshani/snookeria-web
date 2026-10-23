@@ -7,6 +7,7 @@ type Reel={id:string;title:string;caption:string|null;video_url:string;cover_url
 function ReelPreview({reel,onOpen}:{reel:Reel;onOpen:()=>void}){
  const [expanded,setExpanded]=useState(false);
  const [visible,setVisible]=useState(false);
+ const [near,setNear]=useState(false);
  const [muted,setMuted]=useState(true);
  const [failed,setFailed]=useState(false);
  const wrapper=useRef<HTMLElement>(null);
@@ -14,7 +15,8 @@ function ReelPreview({reel,onOpen}:{reel:Reel;onOpen:()=>void}){
  useEffect(()=>{
   const node=wrapper.current;if(!node)return;
   const observer=new IntersectionObserver(entries=>{
-   setVisible(entries[0]?.intersectionRatio>=.55);
+   setNear(Boolean(entries[0]?.isIntersecting));
+   setVisible((entries[0]?.intersectionRatio??0)>=.55);
   },{threshold:[0,.25,.55,.85],rootMargin:"180px 0px"});
   observer.observe(node);return()=>observer.disconnect();
  },[]);
@@ -31,7 +33,7 @@ function ReelPreview({reel,onOpen}:{reel:Reel;onOpen:()=>void}){
  return <article ref={wrapper} className="mb-4 overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--surface)]">
   <div className="relative aspect-[9/13] w-full overflow-hidden bg-[#0c1321]">
    {reel.cover_url&&<img src={reel.cover_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover"/>}
-   {(visible||!reel.cover_url)&&<video ref={video} src={reel.video_url} poster={reel.cover_url||undefined}
+   {near&&<video ref={video} src={reel.video_url} poster={reel.cover_url||undefined}
     playsInline muted={muted} loop preload={visible?"auto":"metadata"} autoPlay={visible}
     onError={()=>setFailed(true)}
     className="absolute inset-0 h-full w-full object-cover"/>}
