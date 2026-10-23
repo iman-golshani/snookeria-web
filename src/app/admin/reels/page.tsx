@@ -50,7 +50,7 @@ export default function ReelsAdmin(){
  useEffect(()=>{let mounted=true;void(async()=>{const{data}=await cmsSupabase.auth.getSession();if(!mounted)return;if(!data.session){router.replace("/admin/login");return}const {data:isAdmin,error:accessError}=await cmsSupabase.rpc("is_cms_admin");if(accessError||!isAdmin){router.replace("/admin");return}await reload();if(mounted)setReady(true)})();return()=>{mounted=false}},[router]);
  useEffect(()=>{if(!video)return;const u=URL.createObjectURL(video);setVideoUrl(u);return()=>URL.revokeObjectURL(u)},[video]);
  useEffect(()=>{if(!cover)return;const u=URL.createObjectURL(cover);setCoverUrl(u);return()=>URL.revokeObjectURL(u)},[cover]);
- function reset(){if(saving){cancelUpload();return}savedUpload.current={videoFile:null,videoUrl:"",coverFile:null,coverUrl:null};setPhase("idle");setError("");setNotice("");setEditing(null);setTitle("");setCaption("");setStatus("draft");setVideo(null);setCover(null);setVideoUrl("");setCoverUrl("");setProgress(0)}
+ function reset(force=false){if(saving&&!force){cancelUpload();return}savedUpload.current={videoFile:null,videoUrl:"",coverFile:null,coverUrl:null};setPhase("idle");setError("");setNotice("");setEditing(null);setTitle("");setCaption("");setStatus("draft");setVideo(null);setCover(null);setVideoUrl("");setCoverUrl("");setProgress(0)}
  function selectVideo(file?:File){if(!file)return;setError("");if(!["video/mp4","video/webm","video/quicktime"].includes(file.type)){setError("فرمت فایل باید MP4، WebM یا MOV باشد.");return}if(file.size>MAX_FILE){setError("برای نسخه اولیه حداکثر حجم ویدیو ۵۰ مگابایت است. ویدیو را ابتدا خروجی کم‌حجم بگیر.");return}setVideo(file);savedUpload.current.videoFile=null; savedUpload.current.videoUrl=""}
  function selectCover(file?:File){if(!file)return;if(!file.type.startsWith("image/")){setError("کاور باید تصویر باشد.");return}if(file.size>12*1024*1024){setError("حجم کاور باید کمتر از ۱۲ مگابایت باشد.");return}setCover(file);savedUpload.current.coverFile=null; savedUpload.current.coverUrl=null}
  async function save(){
@@ -88,7 +88,7 @@ export default function ReelsAdmin(){
    const payload={title:title.trim(),caption:caption.trim(),video_url:uploadedVideo,cover_url:uploadedCover,status,published_at:status==="published"?new Date().toISOString():null,updated_at:new Date().toISOString()};
    const res=editing?await cmsSupabase.from("snookeria_reels").update(payload).eq("id",editing):await cmsSupabase.from("snookeria_reels").insert(payload);
    if(res.error)throw res.error;
-   setPhase("done");reset();setNotice("ریلز با موفقیت ذخیره شد.");await reload();
+   setPhase("done");reset(true);setNotice("ریلز با موفقیت ذخیره شد.");await reload();
   }catch(e){
     if(e instanceof DOMException && e.name==="AbortError"){setError("آپلود لغو شد. می‌توانی دوباره روی ذخیره بزنی. فایل‌های کامل آپلودشده دوباره ارسال نمی‌شوند.")}
     else setError("ذخیره ریلز کامل نشد؛ با زدن دکمه تلاش مجدد می‌توانی ادامه بدهی. "+String(e));
@@ -102,7 +102,7 @@ export default function ReelsAdmin(){
  }
  function edit(item:Reel){savedUpload.current={videoFile:null,videoUrl:"",coverFile:null,coverUrl:null};setPhase("idle");setEditing(item.id);setTitle(item.title);setCaption(item.caption||"");setStatus(item.status);setVideo(null);setCover(null);setVideoUrl(item.video_url);setCoverUrl(item.cover_url||"");window.scrollTo({top:0,behavior:"smooth"})}
  return <main dir="rtl" className="min-h-screen bg-[var(--page)] px-4 pb-24 pt-5 text-[var(--ink)]"><div className="mx-auto max-w-2xl">
- <header className="mb-6 flex items-center justify-between"><Link href="/admin/content" className="rounded-full border border-[var(--edge)] p-2.5"><ArrowRight size={20}/></Link><div className="text-center"><h1 className="text-lg font-black">استودیوی ریلز</h1><span className="text-[10px] text-[var(--muted)]">ویدیوهای کوتاه اسنوکریا</span></div><button onClick={reset} disabled={saving} aria-label="ریلز جدید" className="rounded-full bg-[#d82c45] p-2.5 text-white"><Plus size={22}/></button></header>
+ <header className="mb-6 flex items-center justify-between"><Link href="/admin/content" className="rounded-full border border-[var(--edge)] p-2.5"><ArrowRight size={20}/></Link><div className="text-center"><h1 className="text-lg font-black">استودیوی ریلز</h1><span className="text-[10px] text-[var(--muted)]">ویدیوهای کوتاه اسنوکریا</span></div><button onClick={()=>reset()} disabled={saving} aria-label="ریلز جدید" className="rounded-full bg-[#d82c45] p-2.5 text-white"><Plus size={22}/></button></header>
  {error&&<p role="alert" className="mb-4 rounded-xl bg-red-500/10 p-3 text-xs leading-7 text-red-500">{error}</p>}
  {notice&&<p role="status" className="mb-4 flex items-center gap-2 rounded-xl bg-emerald-500/10 p-3 text-xs text-emerald-500"><CheckCircle2 size={17}/>{notice}</p>}
  <section className="overflow-hidden rounded-3xl border border-[var(--edge)] bg-[var(--surface)] p-4 sm:p-6">
