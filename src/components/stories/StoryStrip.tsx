@@ -9,7 +9,10 @@ const seenKey="snookeria-stories-seen-v1";
 export default function StoryStrip(){
  const [stories,setStories]=useState<Story[]>([]),[highlights,setHighlights]=useState<Highlight[]>([]),[members,setMembers]=useState<{highlight_id:string;story_id:string;sort_order:number}[]>([]);
  const [group,setGroup]=useState<string|null>(null),[index,setIndex]=useState(0),[progress,setProgress]=useState(0),[paused,setPaused]=useState(false),[seen,setSeen]=useState<string[]>([]);
- const [videoDuration,setVideoDuration]=useState(0);const video=useRef<HTMLVideoElement>(null);const hold=useRef<{at:number;x:number;y:number;id:number}|null>(null);
+ const [videoDuration,setVideoDuration]=useState(0);
+ const [mediaReady,setMediaReady]=useState(false);
+ const mediaCache=useRef(new Map<string,HTMLImageElement>());
+ const readyRef=useRef<string|null>(null);const video=useRef<HTMLVideoElement>(null);const hold=useRef<{at:number;x:number;y:number;id:number}|null>(null);
  useEffect(()=>{try{setSeen(JSON.parse(localStorage.getItem(seenKey)||"[]"))}catch{}},[]);
  useEffect(()=>{let live=true;async function load(){const now=new Date().toISOString();const [s,h,m]=await Promise.all([
  cmsSupabase.from("snookeria_stories").select("id,media_url,media_type,title,body,background,link_url,duration_seconds,published_at,expires_at").eq("status","published").order("published_at",{ascending:true}),
@@ -20,10 +23,28 @@ export default function StoryStrip(){
  const now=Date.now();const active=stories.filter(s=>s.media_type==="image"&&new Date(s.expires_at).getTime()>now);
  const list=group==="live"?active:group?members.filter(m=>m.highlight_id===group).map(m=>stories.find(s=>s.id===m.story_id)).filter((s):s is Story=>!!s&&s.media_type==="image"):[];
  const current=list[index];const currentLinks=linksFor(current);
+ useEffect(()=>{
+  if(!group)return;
+  for(const item of list.slice(index+1,index+3)){
+   if(item.media_type!=="image"||!item.media_url||mediaCache.current.has(item.media_url))continue;
+   const picture=new Image();picture.decoding="async";picture.src=item.media_url;
+   mediaCache.current.set(item.media_url,picture);
+  }
+ },[group,index,stories,members]);
  useEffect(()=>{if(!current)return;setSeen(old=>{if(old.includes(current.id))return old;const next=[...old,current.id].slice(-300);try{localStorage.setItem(seenKey,JSON.stringify(next))}catch{}return next})},[current?.id]);
- useEffect(()=>{setProgress(0);setVideoDuration(0)},[group,index]);
- useEffect(()=>{if(!current||paused)return;const duration=current.media_type==="video"?(videoDuration>0?videoDuration:current.duration_seconds):current.duration_seconds;
- const step=50;const timer=setInterval(()=>setProgress(p=>Math.min(100,p+100*step/(duration*1000))),step);return()=>clearInterval(timer)},[current?.id,paused,videoDuration]);
+ useEffect(()=>{
+  setProgress(0);setVideoDuration(0);setMediaReady(false);readyRef.current=null;
+  if(!current)return;
+  if(current.media_type==="text"||!current.media_url){setMediaReady(true);return}
+  if(current.media_type==="image"){
+   const cached=mediaCache.current.get(current.media_url);
+   if(cached?.complete&&cached.naturalWidth>0){
+     readyRef.current=current.id;setMediaReady(true);
+   }
+  }
+ },[current?.id,group,index]);
+ useEffect(()=>{if(!current||paused||!mediaReady)return;const duration=current.media_type==="video"?(videoDuration>0?videoDuration:current.duration_seconds):current.duration_seconds;
+ const step=50;const timer=setInterval(()=>setProgress(p=>Math.min(100,p+100*step/(duration*1000))),step);return()=>clearInterval(timer)},[current?.id,paused,mediaReady,videoDuration]);
  useEffect(()=>{if(progress<100||!current)return;if(index+1<list.length){setIndex(i=>i+1)}else{setGroup(null);setIndex(0)}},[progress,current?.id,index,list.length]);
  useEffect(()=>{if(!group)return;const key=(e:KeyboardEvent)=>{if(e.key==="Escape")setGroup(null);if(e.key==="ArrowLeft")move(1);if(e.key==="ArrowRight")move(-1)};document.addEventListener("keydown",key);return()=>document.removeEventListener("keydown",key)},[group,index,list.length]);
  function move(delta:number){const next=index+delta;if(next<0)return;if(next>=list.length){setGroup(null);setIndex(0);return}setIndex(next)}
@@ -38,13 +59,14 @@ export default function StoryStrip(){
  </div>
  {group&&current&&<div role="dialog" aria-modal="true" aria-label="نمایش استوری" className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-0 sm:p-5" dir="rtl">
  <div className="relative flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-[#142136] text-white sm:h-[min(90dvh,820px)] sm:rounded-2xl" style={{backgroundColor:current.background||"#142136"}}>
- {current.media_type==="image"&&current.media_url&&<img decoding="async" src={current.media_url} alt={current.title} className="absolute inset-0 h-full w-full object-contain"/>}
+ {current.media_type==="image"&&current.media_url&&<img key={current.id} decoding="async" src={current.media_url} alt={current.title} onLoad={()=>{readyRef.current=current.id;setMediaReady(true)}} onError={()=>{readyRef.current=current.id;setMediaReady(true)}} className="absolute inset-0 h-full w-full object-contain"/>}
+ {!mediaReady&&<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#142136]/70"><div className="h-8 w-8 animate-spin rounded-full border-[3px] border-white/25 border-t-white"/></div>}
  {currentLinks.length>0&&<div className="pointer-events-none absolute left-1/2 top-1/2 z-20 aspect-[9/16] max-h-full w-full -translate-x-1/2 -translate-y-1/2" style={{containerType:"inline-size"}}>{currentLinks.map((l,i)=><a key={i} href={l.url} target="_blank" rel="noopener noreferrer" onPointerDown={e=>e.stopPropagation()} onClick={e=>e.stopPropagation()} className="pointer-events-auto absolute inline-flex max-w-[85%] -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-1 rounded-full bg-white px-[.8em] py-[.45em] font-black leading-snug text-[#17253a] shadow-[0_3px_24px_rgba(0,0,0,.35)]" style={{left:l.x/1080*100+"%",top:l.y/1920*100+"%",fontSize:(l.size/1080*100)+"cqw"}}>🔗 {l.label}</a>)}</div>}
- {current.media_type==="video"&&current.media_url&&<video ref={video} src={current.media_url} autoPlay playsInline onEnded={()=>move(1)} onLoadedMetadata={e=>{const duration=e.currentTarget.duration;if(Number.isFinite(duration)&&duration>0)setVideoDuration(duration);setProgress(0)}} className="absolute inset-0 h-full w-full object-contain" />}
+ {current.media_type==="video"&&current.media_url&&<video ref={video} src={current.media_url} autoPlay playsInline onEnded={()=>move(1)} onCanPlay={()=>setMediaReady(true)} onWaiting={()=>setMediaReady(false)} onPlaying={()=>setMediaReady(true)} onLoadedMetadata={e=>{const duration=e.currentTarget.duration;if(Number.isFinite(duration)&&duration>0)setVideoDuration(duration);setProgress(0)}} className="absolute inset-0 h-full w-full object-contain" />}
  <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/70"/>
  <div className="relative z-10 flex gap-1 px-3 pt-[max(12px,env(safe-area-inset-top))]">{list.map((s,i)=><div key={s.id} className="h-1 flex-1 overflow-hidden rounded-full bg-white/35"><div className="h-full bg-white" style={{width:i<index?"100%":i===index?progress+"%":"0%"}}/></div>)}</div>
  <div className="relative z-10 flex items-center justify-between px-4 py-3"><span className="text-xs font-bold">اسنوکریا · {index+1} / {list.length}</span><button onClick={()=>setGroup(null)} aria-label="بستن استوری" className="rounded-full bg-black/40 px-3 py-2 text-lg">✕</button></div>
- <div className="relative z-10 flex-1" onContextMenu={e=>e.preventDefault()} style={{touchAction:"none",userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none",cursor:"default"}} onPointerDown={e=>{if(!e.isPrimary)return;hold.current={at:Date.now(),x:e.clientX,y:e.clientY,id:e.pointerId};e.currentTarget.setPointerCapture(e.pointerId);setPaused(true);video.current?.pause()}} onPointerUp={e=>{const start=hold.current;hold.current=null;setPaused(false);if(video.current?.paused)void video.current.play().catch(()=>{});if(!start||start.id!==e.pointerId)return;const elapsed=Date.now()-start.at;const dx=e.clientX-start.x;const dy=e.clientY-start.y;const distance=Math.hypot(dx,dy);if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.25){move(dx<0?1:-1)}else if(elapsed<300&&distance<15){const rect=e.currentTarget.getBoundingClientRect();move(e.clientX<rect.left+rect.width/2?1:-1)}}} onPointerCancel={()=>{hold.current=null;setPaused(false);if(video.current?.paused)void video.current.play().catch(()=>{})}} onLostPointerCapture={()=>{hold.current=null;setPaused(false)}}><span className="absolute inset-y-0 left-0 w-1/2"/><span className="absolute inset-y-0 right-0 w-1/2"/></div>
+ <div className="relative z-10 flex-1" onContextMenu={e=>e.preventDefault()} style={{touchAction:"none",userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none",cursor:"default"}} onPointerDown={e=>{if(!e.isPrimary)return;hold.current={at:Date.now(),x:e.clientX,y:e.clientY,id:e.pointerId};e.currentTarget.setPointerCapture(e.pointerId);setPaused(true);video.current?.pause()}} onPointerUp={e=>{const start=hold.current;hold.current=null;setPaused(false);if(mediaReady&&video.current?.paused)void video.current.play().catch(()=>{});if(!start||start.id!==e.pointerId)return;const elapsed=Date.now()-start.at;const dx=e.clientX-start.x;const dy=e.clientY-start.y;const distance=Math.hypot(dx,dy);if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.25){move(dx<0?1:-1)}else if(elapsed<300&&distance<15){const rect=e.currentTarget.getBoundingClientRect();move(e.clientX<rect.left+rect.width/2?1:-1)}}} onPointerCancel={()=>{hold.current=null;setPaused(false);if(video.current?.paused)void video.current.play().catch(()=>{})}} onLostPointerCapture={()=>{hold.current=null;setPaused(false)}}><span className="absolute inset-y-0 left-0 w-1/2"/><span className="absolute inset-y-0 right-0 w-1/2"/></div>
  <div className="pointer-events-none relative z-10 px-6 pb-[max(30px,env(safe-area-inset-bottom))] text-center">{current.link_url&&currentLinks.length===0&&<a href={current.link_url} target={current.link_url.startsWith("/")?"_self":"_blank"} rel="noopener noreferrer" className="pointer-events-auto mt-4 inline-block rounded-full bg-white px-5 py-2 text-xs font-bold text-slate-900">مشاهده جزئیات ↗</a>}</div>
  </div></div>}</>
 }
