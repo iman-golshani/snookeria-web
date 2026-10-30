@@ -24,7 +24,7 @@ export default function RichTextEditor({ value, onChange }: Props) {
     editorProps: {
       attributes: {
         class:
-          "min-h-[420px] px-5 py-5 text-sm leading-8 text-white/80 outline-none [&_h2]:mt-7 [&_h2]:text-xl [&_h2]:font-black [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_p]:my-3 [&_blockquote]:my-5 [&_blockquote]:border-r-2 [&_blockquote]:border-[#20a86b] [&_blockquote]:pr-4 [&_blockquote]:text-white/55 [&_ul]:mr-5 [&_ul]:list-disc [&_ol]:mr-5 [&_ol]:list-decimal [&_a]:text-[#55d49a] [&_a]:underline",
+          "min-h-[420px] px-5 py-5 text-sm leading-8 text-[#142b25] outline-none [&_h2]:mt-7 [&_h2]:text-xl [&_h2]:font-black [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_p]:my-3 [&_blockquote]:my-5 [&_blockquote]:border-r-2 [&_blockquote]:border-[#20a86b] [&_blockquote]:pr-4 [&_blockquote]:text-[#47645a] [&_ul]:mr-5 [&_ul]:list-disc [&_ol]:mr-5 [&_ol]:list-decimal [&_a]:text-[#087b56] [&_a]:underline",
       },
     },
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -33,7 +33,7 @@ export default function RichTextEditor({ value, onChange }: Props) {
   if (!editor) return null;
 
   const button = (active = false) =>
-    `flex h-8 w-8 items-center justify-center rounded-lg transition ${active ? "bg-[#1b9b68]/20 text-[#5ddd9f]" : "text-white/45 hover:bg-white/[0.05] hover:text-white"}`;
+    `flex h-8 w-8 items-center justify-center rounded-lg transition ${active ? "bg-[#c5ead8] text-[#086441]" : "text-[#37594c] hover:bg-[#dceee5] hover:text-[#102d22]"}`;
 
   function setLink() {
     if (!editor) return;
@@ -48,11 +48,11 @@ export default function RichTextEditor({ value, onChange }: Props) {
   }
 
   return (
-    <div className="overflow-hidden rounded-[22px] border border-white/[0.08] bg-[#071821]/80">
-      <div className="flex flex-wrap items-center gap-1 border-b border-white/[0.07] bg-[#0a2029]/80 p-2">
+    <div className="overflow-hidden rounded-[22px] border border-[#cbded4] bg-white text-[#142b25]">
+      <div className="flex flex-wrap items-center gap-1 border-b border-[#d4e6db] bg-[#f1f8f4] p-2">
         <button type="button" className={button(editor.isActive("bold"))} onClick={() => editor.chain().focus().toggleBold().run()} title="Bold"><Bold size={15}/></button>
         <button type="button" className={button(editor.isActive("italic"))} onClick={() => editor.chain().focus().toggleItalic().run()} title="Italic"><Italic size={15}/></button>
-        <span className="mx-1 h-5 w-px bg-white/10"/>
+        <span className="mx-1 h-5 w-px bg-[#b4c9be]"/>
         <button type="button" className={button(editor.isActive("heading",{level:2}))} onClick={() => editor.chain().focus().toggleHeading({level:2}).run()} title="Heading 2"><Heading2 size={16}/></button>
         <button type="button" className={button(editor.isActive("heading",{level:3}))} onClick={() => editor.chain().focus().toggleHeading({level:3}).run()} title="Heading 3"><Heading3 size={16}/></button>
         <button type="button" className={button(editor.isActive("bulletList"))} onClick={() => editor.chain().focus().toggleBulletList().run()} title="لیست"><List size={16}/></button>
