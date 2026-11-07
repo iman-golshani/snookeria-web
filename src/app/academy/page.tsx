@@ -11,8 +11,9 @@ import Link from "next/link";
 import ConsultationForm from "@/components/academy/ConsultationForm";
 import { createClient } from "@supabase/supabase-js";
 export const dynamic = "force-dynamic";
-import { CheckCircle2, GraduationCap, Target, Activity, ClipboardCheck, ArrowLeft } from "lucide-react";
+import { CheckCircle2, GraduationCap, Target, Activity, ClipboardCheck, ArrowLeft, BookOpen, Download, ExternalLink } from "lucide-react";
 
+const rulesPdfUrl = "https://raw.githubusercontent.com/iman-golshani/snookeria-web/main/Wpbsa-Snookeria-Complete%20iman%20golshani.pdf";
 const skills = [
  {title:"تکنیک و اجرای ضربه",items:["تحلیل و اصلاح تخصصی کیو اکشن (Cue Action)","بررسی ایستادن، نشانه‌گیری و پل‌گذاری","شناسایی عادت‌های تکنیکی و اصلاح آن‌ها"]},
  {title:"دقت و کنترل بازی",items:["کنترل توپ سفید و موقعیت‌گیری","تقویت دقت در ضربات بلند (Long Pot)","توسعه مهارت بریک‌سازی (Break Building)"]},
@@ -40,6 +41,28 @@ export default async function AcademyPage() {
         </header>
 
         {dailyQuote?.quote && <section aria-label="جمله روز اسنوکریا" className="mx-auto mt-12 max-w-2xl rounded-[24px] border border-red-500/20 bg-red-500/[0.04] px-6 py-7 text-center"><p className="text-xs font-bold text-red-400">جمله روز</p><blockquote className="mt-3 whitespace-pre-line text-base font-bold leading-9 text-[var(--ink)]">«{dailyQuote.quote}»</blockquote>{dailyQuote.author && <p className="mt-3 text-xs text-[var(--muted)]">— {dailyQuote.author}</p>}</section>}
+        <section id="snooker-rules-pdf" aria-labelledby="snooker-rules-title" className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-[28px] border border-red-500/25 bg-[var(--surface)] shadow-[var(--shadow)]">
+          <div className="grid gap-0 sm:grid-cols-[220px_1fr]">
+            <div className="relative flex min-h-[260px] items-center justify-center overflow-hidden bg-[#142332] p-5">
+              <div className="relative flex aspect-[3/4] w-[160px] flex-col items-center justify-center rounded-lg border border-white/20 bg-[#f6f7f7] p-4 text-center shadow-2xl" dir="rtl">
+                <span className="text-[10px] font-bold tracking-widest text-red-700">SNOOKERIA ACADEMY</span>
+                <BookOpen size={52} className="my-6 text-red-600"/>
+                <span className="text-base font-black leading-7 text-[#132b26]">جزوه قوانین اسنوکر به زبان ساده</span>
+                <span className="mt-3 text-[10px] text-[#52665e]">نسخه فارسی | PDF</span>
+              </div>
+            </div>
+            <div className="flex flex-col justify-center p-6 sm:p-8" dir="rtl">
+              <p className="text-xs font-bold tracking-wider text-red-500">کتابخانه آکادمی اسنوکریا</p>
+              <h2 id="snooker-rules-title" className="mt-3 text-xl font-black leading-9 sm:text-2xl">جزوه قوانین اسنوکر به زبان ساده</h2>
+              <p className="mt-3 text-sm leading-8 text-[var(--muted)]">نسخه فارسی جزوه قوانین اسنوکر، تهیه‌شده برای مطالعه آسان‌تر قوانین، آشنایی با اصطلاحات و مراجعه به مقررات بازی. فایل PDF را می‌توانید به‌صورت آنلاین مشاهده یا روی دستگاه خود ذخیره کنید.</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a href={rulesPdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-500"><BookOpen size={18}/> مطالعه آنلاین <ExternalLink size={15}/></a>
+                <a href={rulesPdfUrl} download="Snookeria-Persian-Snooker-Rules.pdf" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[var(--edge)] bg-[var(--page)] px-5 py-3 text-sm font-bold text-[var(--ink)] transition hover:border-red-500/50"><Download size={18}/> دریافت PDF</a>
+              </div>
+              <p className="mt-3 text-xs leading-6 text-[var(--muted)]">در بعضی مرورگرهای موبایل، دکمه دریافت فایل را باز می‌کند؛ برای ذخیره‌کردن از گزینه اشتراک‌گذاری یا ذخیره در Files استفاده کنید.</p>
+            </div>
+          </div>
+        </section>
         <section className="mt-14" aria-labelledby="approach-title">
           <div className="text-center"><Activity size={24} className="mx-auto text-red-500"/><p className="mt-3 text-[11px] font-bold tracking-widest text-red-400">OUR APPROACH</p><h2 id="approach-title" className="mt-2 text-2xl font-black">آموزشی متناسب با بازی شما</h2><p className="mx-auto mt-4 max-w-2xl text-sm leading-8 text-[var(--muted)]">در اسنوکریا، آموزش صرفاً مجموعه‌ای از تمرین‌های تکراری نیست. ابتدا وضعیت فنی و سطح بازی شما بررسی می‌شود؛ سپس با توجه به نقاط قوت، چالش‌ها و اهداف شخصی‌تان، مسیر آموزشی مشخصی شکل می‌گیرد.</p></div>
           <div className="mt-8 grid gap-4 md:grid-cols-3">{approach.map(step=><article key={step.number} className="rounded-[24px] border border-[var(--edge)] bg-[var(--surface)] p-6"><span className="text-2xl font-black text-red-500">{step.number}</span><h3 className="mt-4 text-base font-bold">{step.title}</h3><p className="mt-3 text-sm leading-7 text-[var(--muted)]">{step.detail}</p></article>)}</div>
