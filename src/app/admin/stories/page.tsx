@@ -20,7 +20,7 @@ export default function StoriesAdmin(){
  async function publishStory(file:File,linkStickers:{label:string;url:string;x:number;y:number;size:number}[]){setBusy(true);setProgress(0);setError("");setNotice("");try{
  const path="stories/"+crypto.randomUUID()+".webp";await uploadWithProgress(path,file,p=>setProgress(p));
  const {data:url}=cmsSupabase.storage.from("cms-media").getPublicUrl(path);const now=new Date();
- const payload={title:"استوری "+now.toLocaleDateString("fa-IR")+,body:JSON.stringify({version:1,links:linkStickers}),media_type:"image",media_url:url.publicUrl,background:"#101a29",link_url:linkStickers[0]?.url||null,duration_seconds:5,status:"published",published_at:now.toISOString(),expires_at:new Date(now.getTime()+86400000).toISOString(),updated_at:now.toISOString()};
+ const payload={title:"استوری "+now.toLocaleDateString("fa-IR"),body:JSON.stringify({version:1,links:linkStickers}),media_type:"image",media_url:url.publicUrl,background:"#101a29",link_url:linkStickers[0]?.url||null,duration_seconds:5,status:"published",published_at:now.toISOString(),expires_at:new Date(now.getTime()+86400000).toISOString(),updated_at:now.toISOString()};
  const {data,error:e}=await cmsSupabase.from("snookeria_stories").insert(payload).select("id").single();if(e||!data)throw Error(e?.message||"ذخیره استوری ناموفق بود");
  if(selectedHighlights.length){const {error:he}=await cmsSupabase.from("snookeria_highlight_stories").insert(selectedHighlights.map((hid,i)=>({story_id:data.id,highlight_id:hid,sort_order:links.length+i})));if(he)throw Error("استوری منتشر شد اما ذخیره در هایلایت ناموفق بود: "+he.message)}
  setNotice("استوری منتشر شد"+(selectedHighlights.length?" و در هایلایت‌های انتخاب‌شده ذخیره شد.":"."));
