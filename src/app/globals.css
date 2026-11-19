@@ -45,3 +45,94 @@ html main [class*="bg-[#0a1b25]"],html main [class*="bg-[#0b202a]"],
 html main [class*="bg-[#071821]"],html main [class*="bg-[#07151e]"],
 html main [class*="bg-white/[.04]"]{background:var(--surface)!important;border-color:var(--edge)!important;color:var(--ink)!important}
 html[data-theme="dark"] main [class*="bg-white"]{border-color:var(--edge)}
+
+
+/* Vice Nights — original neon-noir treatment for the public dark theme.
+   Scoped to dark mode: light mode, CMS data, navigation and admin remain intact. */
+html[data-theme="dark"] body:not(:has([data-admin-app])){
+  --page:#100b22;--surface:#201633;--surface-raised:#302044;
+  --ink:#fff1f9;--muted:#c6b2d3;--edge:#74517e;
+  --nav:rgba(21,12,38,.96);--accent:#ff5aa9;
+  --accent-soft:rgba(255,90,169,.2);--green:#57f2db;
+  --green-bright:#74ffe7;--navy:#100b22;--red:#ff5aa9;
+  --shadow:0 8px 28px rgba(9,3,28,.52),0 0 0 1px rgba(255,126,203,.12);
+  background:var(--page);
+}
+/* Fixed city-at-dusk glow: only decorative, never intercepts gestures. */
+html[data-theme="dark"] body:not(:has([data-admin-app]))::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 72% 38% at 86% 3%,rgba(255,91,171,.24),transparent 85%),
+    radial-gradient(ellipse 80% 38% at 3% 83%,rgba(46,214,225,.16),transparent 75%),
+    linear-gradient(158deg,#241032 0%,#100b22 45%,#1c1034 72%,#0d1129 100%);
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) > main,
+html[data-theme="dark"] body:not(:has([data-admin-app])) .app-page{
+  position:relative;background:transparent!important;
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) header{
+  background:linear-gradient(100deg,rgba(28,13,50,.98),rgba(70,24,73,.95),rgba(16,15,45,.98))!important;
+  border-bottom:1px solid rgba(255,111,197,.5)!important;
+  box-shadow:0 3px 18px rgba(255,75,163,.18),inset 0 -1px 0 rgba(82,241,225,.18);
+  backdrop-filter:blur(20px);
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) header a[dir="ltr"] span{
+  color:#fff0f8!important;
+  text-shadow:0 2px 0 #6c286f,0 0 13px rgba(255,78,174,.75),0 0 26px rgba(255,92,166,.3);
+  letter-spacing:.06em!important;
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) header img{
+  border:2px solid #ff8ac9;box-shadow:0 0 12px rgba(255,82,180,.55);
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) nav.fixed{
+  background:linear-gradient(95deg,rgba(31,16,51,.98),rgba(16,15,45,.99))!important;
+  border-top:1px solid rgba(255,104,186,.48);
+  box-shadow:0 -7px 30px rgba(255,64,162,.16);
+  backdrop-filter:blur(20px);
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) nav.fixed a{
+  filter:drop-shadow(0 0 5px rgba(92,255,226,.27));
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) nav.fixed button>span{
+  background:radial-gradient(circle at 30% 25%,#ffb179,#f65d9a 50%,#9a3eb5)!important;
+  border-color:#ffacdb!important;
+  box-shadow:0 0 0 2px rgba(255,103,191,.14),0 0 18px rgba(255,75,164,.6)!important;
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) .app-card,
+html[data-theme="dark"] body:not(:has([data-admin-app])) article,
+html[data-theme="dark"] body:not(:has([data-admin-app])) main [class*="rounded-xl"][class*="border"]{
+  border-color:rgba(255,134,205,.35)!important;
+  box-shadow:0 8px 24px rgba(9,3,28,.45),0 0 18px rgba(242,76,167,.065)!important;
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) .app-card,
+html[data-theme="dark"] body:not(:has([data-admin-app])) article{
+  background:linear-gradient(155deg,rgba(47,27,67,.97),rgba(24,18,47,.98))!important;
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) article img,
+html[data-theme="dark"] body:not(:has([data-admin-app])) .media-cover img{
+  filter:saturate(1.13) contrast(1.04);
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) .app-section-title,
+html[data-theme="dark"] body:not(:has([data-admin-app])) main h1,
+html[data-theme="dark"] body:not(:has([data-admin-app])) main h2{
+  text-shadow:0 0 19px rgba(255,96,179,.2);
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) main button[class*="bg-[#0e8c5b]"]{
+  background:linear-gradient(115deg,#e94691,#9f4cc6)!important;
+  box-shadow:0 4px 18px rgba(244,70,154,.3);
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) main button[class*="bg-[var(--surface-raised)]"]{
+  border:1px solid rgba(107,236,225,.24);
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) main .rounded-full.border-\\[var\\(--edge\\)\\],
+html[data-theme="dark"] body:not(:has([data-admin-app])) main button[aria-label^="هایلایت"]>span:first-child,
+html[data-theme="dark"] body:not(:has([data-admin-app])) main button[aria-label="استوری‌های اسنوکریا"]>span:first-child{
+  border-color:#ff81c7!important;box-shadow:0 0 0 2px rgba(255,122,196,.14),0 0 12px rgba(255,87,174,.3);
+}
+html[data-theme="dark"] body:not(:has([data-admin-app])) main a:hover,
+html[data-theme="dark"] body:not(:has([data-admin-app])) main button:hover{
+  transition:box-shadow .18s,filter .18s;
+}
+@media (prefers-reduced-motion:reduce){
+ html[data-theme="dark"] body:not(:has([data-admin-app])) *{scroll-behavior:auto}
+}
