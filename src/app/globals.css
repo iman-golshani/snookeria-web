@@ -49,7 +49,7 @@ html[data-theme="dark"] main [class*="bg-white"]{border-color:var(--edge)}
 
 /* Vice Nights — original neon-noir treatment for the public dark theme.
    Scoped to dark mode: light mode, CMS data, navigation and admin remain intact. */
-html[data-theme="dark"] body:not(:has([data-admin-app])){
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])){
   --page:#100b22;--surface:#201633;--surface-raised:#302044;
   --ink:#fff1f9;--muted:#c6b2d3;--edge:#74517e;
   --nav:rgba(21,12,38,.96);--accent:#ff5aa9;
@@ -59,80 +59,161 @@ html[data-theme="dark"] body:not(:has([data-admin-app])){
   background:var(--page);
 }
 /* Fixed city-at-dusk glow: only decorative, never intercepts gestures. */
-html[data-theme="dark"] body:not(:has([data-admin-app]))::before{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app]))::before{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
     radial-gradient(ellipse 72% 38% at 86% 3%,rgba(255,91,171,.24),transparent 85%),
     radial-gradient(ellipse 80% 38% at 3% 83%,rgba(46,214,225,.16),transparent 75%),
     linear-gradient(158deg,#241032 0%,#100b22 45%,#1c1034 72%,#0d1129 100%);
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) > main,
-html[data-theme="dark"] body:not(:has([data-admin-app])) .app-page{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) > main,
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) .app-page{
   position:relative;background:transparent!important;
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) header{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) header{
   background:linear-gradient(100deg,rgba(28,13,50,.98),rgba(70,24,73,.95),rgba(16,15,45,.98))!important;
   border-bottom:1px solid rgba(255,111,197,.5)!important;
   box-shadow:0 3px 18px rgba(255,75,163,.18),inset 0 -1px 0 rgba(82,241,225,.18);
   backdrop-filter:blur(20px);
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) header a[dir="ltr"] span{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) header a[dir="ltr"] span{
   color:#fff0f8!important;
   text-shadow:0 2px 0 #6c286f,0 0 13px rgba(255,78,174,.75),0 0 26px rgba(255,92,166,.3);
   letter-spacing:.06em!important;
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) header img{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) header img{
   border:2px solid #ff8ac9;box-shadow:0 0 12px rgba(255,82,180,.55);
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) nav.fixed{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) nav.fixed{
   background:linear-gradient(95deg,rgba(31,16,51,.98),rgba(16,15,45,.99))!important;
   border-top:1px solid rgba(255,104,186,.48);
   box-shadow:0 -7px 30px rgba(255,64,162,.16);
   backdrop-filter:blur(20px);
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) nav.fixed a{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) nav.fixed a{
   filter:drop-shadow(0 0 5px rgba(92,255,226,.27));
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) nav.fixed button>span{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) nav.fixed button>span{
   background:radial-gradient(circle at 30% 25%,#ffb179,#f65d9a 50%,#9a3eb5)!important;
   border-color:#ffacdb!important;
   box-shadow:0 0 0 2px rgba(255,103,191,.14),0 0 18px rgba(255,75,164,.6)!important;
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) .app-card,
-html[data-theme="dark"] body:not(:has([data-admin-app])) article,
-html[data-theme="dark"] body:not(:has([data-admin-app])) main [class*="rounded-xl"][class*="border"]{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) .app-card,
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) article,
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) main [class*="rounded-xl"][class*="border"]{
   border-color:rgba(255,134,205,.35)!important;
   box-shadow:0 8px 24px rgba(9,3,28,.45),0 0 18px rgba(242,76,167,.065)!important;
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) .app-card,
-html[data-theme="dark"] body:not(:has([data-admin-app])) article{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) .app-card,
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) article{
   background:linear-gradient(155deg,rgba(47,27,67,.97),rgba(24,18,47,.98))!important;
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) article img,
-html[data-theme="dark"] body:not(:has([data-admin-app])) .media-cover img{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) article img,
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) .media-cover img{
   filter:saturate(1.13) contrast(1.04);
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) .app-section-title,
-html[data-theme="dark"] body:not(:has([data-admin-app])) main h1,
-html[data-theme="dark"] body:not(:has([data-admin-app])) main h2{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) .app-section-title,
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) main h1,
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) main h2{
   text-shadow:0 0 19px rgba(255,96,179,.2);
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) main button[class*="bg-[#0e8c5b]"]{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) main button[class*="bg-[#0e8c5b]"]{
   background:linear-gradient(115deg,#e94691,#9f4cc6)!important;
   box-shadow:0 4px 18px rgba(244,70,154,.3);
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) main button[class*="bg-[var(--surface-raised)]"]{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) main button[class*="bg-[var(--surface-raised)]"]{
   border:1px solid rgba(107,236,225,.24);
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) main .rounded-full.border-\\[var\\(--edge\\)\\],
-html[data-theme="dark"] body:not(:has([data-admin-app])) main button[aria-label^="هایلایت"]>span:first-child,
-html[data-theme="dark"] body:not(:has([data-admin-app])) main button[aria-label="استوری‌های اسنوکریا"]>span:first-child{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) main .rounded-full.border-\\[var\\(--edge\\)\\],
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) main button[aria-label^="هایلایت"]>span:first-child,
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) main button[aria-label="استوری‌های اسنوکریا"]>span:first-child{
   border-color:#ff81c7!important;box-shadow:0 0 0 2px rgba(255,122,196,.14),0 0 12px rgba(255,87,174,.3);
 }
-html[data-theme="dark"] body:not(:has([data-admin-app])) main a:hover,
-html[data-theme="dark"] body:not(:has([data-admin-app])) main button:hover{
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) main a:hover,
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) main button:hover{
   transition:box-shadow .18s,filter .18s;
 }
 @media (prefers-reduced-motion:reduce){
- html[data-theme="dark"] body:not(:has([data-admin-app])) *{scroll-behavior:auto}
+ html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app])) *{scroll-behavior:auto}
+}
+
+/* Snookeria Vice Coast: original illustrated scene across BOTH site themes.
+   To revert without losing either theme, set data-visual-style="classic".
+   Public presentation only; do not touch admin shells, data, routes or controls. */
+html[data-visual-style="gta"] body:not(:has([data-admin-app]))::after{
+  content:"";position:fixed;inset:44px 0 52px;z-index:0;
+  pointer-events:none;user-select:none;
+  background-image:url("/images/vice-snooker-scene.webp");
+  background-repeat:no-repeat;background-size:cover;
+  background-position:center 42%;
+  opacity:.23;
+}
+html[data-visual-style="gta"] body:not(:has([data-admin-app])) > main,
+html[data-visual-style="gta"] body:not(:has([data-admin-app])) > .app-page{
+  position:relative;z-index:1;background:transparent!important;
+}
+html[data-visual-style="gta"][data-theme="dark"] body:not(:has([data-admin-app]))::after{
+  opacity:.29;filter:saturate(1.2) contrast(1.08);
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 75%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 0%,#000 75%,transparent 100%);
+}
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app])){
+  --page:#fff8fb;--surface:rgba(255,255,255,.97);
+  --surface-raised:#fceaf7;--ink:#34203e;--muted:#735d7b;
+  --edge:#eec4e5;--nav:rgba(255,246,252,.97);
+  --accent:#b52879;--accent-soft:rgba(181,40,121,.09);
+  --green:#087f7c;--green-bright:#0ea69d;
+  --shadow:0 8px 22px rgba(92,26,103,.09);
+  background:var(--page);
+}
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app]))::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,249,252,.88),rgba(255,231,246,.72) 50%,rgba(232,254,255,.82));
+}
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app]))::after{
+  opacity:.18;filter:saturate(.9) contrast(.88);
+}
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app])) header{
+  background:linear-gradient(95deg,rgba(255,251,254,.98),rgba(255,229,244,.98),rgba(234,251,253,.98))!important;
+  border-color:rgba(220,91,172,.38)!important;
+  box-shadow:0 3px 15px rgba(168,50,143,.10);
+}
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app])) header a[dir="ltr"] span{
+  color:#87366d!important;text-shadow:0 1px 0 #fff,0 0 13px rgba(242,103,185,.2);
+}
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app])) header img{
+  border:2px solid #ec8dca;box-shadow:0 0 12px rgba(229,116,181,.22);
+}
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app])) nav.fixed{
+  background:linear-gradient(110deg,rgba(255,245,251,.98),rgba(240,250,253,.98))!important;
+  border-top:1px solid rgba(214,115,182,.44);
+  box-shadow:0 -4px 24px rgba(182,72,143,.13);
+}
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app])) .app-card,
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app])) article{
+  border-color:rgba(209,132,187,.38)!important;
+  box-shadow:0 7px 22px rgba(90,33,103,.12)!important;
+  background:rgba(255,255,255,.95)!important;
+}
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app])) main button[class*="bg-[#0e8c5b]"]{
+  background:linear-gradient(115deg,#e46aac,#9371d7)!important;
+  color:#fff!important;box-shadow:0 4px 15px rgba(202,81,155,.2);
+}
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app])) main button[aria-label^="هایلایت"]>span:first-child,
+html[data-visual-style="gta"]:not([data-theme="dark"]) body:not(:has([data-admin-app])) main button[aria-label="استوری‌های اسنوکریا"]>span:first-child{
+ border-color:#e77db9!important;box-shadow:0 0 0 2px rgba(242,153,207,.15);
+}
+/* Preserve story player art, photographs, and full-screen video contrast. */
+html[data-visual-style="gta"] [role="dialog"][aria-label="نمایش استوری"]{
+  isolation:isolate;
+}
+@media(min-width:850px){
+ html[data-visual-style="gta"] body:not(:has([data-admin-app]))::after{
+   background-size:auto 105vh;background-position:center center;
+ }
+}
+@media(max-width:480px){
+ html[data-visual-style="gta"] body:not(:has([data-admin-app]))::after{
+  background-position:center 48%;
+ }
 }
